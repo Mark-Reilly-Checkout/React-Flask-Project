@@ -80,5 +80,5 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 ### `flask run`
 
 Your React application should now be running on http://localhost:3000 and communicating with the Flask backend on http://localhost:5000
-This setup provides a basic integration between React and Flask
+This setup provides a basic integration between React and Flask.
 
