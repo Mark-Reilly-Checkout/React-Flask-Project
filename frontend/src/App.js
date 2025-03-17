@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import NavigationBar from './pages/NavigationBar';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+
 
 function App() {
   const [data, setData] = useState('');
@@ -12,7 +16,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>React + Flask Integration</h1>
+      <NavigationBar />
       <p>{data}</p>
     </div>
   );
