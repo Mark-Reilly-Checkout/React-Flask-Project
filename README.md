@@ -82,3 +82,8 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 The React application should now be running on http://localhost:3000 and communicating with the Flask backend on http://localhost:5000
 This setup provides a basic integration between React and Flask.
 
+Agenda:
+1. Install python 3.6 to be compatible with CKO Python SDK
+2. Run test API calls with SDK
+3. Start to implement CKO products. 
+
