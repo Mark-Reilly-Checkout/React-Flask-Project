@@ -1,12 +1,219 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
+from checkout_sdk.checkout_sdk import CheckoutSdk
+from checkout_sdk.environment import Environment
+from checkout_sdk.api_client import ApiClient
+from checkout_sdk.authorization_type import AuthorizationType
+from checkout_sdk.checkout_configuration import CheckoutConfiguration
+from checkout_sdk.oauth_scopes import OAuthScopes
+from checkout_sdk.payments.sessions.sessions_client import PaymentSessionsClient
+from checkout_sdk.payments.sessions.sessions import PaymentSessionsRequest
+import json, datetime
 
 app = Flask(__name__)
 CORS(app)
 
+# Init API keys
+checkout_api = CheckoutSdk.builder() \
+    .secret_key('sk_sbox_vyafhd3nyddbhrs6ks53gpx2mi5') \
+    .public_key('pk_sbox_z6zxchef4pyoy3bziidwee4clm4')\
+    .environment(Environment.sandbox()) \
+    .build() 
+payments_client = checkout_api.payments    
+
+
+""" # Init OAuth keys
+checkout_api = CheckoutSdk\
+    .builder()\
+    .oauth()\
+    .client_credentials(client_id='ack_jdvxyolcn7zexnoptk3cec3zze', client_secret='b8OZBEXkGxSF3Xe4VG9BiVltDo-N9lKLZQa_g7MSbK9OSDxdb-8mGK53YsWPMqMDZRFaQZMxnPCVfNcw8y6sxQ')\
+    .environment(Environment.sandbox())\
+    .build()
+payments_client = checkout_api.payments """
+
+
+# Test to show FE and BE communicating 
 @app.route('/api/data')
 def get_data():
     return jsonify({"message": "Hello from Flask!"})
+
+# Recursively convert the payment details to a JSON-serializable structure
+def make_json_serializable(data):
+    """ Recursively make data JSON serializable """
+    if isinstance(data, dict):
+        return {key: make_json_serializable(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [make_json_serializable(item) for item in data]
+    elif hasattr(data, '__dict__'):
+        return make_json_serializable(vars(data))
+    elif isinstance(data, (str, int, float, bool, type(None))):
+        return data
+    elif hasattr(data, 'href'):  # Specific handling for ResponseWrapper links
+        return data.href  # Assuming href holds the URL link
+    else:
+        return str(data)
+# GET - payment details
+@app.route('/api/payment-details/<payment_id>')
+def get_payment_details(payment_id):
+    try:
+        payment_details = payments_client.get_payment_details(payment_id)
+        
+
+        # Recursively convert the payment details to a JSON-serializable structure
+        response_data = make_json_serializable(vars(payment_details))
+
+        print("Extracted Payment Details:", response_data)
+        return jsonify(response_data)
+
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+
+        if hasattr(e, 'http_status_code'):
+            print(f"HTTP Status Code: {e.http_status_code}")
+        if hasattr(e, 'error_details'):
+            print(f"Error Details: {e.error_details}")
+
+        return jsonify({"error": "Failed to fetch payment details", "details": str(e)}), 500
+    
+
+# POST - Flow - Create payment session
+@app.route('/api/create-payment-session', methods=['POST'])
+def create_payment_session():
+    response = None
+    try:
+        data = request.json
+        payment_request = {
+            "amount": data["amount"],  # Amount in cents
+            "currency": "EUR",
+            "reference": "order-12345",
+            "capture": True,  # Auto-capture payment
+            "customer": {
+                "name":"Mark Reilly",
+                "email": data["email"]
+            },
+            "billing":{
+                "address":{
+                    "country":"NL"
+                }
+            },
+            "payment_method_configuration": {
+                "googlepay":{
+                    "store_payment_details":"disabled"
+                }
+            },
+            "payment_type": "Recurring",
+            "items": [
+                {
+                "name":         "Battery Power Pack",
+                "quantity":     1,
+                "unit_price":   1000,
+                "total_amount": 1000,
+                "reference":    "SE532"    }
+            ],
+            "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
+            "success_url": "http://localhost:3000/success",
+            "failure_url": "http://localhost:3000/failure"
+        }
+
+        # ✅ Check if `sessions` exists in `checkout_api`
+        if not hasattr(checkout_api, "sessions"):
+            return jsonify({"error": "Sessions API is not available in the SDK"}), 500
+
+       # Access payment sessions client correctly
+        payment_sessions_client = checkout_api.payment_sessions
+        
+        # Create the payment session
+        response = payment_sessions_client.create_payment_sessions(payment_request)
+
+
+        print(f"Payment Session Token: {response.id}")
+
+        return jsonify({
+
+            "id": response.id,
+            "payment_session_secret ": response.payment_session_secret,
+            "payment_session_token": response.payment_session_token
+        })
+
+    except Exception as e:
+        error_message = {"error": str(e)}
+        if response and hasattr(response, 'error_type'):
+            error_message["type"] = response.error_type  # Avoids accessing response if it's None
+        return jsonify(error_message), 500
+
+# POST - Regular - Payment
+@app.route('/api/requestPayment', methods=['POST'])
+def regularPayment():
+    try:
+        data = request.json
+        payment_request = {
+            "source": {
+                "type": "card",
+                "number": data["card_number"],  # Card number from frontend
+                "expiry_month": data["expiry_month"],  # Expiry month from frontend
+                "expiry_year": data["expiry_year"],  # Expiry year from frontend
+                "cvv": data["cvv"]  # CVV from frontend
+            },
+            "amount": data["amount"],  # Amount in cents
+            "currency": "USD",
+            "reference": "order-1234",
+            "capture": True,  # Auto-capture payment
+            "payment_type": "Regular",
+            "customer": {
+                "name":"Mark Reilly",
+                "email": data["email"]
+            },
+            "billing":{
+                "address":{
+                    "country":"GB"
+                }
+            },
+            "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
+            "success_url": "http://localhost:3000/success",
+            "failure_url": "http://localhost:3000/failure"
+        }
+
+        response = checkout_api.payments.request_payment(payment_request)
+        #Display the API response response.id will find the field with id from the response
+        return jsonify({"payment_id": response.id, "amount": response.amount, "status":response.status, "Response code": response.response_code, "Response Summary":response.response_summary})
+
+    except Exception as e:
+        #When there is an error display responses error codes and type
+        return jsonify({"error": str(e), "error Code": response.error_codes, "Error Type": response.error_type}), 500
+
+
+# POST - Regular - Payment Link
+@app.route('/api/paymentLink', methods=['POST'])
+def paymentLink():
+    try:
+        data = request.json
+        requestPaymentLink = {
+            "amount": data["amount"],  # Amount in cents
+            "currency": "USD",
+            "reference": "UCHA.SE LTD",
+            "capture": True,  # Auto-capture payment
+            "payment_type": "Regular",
+            "customer": {
+                "name":"Mark Reilly",
+                "email": "test@checkout.com"
+            },
+            "billing":{
+                "address":{
+                    "country":"GB"
+                }
+            },
+            "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
+            "return_url":"http://localhost:3000/paymentLink"
+        }
+
+        response = checkout_api.payments_links.create_payment_link(requestPaymentLink)
+        #Display the API response response.id will find the field with id from the response
+        return jsonify({"id": response.id, "redirect_href": response._links.redirect.href, "expires_on":response.expires_on, "reference": response.reference})
+    except Exception as e:
+        error_message = {"error": str(e)}
+        if response and hasattr(response, 'error_type'):
+            error_message["type"] = response.error_type  # Avoids accessing response if it's None
+        return jsonify(error_message), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

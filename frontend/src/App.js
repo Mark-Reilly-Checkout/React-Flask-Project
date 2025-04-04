@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import NavigationBar from './pages/NavigationBar';
+import NavigationBar from './components/NavigationBar';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Flow from './components/Flow';
+import RequestPayment from './components/RequestPayment'
+import PaymentLink from './components/PaymentLink';
+
 
 
 
@@ -15,10 +20,14 @@ function App() {
   }, []);
 
   return (
-    <div className="App">
-      <NavigationBar />
-      <p>{data}</p>
-    </div>
+    <Router>
+            <NavigationBar />
+            <Routes>
+                <Route path="/flow" element={<Flow />} />
+                <Route path="/requestPayment" element={<RequestPayment />} />
+                <Route path="/paymentLink" element={<PaymentLink />} />
+            </Routes>
+    </Router>
   );
 }
 
