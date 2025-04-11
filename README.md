@@ -87,3 +87,12 @@ Agenda:
 2. Run test API calls with SDK
 3. Start to implement CKO products. 
 
+
+### Running with HTTPS
+## Frontend 
+Run as usual with `npm start`
+
+## Backend
+Run the backend.sh file using ./backend.sh
+Use chmod +x backend.sh to complie the file
+

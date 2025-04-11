@@ -11,7 +11,7 @@ from checkout_sdk.payments.sessions.sessions import PaymentSessionsRequest
 import json, datetime
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins="https://localhost:3000") #Frontend is running on https://
 
 # Init API keys
 checkout_api = CheckoutSdk.builder() \
@@ -216,4 +216,5 @@ def paymentLink():
         return jsonify(error_message), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
+    #app.run(port=5000)

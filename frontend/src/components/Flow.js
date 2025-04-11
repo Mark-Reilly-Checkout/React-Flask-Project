@@ -14,7 +14,7 @@ const Flow = () => {
         setLoading(true);
         // Set loading to true when the request starts
         try {
-            const response = await axios.post("http://127.0.0.1:5000/api/create-payment-session", {
+            const response = await axios.post("/api/create-payment-session", {
                 amount: 1000,  // Amount in cents ($50.00)
                 email: "test@example.com"
             });

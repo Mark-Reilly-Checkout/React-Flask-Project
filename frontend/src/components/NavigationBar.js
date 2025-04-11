@@ -6,14 +6,14 @@ const NavigationBar = () => {
   return (
     <Navbar bg="primary" data-bs-theme="dark" expand="lg" sticky="top">
       <Container>
-        <Navbar.Brand href="#home">CKO Integrations</Navbar.Brand>
+        <Navbar.Brand href="/">CKO Integrations</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
             <Nav.Link href="/flow">Flow</Nav.Link>
             <Nav.Link href="/requestPayment">Hosted Payment Pages</Nav.Link>
             <Nav.Link href="/paymentLink">Payment Link</Nav.Link>
-            <Nav.Link href="#applePay">Apple Pay</Nav.Link>
+            <Nav.Link href="/applePay">Apple Pay</Nav.Link>
             <Nav.Link href="#googlePay">Google Pay</Nav.Link>
           </Nav>
           <Nav>

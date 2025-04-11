@@ -6,15 +6,17 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Flow from './components/Flow';
 import RequestPayment from './components/RequestPayment'
 import PaymentLink from './components/PaymentLink';
+import ApplePay from './components/ApplePay';
 
 
 
 
 function App() {
   const [data, setData] = useState('');
+  const apiUrl = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
-    axios.get('/api/data')
+    axios.get(apiUrl+'/api/data')
       .then(response => setData(response.data.message))
       .catch(error => console.error('Error fetching data:', error));
   }, []);
@@ -26,6 +28,8 @@ function App() {
                 <Route path="/flow" element={<Flow />} />
                 <Route path="/requestPayment" element={<RequestPayment />} />
                 <Route path="/paymentLink" element={<PaymentLink />} />
+                <Route path="/applePay" element={<ApplePay />} />
+                <Route path="/" element={<div>Welcome to the Payment App</div>} />
             </Routes>
     </Router>
   );

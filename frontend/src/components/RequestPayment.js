@@ -12,7 +12,7 @@ const PaymentComponent = () => {
 
 const RequestPayment = async () => {
     try {
-        const response = axios.post("http://127.0.0.1:5000/api/requestPayment", {
+        const response = axios.post("http://127.0.0.1:5002/api/requestPayment", {
             card_number: "4242424242424242",
             expiry_month: "6",
             expiry_year: "2025",
