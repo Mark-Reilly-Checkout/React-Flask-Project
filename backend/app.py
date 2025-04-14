@@ -8,10 +8,16 @@ from checkout_sdk.checkout_configuration import CheckoutConfiguration
 from checkout_sdk.oauth_scopes import OAuthScopes
 from checkout_sdk.payments.sessions.sessions_client import PaymentSessionsClient
 from checkout_sdk.payments.sessions.sessions import PaymentSessionsRequest
-import json, datetime
+import json, datetime, traceback
 
 app = Flask(__name__)
+app.config["DEBUG"] = True
 CORS(app, origins="https://localhost:3000") #Frontend is running on https://
+
+# Path to your Apple Pay merchant certificate and key
+APPLE_PAY_CERT = './certificate_sandbox.pem'
+APPLE_PAY_KEY = './certificate_sandbox.key'
+MERCHANT_ID = 'merchant.com.reactFlask.sandbox'
 
 # Init API keys
 checkout_api = CheckoutSdk.builder() \
@@ -75,7 +81,6 @@ def get_payment_details(payment_id):
 
         return jsonify({"error": "Failed to fetch payment details", "details": str(e)}), 500
     
-
 # POST - Flow - Create payment session
 @app.route('/api/create-payment-session', methods=['POST'])
 def create_payment_session():
@@ -214,6 +219,70 @@ def paymentLink():
         if response and hasattr(response, 'error_type'):
             error_message["type"] = response.error_type  # Avoids accessing response if it's None
         return jsonify(error_message), 500
+
+@app.route('/api/apple-pay-session', methods=['POST'])
+def applePaySession():
+    data = request.get_json()
+
+    payload = {
+        "source": {
+            "type": "applepay",
+            "token_data": data["tokenData"]
+        },
+        "amount": data["amount"],
+        "currency": "USD",  # or EUR/GBP depending on your use
+        "reference": "apple_pay_txn_001",
+    }
+
+    headers = {
+        "Authorization": "sk_sbox_vyafhd3nyddbhrs6ks53gpx2mi5",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post("https://api.checkout.com/payments", json=payload, headers=headers)
+
+    return jsonify(response.json()), response.status_code
+
+
+@app.route("/api/apple-pay/complete", methods=["POST"])
+def complete_apple_pay():
+    data = request.get_json()
+
+    # This route would typically finalize the order or save to DB
+    # For now we just echo the token for testing
+    return jsonify({
+        "status": "success",
+        "message": "Payment token received",
+        "token": data
+    })
+
+@app.route('/api/apple-pay/validate-merchant', methods=['POST'])
+def validate_merchant():
+    data = request.get_json()
+    validation_url = data.get('validationURL')
+
+    if not validation_url:
+        return jsonify({"error": "Missing validationURL"}), 400
+
+    payload = {
+        "merchantIdentifier": MERCHANT_ID,
+        "domainName": "localhost",  # use your dev domain or localhost
+        "displayName": "My Cool Shop"
+    }
+
+    try:
+        response = requests.post(
+            validation_url,
+            json=payload,
+            cert=(APPLE_PAY_CERT, APPLE_PAY_KEY),
+            headers={"Content-Type": "application/json"}
+        )
+        response.raise_for_status()
+        return jsonify(response.json())
+    except requests.RequestException as e:
+        print("❌ Error validating merchant:")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run()
