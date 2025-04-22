@@ -3,12 +3,14 @@ import { Card } from 'react-bootstrap';
 import axios from 'axios';
 import Button from 'react-bootstrap/Button';
 import CardGroup from 'react-bootstrap/CardGroup';
+import { Frames, CardNumber, ExpiryDate, Cvv } from "frames-react";
 import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components';
+
 
 const Flow = () => {
     const [loading, setLoading] = useState(false);
     const [paymentSession, setPaymentSession] = useState(null);
-    const publicKey = 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4';
+
 
     const SessionRequest = async () => {
         setLoading(true);
@@ -30,6 +32,7 @@ const Flow = () => {
     };
 
     useEffect(() => {
+        Frames.init("pk_sbox_z6zxchef4pyoy3bziidwee4clm4");
         if (paymentSession) {
             loadCheckoutWebComponents({
                 paymentSession,
@@ -58,9 +61,9 @@ return(
     <CardGroup>
         <Card>
             <Card.Body>
-            <Card.Title>Requet a session for Flow</Card.Title>
+            <Card.Title className="text-center">Requet a session for Flow</Card.Title>
             <Card.Text>
-            <div>
+            <div className="text-center">
                 <button onClick={SessionRequest} disabled={loading}>
                     {loading ? "Processing..." : "Request Session"}
                 </button>
@@ -80,11 +83,10 @@ return(
         </Card>
         <Card>
             <Card.Body>
-            <Card.Title>Flow module</Card.Title>
+            <Card.Title className="text-center">Flow module</Card.Title>
             <Card.Text>
             <div id="flow-container"></div>
             <div id='klarna-container'></div>
-            <p>{paymentSession ? `Session ID: ${paymentSession.id}` : ''}</p>
             </Card.Text>
             </Card.Body>
             <Card.Footer>
@@ -93,8 +95,10 @@ return(
         </Card>
         <Card>
             <Card.Body>
-            <Card.Title></Card.Title>
+            <Card.Title className="text-center">Frames</Card.Title>
             <Card.Text>
+            <div class="card-frame">
+            </div>
             </Card.Text>
             </Card.Body>
             <Card.Footer>
