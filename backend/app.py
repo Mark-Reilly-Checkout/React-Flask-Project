@@ -43,7 +43,7 @@ payments_client = checkout_api.payments """
 def get_data():
     return jsonify({"message": "Hello from Flask!"})
 
-@app.route('/.well-known/apple-developer-merchantid-domain-association')
+@app.route('/.well-known/apple-developer-merchantid-domain-association.txt')
 def serve_apple_pay_verification():
     well_known_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.well-known')
     return send_from_directory(well_known_dir, 'apple-developer-merchantid-domain-association.txt')
