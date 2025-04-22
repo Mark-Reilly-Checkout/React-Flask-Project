@@ -116,8 +116,8 @@ def create_payment_session():
                 "reference":    "SE532"    }
             ],
             "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
-            "success_url": "https://localhost:3000/success",
-            "failure_url": "https://localhost:3000/failure"
+            "success_url": "https://react-frontend-elpl.onrender.com/success",
+            "failure_url": "https://react-frontend-elpl.onrender.com/failure"
         }
 
         # ✅ Check if `sessions` exists in `checkout_api`
@@ -174,8 +174,8 @@ def regularPayment():
                 }
             },
             "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
-            "success_url": "http://localhost:3000/success",
-            "failure_url": "http://localhost:3000/failure"
+            "success_url": "https://react-frontend-elpl.onrender.com/success",
+            "failure_url": "https://react-frontend-elpl.onrender.com/failure"
         }
 
         response = checkout_api.payments.request_payment(payment_request)
@@ -208,7 +208,7 @@ def paymentLink():
                 }
             },
             "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
-            "return_url":"http://localhost:3000/paymentLink"
+            "return_url":"https://react-frontend-elpl.onrender.com/paymentLink"
         }
 
         response = checkout_api.payments_links.create_payment_link(requestPaymentLink)
@@ -266,8 +266,8 @@ def validate_merchant():
 
     payload = {
         "merchantIdentifier": MERCHANT_ID,
-        "domainName": "localhost",  # use your dev domain or localhost
-        "displayName": "My Cool Shop"
+        "domainName": "https://react-frontend-elpl.onrender.com",  # use your dev domain or localhost
+        "displayName": "My Shop"
     }
 
     try:
