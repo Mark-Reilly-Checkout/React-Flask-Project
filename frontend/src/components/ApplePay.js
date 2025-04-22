@@ -63,8 +63,7 @@ const ApplePay = () => {
 
       try {
         const res = await axios.post(`${API_BASE_URL}api/apple-pay/session`, {
-          tokenData: token.paymentData,
-          amount: 5000
+          tokenData: token.paymentData
         });
 
         if (res.data && res.data.approved) {

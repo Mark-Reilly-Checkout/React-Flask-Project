@@ -229,22 +229,19 @@ def paymentLink():
 def applePaySession():
     data = request.get_json()
 
+    print("Data in Apple Pay session call:"+ data)
+
     payload = {
-        "source": {
-            "type": "applepay",
-            "token_data": data["tokenData"]
-        },
-        "amount": data["amount"],
-        "currency": "USD",  # or EUR/GBP depending on your use
-        "reference": "apple_pay_txn_001",
+        "type": "applepay",
+        "token_data": data["tokenData"]
     }
 
     headers = {
-        "Authorization": "sk_sbox_vyafhd3nyddbhrs6ks53gpx2mi5",
+        "Authorization": "pk_sbox_z6zxchef4pyoy3bziidwee4clm4",
         "Content-Type": "application/json"
     }
 
-    response = requests.post("https://api.sandbox.checkout.com/payments", json=payload, headers=headers)
+    response = requests.post("https://api.sandbox.checkout.com/tokens", json=payload, headers=headers)
 
     return jsonify(response.json()), response.status_code
 
@@ -288,6 +285,7 @@ def validate_merchant():
         print("❌ Error validating merchant:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run()
