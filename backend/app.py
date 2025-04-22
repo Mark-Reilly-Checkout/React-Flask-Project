@@ -12,7 +12,7 @@ import json, datetime, traceback
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
-CORS(app, origins="https://localhost:3000") #Frontend is running on https://
+CORS(app, origins="https://react-frontend-elpl.onrender.com") #Frontend is running on https://
 
 # Path to your Apple Pay merchant certificate and key
 APPLE_PAY_CERT = './certificate_sandbox.pem'
