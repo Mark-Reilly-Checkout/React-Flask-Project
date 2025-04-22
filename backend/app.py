@@ -280,6 +280,7 @@ def validate_merchant():
             headers={"Content-Type": "application/json"}
         )
         response.raise_for_status()
+        print("Merchant Verified")
         return jsonify(response.json())
     except requests.RequestException as e:
         print("❌ Error validating merchant:")

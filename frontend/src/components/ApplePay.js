@@ -62,7 +62,7 @@ const ApplePay = () => {
       const token = event.payment.token;
 
       try {
-        const res = await axios.post(`${API_BASE_URL}api/apple-pay/session`, {
+        const res = await axios.post(`${API_BASE_URL}api/apple-pay-session`, {
           tokenData: token.paymentData
         });
 
