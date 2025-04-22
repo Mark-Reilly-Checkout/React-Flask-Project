@@ -6,7 +6,7 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     runtime: python
-    workingDir: backend
+    rootDir: backend
     buildFilter:
       paths:
         - backend/**
@@ -18,7 +18,7 @@ services:
     plan: free
     buildCommand: npm install && npm run build
     staticPublishPath: build
-    workingDir: frontend
+    rootDir: frontend
     buildFilter:
       paths:
         - frontend/**
