@@ -11,7 +11,7 @@ services:
       paths:
         - backend/**
 
-  - type: static
+  - type: web
     name: react-frontend
     runtime: static
     region: oregon
@@ -22,3 +22,5 @@ services:
     buildFilter:
       paths:
         - frontend/**
+
+
