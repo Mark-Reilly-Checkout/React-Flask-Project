@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from checkout_sdk.checkout_sdk import CheckoutSdk
 from checkout_sdk.environment import Environment
@@ -8,7 +8,7 @@ from checkout_sdk.checkout_configuration import CheckoutConfiguration
 from checkout_sdk.oauth_scopes import OAuthScopes
 from checkout_sdk.payments.sessions.sessions_client import PaymentSessionsClient
 from checkout_sdk.payments.sessions.sessions import PaymentSessionsRequest
-import json, datetime, traceback
+import json, datetime, traceback, os
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -42,6 +42,11 @@ payments_client = checkout_api.payments """
 @app.route('/')
 def get_data():
     return jsonify({"message": "Hello from Flask!"})
+
+@app.route('/.well-known/apple-developer-merchantid-domain-association')
+def serve_apple_pay_verification():
+    well_known_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.well-known')
+    return send_from_directory(well_known_dir, 'apple-developer-merchantid-domain-association.txt')
 
 # Recursively convert the payment details to a JSON-serializable structure
 def make_json_serializable(data):
