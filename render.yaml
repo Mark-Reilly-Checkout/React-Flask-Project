@@ -11,13 +11,13 @@ services:
       paths:
         - backend/**
 
-  - type: web
+  - type: static
     name: react-frontend
     runtime: static
     region: oregon
     plan: free
     buildCommand: npm install && npm run build
-    staticPublishPath: frontend/build
+    staticPublishPath: build
     workingDir: frontend
     buildFilter:
       paths:
