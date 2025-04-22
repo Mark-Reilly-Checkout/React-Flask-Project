@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-  "proxy": "https://localhost:5002",
+  "homepage": "https://react-flask-75jd.onrender.com",
   "dependencies": {
     "@checkout.com/checkout-web-components": "^0.6.0-beta",
     "@testing-library/dom": "^10.4.0",

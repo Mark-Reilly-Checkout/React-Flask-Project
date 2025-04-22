@@ -39,7 +39,7 @@ payments_client = checkout_api.payments """
 
 
 # Test to show FE and BE communicating 
-@app.route('/api/data')
+@app.route('/')
 def get_data():
     return jsonify({"message": "Hello from Flask!"})
 

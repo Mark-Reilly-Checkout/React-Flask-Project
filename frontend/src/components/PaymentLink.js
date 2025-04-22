@@ -9,13 +9,16 @@ import Row from 'react-bootstrap/Row';
 const PaymentLink = () => {
     const [loading, setLoading] = useState(false);
     const [paymentLinkData, setPaymentLinkData] = useState(null);
+    const API_BASE_URL = process.env.REACT_APP_API_URL || "";
+
 
 const RequestPaymentLink = async () => {
     try {
-        const response = await axios.post("/api/paymentLink", {
+        const response = await axios.post(`${API_BASE_URL}/api/paymentLink`, {
             amount: 5000
         });
 
+        console.log("API Base URL:", API_BASE_URL);
         console.log("Payment Link data:", response.data);
         console.log("Payment Link ID:", response.data.id);
 

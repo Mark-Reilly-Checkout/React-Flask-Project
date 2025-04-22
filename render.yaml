@@ -1,7 +1,6 @@
 services:
   - type: web
     name: flask-backend
-    env: python
     region: oregon  # or your preferred region
     plan: free
     buildCommand: pip install -r requirements.txt
@@ -14,11 +13,12 @@ services:
 
   - type: web
     name: react-frontend
-    env: static
+    runtime: static
     region: oregon
     plan: free
-    buildCommand: cd ../frontend && npm install && npm run build
+    buildCommand: npm install && npm run build
     staticPublishPath: frontend/build
+    workingDir: frontend
     buildFilter:
       paths:
         - frontend/**
