@@ -225,11 +225,12 @@ def paymentLink():
             error_message["type"] = response.error_type  # Avoids accessing response if it's None
         return jsonify(error_message), 500
 
+#POST - Convert Apple Pay token to CKO token
 @app.route('/api/apple-pay-session', methods=['POST'])
 def applePaySession():
     data = request.get_json()
 
-    print("Data in Apple Pay session call:"+ data)
+    print("Data in Apple Pay session call:", data)
 
     payload = {
         "type": "applepay",
