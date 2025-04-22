@@ -8,11 +8,12 @@ import Row from 'react-bootstrap/Row';
 
 const PaymentComponent = () => {
     const [loading, setLoading] = useState(false);
+    const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 
 const RequestPayment = async () => {
     try {
-        const response = axios.post("http://127.0.0.1:5002/api/requestPayment", {
+        const response = axios.post(`${API_BASE_URL}api/requestPayment`, {
             card_number: "4242424242424242",
             expiry_month: "6",
             expiry_year: "2025",

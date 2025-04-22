@@ -15,12 +15,12 @@ function App() {
   const [data, setData] = useState('');
   const apiUrl = process.env.REACT_APP_BACKEND_URL;
 
-  useEffect(() => {
+/*   useEffect(() => {
     console.log(apiUrl)
     axios.get(apiUrl+'api/data')
       .then(response => setData(response.data.message))
       .catch(error => console.error('Error fetching data:', error));
-  }, []);
+  }, []); */
 
   return (
     <Router>

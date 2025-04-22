@@ -10,13 +10,14 @@ import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components
 const Flow = () => {
     const [loading, setLoading] = useState(false);
     const [paymentSession, setPaymentSession] = useState(null);
+    const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 
     const SessionRequest = async () => {
         setLoading(true);
         // Set loading to true when the request starts
         try {
-            const response = await axios.post("/api/create-payment-session", {
+            const response = await axios.post(`${API_BASE_URL}api/create-payment-session`, {
                 amount: 1000,  // Amount in cents ($50.00)
                 email: "test@example.com"
             });

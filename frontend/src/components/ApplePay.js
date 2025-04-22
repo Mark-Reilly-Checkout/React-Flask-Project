@@ -4,6 +4,7 @@ import axios from 'axios';
 
 const ApplePay = () => {
   const containerRef = useRef(null);
+  const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
 
   useEffect(() => {
     // Remove any existing button to avoid duplicates
@@ -47,7 +48,7 @@ const ApplePay = () => {
     session.onvalidatemerchant = async (event) => {
         const validationURL = event.validationURL;
         try {
-          const res = await axios.post("/api/apple-pay/validate-merchant", {
+          const res = await axios.post(`${API_BASE_URL}api/apple-pay/validate-merchant`, {
             validationURL
           });
           session.completeMerchantValidation(res.data);
