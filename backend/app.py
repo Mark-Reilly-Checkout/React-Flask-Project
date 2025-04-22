@@ -8,7 +8,7 @@ from checkout_sdk.checkout_configuration import CheckoutConfiguration
 from checkout_sdk.oauth_scopes import OAuthScopes
 from checkout_sdk.payments.sessions.sessions_client import PaymentSessionsClient
 from checkout_sdk.payments.sessions.sessions import PaymentSessionsRequest
-import json, datetime, traceback, os
+import json, datetime, traceback, os, requests
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -244,7 +244,7 @@ def applePaySession():
         "Content-Type": "application/json"
     }
 
-    response = requests.post("https://api.checkout.com/payments", json=payload, headers=headers)
+    response = requests.post("https://api.sandbox.checkout.com/payments", json=payload, headers=headers)
 
     return jsonify(response.json()), response.status_code
 
@@ -271,7 +271,7 @@ def validate_merchant():
 
     payload = {
         "merchantIdentifier": MERCHANT_ID,
-        "domainName": "https://react-frontend-elpl.onrender.com",  # use your dev domain or localhost
+        "domainName": "react-frontend-elpl.onrender.com",  # use your dev domain or localhost
         "displayName": "My Shop"
     }
 
