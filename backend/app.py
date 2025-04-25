@@ -19,23 +19,13 @@ APPLE_PAY_CERT = './certificate_sandbox.pem'
 APPLE_PAY_KEY = './certificate_sandbox.key'
 MERCHANT_ID = 'merchant.com.reactFlask.sandbox'
 
-# Init API keys
+# Initialise Checkout SDK
 checkout_api = CheckoutSdk.builder() \
     .secret_key('sk_sbox_vyafhd3nyddbhrs6ks53gpx2mi5') \
     .public_key('pk_sbox_z6zxchef4pyoy3bziidwee4clm4')\
     .environment(Environment.sandbox()) \
     .build() 
 payments_client = checkout_api.payments    
-
-
-""" # Init OAuth keys
-checkout_api = CheckoutSdk\
-    .builder()\
-    .oauth()\
-    .client_credentials(client_id='ack_jdvxyolcn7zexnoptk3cec3zze', client_secret='b8OZBEXkGxSF3Xe4VG9BiVltDo-N9lKLZQa_g7MSbK9OSDxdb-8mGK53YsWPMqMDZRFaQZMxnPCVfNcw8y6sxQ')\
-    .environment(Environment.sandbox())\
-    .build()
-payments_client = checkout_api.payments """
 
 
 # Test to show FE and BE communicating 
@@ -225,26 +215,56 @@ def paymentLink():
             error_message["type"] = response.error_type  # Avoids accessing response if it's None
         return jsonify(error_message), 500
 
-#POST - Convert Apple Pay token to CKO token
-@app.route('/api/apple-pay-session', methods=['POST'])
-def applePaySession():
-    data = request.get_json()
+from flask import request, jsonify
 
+# POST - Apple Pay session
+# This endpoint is called by the frontend to initiate the Apple Pay session
+# It receives the Apple Pay token and amount, and then converts it into a Checkout.com token
+# and processes the payment
+@app.route('/api/apple-pay-session', methods=['POST'])
+def apple_pay_session():
+    data = request.get_json()
     print("Data in Apple Pay session call:", data)
 
-    payload = {
-        "type": "applepay",
-        "token_data": data["tokenData"]
-    }
+    # 1. Tokenize the Apple Pay token using the SDK
+    try:
+        token_response = checkout_api.tokens.request_wallet_token({
+            "type": "applepay",
+            "token_data": data["tokenData"]
+        })
+        token = token_response.token  # The Checkout.com card token
+    except Exception as e:
+        print(f"Tokenization failed: {e}")
+        return jsonify({"error": "Tokenization failed", "details": str(e)}), 400
 
-    headers = {
-        "Authorization": "pk_sbox_z6zxchef4pyoy3bziidwee4clm4",
-        "Content-Type": "application/json"
-    }
+    # 2. Use the token to create a payment
+    try:
+        payment_request = {
+            "source": {
+                "type": "token",
+                "token": token
+            },
+            "amount": data["amount"],  # Amount from frontend (integer, e.g., 5000)
+            "currency": "USD",         # Or use data["currency"] if dynamic
+            "reference": "apple_pay_txn_001",
+        }
+        payment_response = payments_client.request_payment(payment_request)
+        
+        # Determine payment status
+        is_approved = payment_response.status == "Authorized" or payment_response.status == "Captured"
+        return jsonify({
+            "approved": is_approved,
+            "status": payment_response.status,
+            "payment_id": payment_response.id
+        }), 200
 
-    response = requests.post("https://api.sandbox.checkout.com/tokens", json=payload, headers=headers)
-
-    return jsonify(response.json()), response.status_code
+    except Exception as e:
+        print(f"Payment failed: {str(e)}")
+        return jsonify({
+            "approved": False,
+            "error": str(e),
+            "status": "Failed"
+        }), 400
 
 
 @app.route("/api/apple-pay/complete", methods=["POST"])

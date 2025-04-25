@@ -5,6 +5,7 @@ import axios from 'axios';
 const ApplePay = () => {
   const containerRef = useRef(null);
   const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
+  const amount = 50.00; // Amount in dollars
 
   useEffect(() => {
     // Remove any existing button to avoid duplicates
@@ -39,7 +40,7 @@ const ApplePay = () => {
       merchantCapabilities: ['supports3DS'],
       total: {
         label: 'Test Purchase',
-        amount: '50.00',
+        amount: amount.toFixed(2), // Format to 2 decimal places
       },
     };
 
@@ -63,18 +64,19 @@ const ApplePay = () => {
 
       try {
         const res = await axios.post(`${API_BASE_URL}api/apple-pay-session`, {
-          tokenData: token.paymentData
+          tokenData: token.paymentData,
+          amount: amount,
         });
 
-        if (res.data && res.data.approved) {
-          session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
-        } else {
+        if (res.data.approved) {
+            session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
+          } else {
+            session.completePayment(window.ApplePaySession.STATUS_FAILURE);
+          }
+        } catch (err) {
+          console.error('Payment failed', err);
           session.completePayment(window.ApplePaySession.STATUS_FAILURE);
         }
-      } catch (err) {
-        console.error('Payment failed', err);
-        session.completePayment(window.ApplePaySession.STATUS_FAILURE);
-      }
     };
 
     session.begin();
