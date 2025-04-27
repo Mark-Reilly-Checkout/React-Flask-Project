@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import NavigationBar from './components/NavigationBar';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { BrowserRouter as Route, Routes } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Flow from './components/Flow';
 import RequestPayment from './components/RequestPayment'
 import PaymentLink from './components/PaymentLink';
