@@ -5,6 +5,8 @@ import CardGroup from 'react-bootstrap/CardGroup';
 import { Frames, CardNumber, ExpiryDate, Cvv } from "frames-react";
 import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components';
 import { toast } from 'react-toastify';
+import { useSearchParams } from "react-router-dom";
+
 
 
 
@@ -12,6 +14,9 @@ const Flow = () => {
     const [loading, setLoading] = useState(false);
     const [paymentSession, setPaymentSession] = useState(null);
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
+    const [searchParams] = useSearchParams();
+    const paymentIdFromUrl = searchParams.get("cko-payment-id");
+
 
     // Separate states for each card's last updated time
     const [lastUpdatedSession, setLastUpdatedSession] = useState(null);
@@ -85,12 +90,12 @@ const Flow = () => {
                     toast.success('Payment completed successfully!');
                     toast.info('Payment ID: ' + paymentResponse.id);
                     console.log("Payment ID:", paymentResponse.id);
-                  },
-                  onError: (component, error) => {
+                },
+                onError: (component, error) => {
                     toast.error('Payment failed. Please try again.');
                     console.error("Payment Error:", error);
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
-                  }
+                }
             }).then(checkout => {
                 const flowComponent = checkout.create('flow');
                 flowComponent.mount('#flow-container');  // Mount the Flow component to a div
@@ -175,6 +180,14 @@ const Flow = () => {
                     </Card>
                 </CardGroup>
             </div>
+            {paymentIdFromUrl && (
+                <div className="text-center my-3">
+                    <p className="text-success">Payment completed!</p>
+                    <p>
+                        <strong>Payment ID:</strong> <code>{paymentIdFromUrl}</code>
+                    </p>
+                </div>
+            )}
         </div>
     );
 };
