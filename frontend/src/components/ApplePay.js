@@ -6,6 +6,8 @@ const ApplePay = () => {
   const containerRef = useRef(null);
   const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
   const amount = 50.00; // Amount in dollars
+  const [paymentId, setPaymentId] = useState(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   useEffect(() => {
     // Remove any existing button to avoid duplicates
@@ -69,6 +71,8 @@ const ApplePay = () => {
         });
 
         if (res.data.approved) {
+            setPaymentId(res.data.payment_id);      // Store the payment ID
+            setPaymentSuccess(true);  // Set payment success state
             session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
           } else {
             session.completePayment(window.ApplePaySession.STATUS_FAILURE);
@@ -113,9 +117,24 @@ const ApplePay = () => {
       </style>
 
       <h1 className="text-center">Apple Pay</h1>
+    
+    {/* Conditional Rendering */}
+    {!paymentSuccess ? (
+      // Show Apple Pay button container if payment hasn't succeeded
       <div ref={containerRef} className="text-center" />
-    </div>
-  );
+    ) : (
+      // Show success message and payment ID after successful payment
+      <div className="text-center mt-4">
+        <p className="text-success">✅ Payment successful!</p>
+        {paymentId && (
+          <p className="text-muted">
+            Payment ID: <code>{paymentId}</code>
+          </p>
+        )}
+      </div>
+    )}
+  </div>
+);
 };
 
 export default ApplePay;

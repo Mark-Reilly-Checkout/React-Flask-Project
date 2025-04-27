@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from 'react-bootstrap';
 import axios from 'axios';
-import Button from 'react-bootstrap/Button';
 import CardGroup from 'react-bootstrap/CardGroup';
 import { Frames, CardNumber, ExpiryDate, Cvv } from "frames-react";
 import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components';
@@ -12,6 +11,47 @@ const Flow = () => {
     const [paymentSession, setPaymentSession] = useState(null);
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
 
+    // Separate states for each card's last updated time
+    const [lastUpdatedSession, setLastUpdatedSession] = useState(null);
+    const [lastUpdatedFlow, setLastUpdatedFlow] = useState(null);
+    const [lastUpdatedFrames, setLastUpdatedFrames] = useState(null);
+
+    // Time display strings for each card
+    const [timeAgoSession, setTimeAgoSession] = useState('');
+    const [timeAgoFlow, setTimeAgoFlow] = useState('');
+    const [timeAgoFrames, setTimeAgoFrames] = useState('');
+
+    // Helper function to calculate time ago
+    const getTimeAgo = (timestamp) => {
+        if (!timestamp) return "Last updated just now";
+        const now = new Date();
+        const diffMs = now - timestamp;
+        const diffMins = Math.floor(diffMs / 60000);
+
+        if (diffMins < 60) {
+            return `Last updated ${diffMins} min${diffMins !== 1 ? 's' : ''} ago`;
+        } else {
+            const diffHours = Math.floor(diffMins / 60);
+            return `Last updated ${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+        }
+    };
+
+    // Update time displays every minute
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTimeAgoSession(getTimeAgo(lastUpdatedSession));
+            setTimeAgoFlow(getTimeAgo(lastUpdatedFlow));
+            setTimeAgoFrames(getTimeAgo(lastUpdatedFrames));
+        }, 60000);
+
+        return () => clearInterval(interval);
+    }, [lastUpdatedSession, lastUpdatedFlow, lastUpdatedFrames]);
+
+    // Initialize Frames and set third card's timestamp
+    useEffect(() => {
+        Frames.init("pk_sbox_z6zxchef4pyoy3bziidwee4clm4");
+        setLastUpdatedFrames(new Date()); // Update third card when Frames initializes
+    }, []);
 
     const SessionRequest = async () => {
         setLoading(true);
@@ -21,19 +61,18 @@ const Flow = () => {
                 amount: 1000,  // Amount in cents ($50.00)
                 email: "test@example.com"
             });
-            console.log("Payment Responses:", response.data);
-            console.log("Session ID:", response.data.id);
+
             setPaymentSession(response.data); // Store session data in state
+            setLastUpdatedSession(new Date()); // Update first card's timestamp
 
         } catch (error) {
             console.error("Payment Error:", error.response ? error.response.data : error.message);
-        }finally {
+        } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        Frames.init("pk_sbox_z6zxchef4pyoy3bziidwee4clm4");
         if (paymentSession) {
             loadCheckoutWebComponents({
                 paymentSession,
@@ -42,73 +81,71 @@ const Flow = () => {
             }).then(checkout => {
                 const flowComponent = checkout.create('flow');
                 flowComponent.mount('#flow-container');  // Mount the Flow component to a div
+                setLastUpdatedFlow(new Date()); // Update second card when flow mounts
                 const klarnaComponent = checkout.create("klarna");
                 const klarnaElement = document.getElementById('klarna-container');
                 if (klarnaComponent.isAvailable()) {
                     klarnaComponent.mount(klarnaElement);
-                  }
+                }
             }).catch(err => console.error("Checkout Web Components Error:", err));
         }
     }, [paymentSession]);
 
+    return (
+        <div>
+            <br />
+            <div>
+                <CardGroup>
+                    {/* Card 1 - Session Request */}
+                    <Card>
+                        <Card.Body>
+                            <Card.Title className="text-center">Request a session for Flow</Card.Title>
+                            <Card.Text>
+                                <div className="text-center">
+                                    <button onClick={SessionRequest} disabled={loading}>
+                                        {loading ? "Processing..." : "Request Session"}
+                                    </button>
+                                    <br />
+                                    <div>
+                                        {paymentSession && <p>Payment Session ID: {paymentSession.id}</p>}
+                                    </div>
+                                </div>
+                            </Card.Text>
+                        </Card.Body>
+                        <Card.Footer>
+                            <small className="text-muted">{timeAgoSession}</small>
+                        </Card.Footer>
+                    </Card>
 
+                    {/* Card 2 - Flow Module */}
+                    <Card>
+                        <Card.Body>
+                            <Card.Title className="text-center">Flow module</Card.Title>
+                            <Card.Text>
+                                <div id="flow-container"></div>
+                                <div id='klarna-container'></div>
+                            </Card.Text>
+                        </Card.Body>
+                        <Card.Footer>
+                            <small className="text-muted">{timeAgoFlow}</small>
+                        </Card.Footer>
+                    </Card>
 
-    
-
-return(
-    <div>
-        <br></br>
-    <div>
-    <CardGroup>
-        <Card>
-            <Card.Body>
-            <Card.Title className="text-center">Requet a session for Flow</Card.Title>
-            <Card.Text>
-            <div className="text-center">
-                <button onClick={SessionRequest} disabled={loading}>
-                    {loading ? "Processing..." : "Request Session"}
-                </button>
-
-                <br></br>
-                <div>
-                {paymentSession && (
-                 <p>Payment Session ID: {paymentSession.id}</p>
-                )}
-                </div>
+                    {/* Card 3 - Frames */}
+                    <Card>
+                        <Card.Body>
+                            <Card.Title className="text-center">Frames</Card.Title>
+                            <Card.Text>
+                                <div className="card-frame"></div>
+                            </Card.Text>
+                        </Card.Body>
+                        <Card.Footer>
+                            <small className="text-muted">{timeAgoFrames}</small>
+                        </Card.Footer>
+                    </Card>
+                </CardGroup>
             </div>
-            </Card.Text>
-            </Card.Body>
-            <Card.Footer>
-            <small className="text-muted">Last updated 3 mins ago</small>
-            </Card.Footer>
-        </Card>
-        <Card>
-            <Card.Body>
-            <Card.Title className="text-center">Flow module</Card.Title>
-            <Card.Text>
-            <div id="flow-container"></div>
-            <div id='klarna-container'></div>
-            </Card.Text>
-            </Card.Body>
-            <Card.Footer>
-            <small className="text-muted">Last updated 3 mins ago</small>
-            </Card.Footer>
-        </Card>
-        <Card>
-            <Card.Body>
-            <Card.Title className="text-center">Frames</Card.Title>
-            <Card.Text>
-            <div class="card-frame">
-            </div>
-            </Card.Text>
-            </Card.Body>
-            <Card.Footer>
-            <small className="text-muted">Last updated 3 mins ago</small>
-            </Card.Footer>
-        </Card>
-    </CardGroup> 
-    </div>
-</div>
+        </div>
     );
 };
 

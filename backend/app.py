@@ -233,11 +233,12 @@ def apple_pay_session():
             "token_data": data["tokenData"]
         })
         token = token_response.token  # The Checkout.com card token
+        print("Tokenized Apple Pay token:", token)
     except Exception as e:
         print(f"Tokenization failed: {e}")
         return jsonify({"error": "Tokenization failed", "details": str(e)}), 400
 
-    # 2. Use the token to create a payment
+    # 2. Use the token to create a payment request
     try:
         payment_request = {
             "source": {
