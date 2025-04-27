@@ -4,14 +4,13 @@ import axios from 'axios';
 import CardGroup from 'react-bootstrap/CardGroup';
 import { Frames, CardNumber, ExpiryDate, Cvv } from "frames-react";
 import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components';
+import { toast } from 'react-toastify';
+
 
 
 const Flow = () => {
     const [loading, setLoading] = useState(false);
     const [paymentSession, setPaymentSession] = useState(null);
-    const [toastVisible, setToastVisible] = useState(false);
-    const [toastType, setToastType] = useState('');
-    const [toastMessage, setToastMessage] = useState('');
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
 
     // Separate states for each card's last updated time
@@ -70,7 +69,7 @@ const Flow = () => {
 
         } catch (error) {
             console.error("Payment Error:", error.response ? error.response.data : error.message);
-            showToast('Error creating payment session', 'error');
+            toast.error('Error creating payment session', 'error');
         } finally {
             setLoading(false);
         }
@@ -83,13 +82,15 @@ const Flow = () => {
                 publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4',  // Replace with your actual public key
                 environment: 'sandbox', // Or 'production' based on your environment
                 onPaymentCompleted: (_component, paymentResponse) => {
-                    showToast('Payment completed successfully!', 'success');
-                    console.log("Payment completed with ID:", paymentResponse.id);
-                },
-                onError: (component, error) => {
-                    showToast('Payment processing error', 'error');
-                    console.error("Payment Error:", error, "Component:", component.type);
-                }
+                    toast.success('Payment completed successfully!');
+                    toast.info('Payment ID: ' + paymentResponse.id);
+                    console.log("Payment ID:", paymentResponse.id);
+                  },
+                  onError: (component, error) => {
+                    toast.error('Payment failed. Please try again.');
+                    toast.info('Request ID: ' + paymentResponse.request_id);
+                    console.error("Payment Error:", error);
+                  }
             }).then(checkout => {
                 const flowComponent = checkout.create('flow');
                 flowComponent.mount('#flow-container');  // Mount the Flow component to a div
@@ -110,9 +111,9 @@ const Flow = () => {
         const paymentId = urlParams.get('cko-payment-id');
 
         if (paymentStatus === 'succeeded') {
-            showToast('Payment succeeded!', 'success');
+            toast.success('Payment succeeded!', 'success');
         } else if (paymentStatus === 'failed') {
-            showToast('Payment failed. Please try again.', 'error');
+            toast.error('Payment failed. Please try again.', 'error');
         }
 
         if (paymentId) {
@@ -120,49 +121,8 @@ const Flow = () => {
         }
     }, []);
 
-    const showToast = (message, type) => {
-        setToastVisible(true);
-        setToastMessage(message);
-        setToastType(type);
-        setTimeout(() => setToastVisible(false), 5000);
-    };
-
     return (
         <div>
-            <style>
-                {`
-                    .toast {
-                        visibility: hidden;
-                        min-width: 250px;
-                        margin-left: -125px;
-                        color: #fff;
-                        text-align: center;
-                        border-radius: 2px;
-                        padding: 16px;
-                        position: fixed;
-                        z-index: 1;
-                        left: 50%;
-                        bottom: 30px;
-                        font-family: monospace;
-                        opacity: 0;
-                        transition: all 0.5s ease;
-                    }
-
-                    .toast.show {
-                        visibility: visible;
-                        opacity: 1;
-                        bottom: 30px;
-                    }
-
-                    .toast.success {
-                        background-color: mediumseagreen;
-                    }
-
-                    .toast.error {
-                        background-color: indianred;
-                    }
-                `}
-            </style>
             <br />
             <div>
                 <CardGroup>
@@ -194,13 +154,6 @@ const Flow = () => {
                             <Card.Text>
                                 <div id="flow-container"></div>
                                 <div id='klarna-container'></div>
-
-                                {/* Toast Notification */}
-                                {toastVisible && (
-                                    <div className={`toast ${toastType} show`}>
-                                        {toastMessage}
-                                    </div>
-                                )}
                             </Card.Text>
                         </Card.Body>
                         <Card.Footer>

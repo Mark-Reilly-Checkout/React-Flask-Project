@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import NavigationBar from './components/NavigationBar';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Route, Routes } from 'react-router-dom';
 import Flow from './components/Flow';
 import RequestPayment from './components/RequestPayment'
 import PaymentLink from './components/PaymentLink';
 import ApplePay from './components/ApplePay';
+import { ToastContainer } from 'react-toastify';
+import ToastHandler from './ToastHandler';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 
 
@@ -14,6 +17,7 @@ import ApplePay from './components/ApplePay';
 function App() {
   const [data, setData] = useState('');
   const apiUrl = process.env.REACT_APP_BACKEND_URL;
+  
 
 /*   useEffect(() => {
     console.log(apiUrl)
@@ -23,16 +27,18 @@ function App() {
   }, []); */
 
   return (
-    <Router>
-            <NavigationBar />
-            <Routes>
-                <Route path="/flow" element={<Flow />} />
-                <Route path="/requestPayment" element={<RequestPayment />} />
-                <Route path="/paymentLink" element={<PaymentLink />} />
-                <Route path="/applePay" element={<ApplePay />} />
-                <Route path="/" element={<div>Welcome to the Payment App</div>} />
-            </Routes>
-    </Router>
+    <>
+      <NavigationBar />
+      <ToastHandler />
+      <ToastContainer />
+      <Routes>
+        <Route path="/flow" element={<Flow />} />
+        <Route path="/requestPayment" element={<RequestPayment />} />
+        <Route path="/paymentLink" element={<PaymentLink />} />
+        <Route path="/applePay" element={<ApplePay />} />
+        <Route path="/" element={<div>Welcome to the Payment App</div>} />
+      </Routes>
+    </>
   );
 }
 
