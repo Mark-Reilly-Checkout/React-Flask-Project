@@ -7,7 +7,7 @@ import RequestPayment from './components/RequestPayment'
 import PaymentLink from './components/PaymentLink';
 import ApplePay from './components/ApplePay';
 import { ToastContainer } from 'react-toastify';
-import ToastHandler from './ToastHandler';
+import ToastHandler from './components/ToastHandler';
 import 'react-toastify/dist/ReactToastify.css';
 
 
