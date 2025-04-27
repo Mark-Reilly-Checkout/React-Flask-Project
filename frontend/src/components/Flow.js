@@ -88,8 +88,8 @@ const Flow = () => {
                   },
                   onError: (component, error) => {
                     toast.error('Payment failed. Please try again.');
-                    toast.info('Request ID: ' + paymentResponse.request_id);
                     console.error("Payment Error:", error);
+                    toast.info('Request ID: ' + (error?.request_id || 'N/A'));
                   }
             }).then(checkout => {
                 const flowComponent = checkout.create('flow');
