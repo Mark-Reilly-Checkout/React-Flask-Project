@@ -20,7 +20,7 @@ const NavigationBar = () => {
             <NavDropdown title="Apple Pay Scenarios" id="collapsible-nav-dropdown" data-bs-theme="light">
               <Dropdown.Item href="/ap1">Scenario 1</Dropdown.Item>
               <Dropdown.Item href="#/ap2">Scenario 2</Dropdown.Item>
-              <Dropdown.Item href="/ap3">Scenario 3y</Dropdown.Item>
+              <Dropdown.Item href="/ap3">Scenario 3</Dropdown.Item>
 
             </NavDropdown>
           </Nav>
