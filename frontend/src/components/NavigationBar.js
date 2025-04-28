@@ -26,9 +26,9 @@ const NavigationBar = () => {
           </Nav>
           <Nav>
             <NavDropdown title="Flow Scenarios" id="collapsible-nav-dropdown" data-bs-theme="light">
-              <Dropdown.Item href="/flow1">Scenario 1</Dropdown.Item>
-              <Dropdown.Item href="flow2">Scenario 2</Dropdown.Item>
-              <Dropdown.Item href="flow3">Scenario 3</Dropdown.Item>
+              <Dropdown.Item href="/flowScenarioOne">Scenario 1</Dropdown.Item>
+              <Dropdown.Item href="flowScenarioTwo">Scenario 2</Dropdown.Item>
+              <Dropdown.Item href="flowScenarioThree">Scenario 3</Dropdown.Item>
 
             </NavDropdown>
           </Nav>
