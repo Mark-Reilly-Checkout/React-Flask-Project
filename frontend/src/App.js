@@ -9,8 +9,9 @@ import ApplePay from './components/ApplePay';
 import { ToastContainer } from 'react-toastify';
 import ToastHandler from './components/ToastHandler';
 import 'react-toastify/dist/ReactToastify.css';
-import Success from './components/Success';
-
+import Success from './components/Redirects/Success';
+import Failure from './components/Redirects/Failure';
+import FlowS1 from './components/Scenarios/Flow/Scenario One/FlowS1';
 
 
 
@@ -39,6 +40,8 @@ function App() {
         <Route path="/applePay" element={<ApplePay />} />
         <Route path="/" element={<div>Welcome to the Payment App</div>} />
         <Route path="/success" element={<Success />} />
+        <Route path="/failure" element={<Failure />} />
+        <Route path="/flowScenarioOne" element={<FlowS1 />} />
       </Routes>
     </>
   );

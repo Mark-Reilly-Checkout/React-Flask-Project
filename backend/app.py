@@ -82,26 +82,28 @@ def create_payment_session():
     response = None
     try:
         data = request.json
+        email = data.get("email", "test@example.com")  # Default email if not sent from FE
+        country = data.get("country", "PL")  # Default country if not sent from FE
+        currency = data.get("currency", "EUR")  # Default currency if not sent from FE
         payment_request = {
-            "amount": data["amount"],  # Amount in cents
-            "currency": "EUR",
+            "amount": data["amount"],  
+            "currency": currency,
             "reference": "order-12345",
-            "capture": True,  # Auto-capture payment
+            "capture": True,  
             "customer": {
                 "name":"Mark Reilly",
-                "email": data["email"]
+                "email": email
             },
             "billing":{
                 "address":{
-                    "country":"NL"
+                    "country":country
                 }
             },
             "payment_method_configuration": {
                 "googlepay":{
-                    "store_payment_details":"disabled"
+                    "store_payment_details":"disabled" # This enables the user to save their payment details for future use, which returns the src_ in webhook.
                 }
             },
-            "payment_type": "Recurring",
             "items": [
                 {
                 "name":         "Battery Power Pack",
