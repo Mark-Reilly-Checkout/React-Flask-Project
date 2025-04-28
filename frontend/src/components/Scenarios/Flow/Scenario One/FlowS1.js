@@ -6,6 +6,7 @@ import { Frames, CardNumber, ExpiryDate, Cvv } from "frames-react";
 import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components';
 import { toast } from 'react-toastify';
 import { useSearchParams } from "react-router-dom";
+import { FaExclamationCircle, FaQuestionCircle } from 'react-icons/fa';
 
 
 
@@ -169,11 +170,13 @@ const FlowS1 = () => {
                         <Card.Body>
                             <Card.Title className="text-center">Scenario</Card.Title>
                             <Card.Text>
-                                <div className="text-center" color='blue'>
-                                    I have setup Flow on my website but I am not seeing iDeal as an option 
+                                <div className="text-center" >
+                                <FaExclamationCircle color="#3a86ff" style={{marginRight: 8}}/>
+                                <span className="text-muted">Scenario: </span> I have setup Flow on my website but I am not seeing iDeal as an option 
                                     when I am passing the correct data in the payment session request.
                                 </div>
-                                <div className="text-center">
+                                <div className="text-center mt-3" >
+                                <FaQuestionCircle color="#ef233c" style={{marginRight: 8}}/>
                                 What would we check in this scenario ?
                                 </div>
                             </Card.Text>
