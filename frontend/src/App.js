@@ -12,6 +12,11 @@ import 'react-toastify/dist/ReactToastify.css';
 import Success from './components/Redirects/Success';
 import Failure from './components/Redirects/Failure';
 import FlowS1 from './components/Scenarios/Flow/Scenario One/FlowS1';
+import FlowS2 from './components/Scenarios/Flow/Scenario Two/FlowS2';
+import FlowS3 from './components/Scenarios/Flow/Scenario Three/FlowS3';
+import ApplePayS1 from './components/Scenarios/ApplePay/Scenario One/ApplePayS1';
+import ApplePayS2 from './components/Scenarios/ApplePay/Scenario Two/ApplePayS2';
+import ApplePayS3 from './components/Scenarios/ApplePay/Scenario Three/ApplePayS3';
 
 
 
@@ -42,6 +47,11 @@ function App() {
         <Route path="/success" element={<Success />} />
         <Route path="/failure" element={<Failure />} />
         <Route path="/flowScenarioOne" element={<FlowS1 />} />
+        <Route path="/flowScenarioTwo" element={<FlowS2/>} />
+        <Route path="/flowScenarioThree" element={<FlowS3/>} />
+        <Route path="/applePayScenarioOne" element={<ApplePayS1/>} /> 
+        <Route path="/applePayScenarioTwo" element={<ApplePayS2/>} />
+        <Route path="/applePayScenarioThree" element={<ApplePayS3/>} />
       </Routes>
     </>
   );
