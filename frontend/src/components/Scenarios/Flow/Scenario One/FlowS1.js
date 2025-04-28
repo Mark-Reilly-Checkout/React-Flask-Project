@@ -130,6 +130,7 @@ const FlowS1 = () => {
 
     return (
         <div>
+            <h1 className="text-center">Flow Scenario One</h1>
             <br />
             <div>
                 <CardGroup>
@@ -171,9 +172,15 @@ const FlowS1 = () => {
                     {/* Card 3 - Frames */}
                     <Card>
                         <Card.Body>
-                            <Card.Title className="text-center">Frames</Card.Title>
+                            <Card.Title className="text-center">Scenario</Card.Title>
                             <Card.Text>
-                                <div className="card-frame"></div>
+                                <div className="text-center" color='blue'>
+                                    I have setup Flow on my website but I am not seeing iDeal as an option 
+                                    when I am passing the correct data in the payment session request.
+                                </div>
+                                <div className="text-center">
+                                What would we check in this scenario ?
+                                </div>
                             </Card.Text>
                         </Card.Body>
                         <Card.Footer>
