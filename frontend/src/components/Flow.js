@@ -100,13 +100,13 @@ const Flow = () => {
                 const flowComponent = checkout.create('flow');
                 flowComponent.mount('#flow-container');  // Mount the Flow component to a div
                 setLastUpdatedFlow(new Date()); // Update second card when flow mounts
-                const klarnaElement = document.getElementById('klarna-container');
-                checkout.isComponentAvailable('klarna').then((isAvailable) => {
-                    if (isAvailable) {
-                        const klarnaComponent = checkout.create('klarna');
+                (async () => {
+                    const klarnaComponent = checkout.create("klarna");
+                    const klarnaElement = document.getElementById('klarna-container');
+                    if (await klarnaComponent.isAvailable()) {
                         klarnaComponent.mount(klarnaElement);
                     }
-                });
+                })();
             }).catch(err => console.error("Checkout Web Components Error:", err));
         }
     }, [paymentSession]);
