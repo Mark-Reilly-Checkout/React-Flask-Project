@@ -54,11 +54,6 @@ const FlowS1 = () => {
         return () => clearInterval(interval);
     }, [lastUpdatedSession, lastUpdatedFlow, lastUpdatedFrames]);
 
-    // Initialize Frames and set third card's timestamp
-    useEffect(() => {
-        Frames.init("pk_sbox_z6zxchef4pyoy3bziidwee4clm4");
-        setLastUpdatedFrames(new Date()); // Update third card when Frames initializes
-    }, []);
 
     const SessionRequest = async () => {
         setLoading(true);
