@@ -17,6 +17,7 @@ const FlowS1 = () => {
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
     const [searchParams] = useSearchParams();
     const paymentIdFromUrl = searchParams.get("cko-payment-id");
+    const [inlinePaymentId, setInlinePaymentId] = useState(null);
 
 
     // Separate states for each card's last updated time
@@ -87,6 +88,7 @@ const FlowS1 = () => {
                 onPaymentCompleted: (_component, paymentResponse) => {
                     toast.success('Payment completed successfully!');
                     toast.info('Payment ID: ' + paymentResponse.id);
+                    setInlinePaymentId(paymentResponse.id); // <-- Store for rendering
                     console.log("Payment ID:", paymentResponse.id);
                 },
                 onError: (component, error) => {
@@ -139,6 +141,15 @@ const FlowS1 = () => {
                                         {paymentSession && <p>Payment Session ID: {paymentSession.id}</p>}
                                     </div>
                                 </div>
+
+                                {(inlinePaymentId || paymentIdFromUrl) && (
+                                    <div className="text-center my-3">
+                                        <p className="text-success">Payment completed!</p>
+                                        <p>
+                                            <strong>Payment ID:</strong> <code>{inlinePaymentId || paymentIdFromUrl}</code>
+                                        </p>
+                                    </div>
+                                )}
                             </Card.Text>
                         </Card.Body>
                         <Card.Footer>
