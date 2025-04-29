@@ -150,6 +150,27 @@ const FlowS2 = () => {
                                         </p>
                                     </div>
                                 )}
+
+                                <br />
+                                <Frames
+                                    config={{
+                                        publicKey: "pk_sbox_z6zxchef4pyoy3bziidwee4clm4",
+                                    }}
+                                    cardTokenized={(e) => {
+                                        alert(e.token);
+                                    }}
+                                >
+                                    <CardFrame />
+
+                                    <button
+                                        onClick={() => {
+                                            Frames.submitCard();
+                                        }}
+                                    >
+                                        PAY GBP 25.00
+                                    </button>
+                                </Frames>
+
                             </Card.Text>
                         </Card.Body>
                         <Card.Footer>
