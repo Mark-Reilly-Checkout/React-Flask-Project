@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from 'react-bootstrap';
 import axios from 'axios';
 import CardGroup from 'react-bootstrap/CardGroup';
-import { Frames, CardNumber, ExpiryDate, Cvv } from "frames-react";
+import { Frames, CardNumber, ExpiryDate, Cvv, CardFrame } from "frames-react";
 import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components';
 import { toast } from 'react-toastify';
 import { useSearchParams } from "react-router-dom";
