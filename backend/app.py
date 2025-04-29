@@ -291,10 +291,13 @@ def validate_merchant():
         return jsonify({"error": "Missing validationURL"}), 400
 
     payload = {
-        "merchantIdentifier": MERCHANT_ID,
-        "domainName": "react-frontend-elpl.onrender.com",  # use your dev domain or localhost
-        "displayName": "My Shop"
-    }
+    "merchantIdentifier": MERCHANT_ID,
+    "displayName": "My Store",
+    "initiative": "web",
+    "initiativeContext": "react-frontend-elpl.onrender.com"
+}
+
+    
 
     try:
         response = requests.post(
