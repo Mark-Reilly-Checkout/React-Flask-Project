@@ -54,6 +54,8 @@ const ApplePay = () => {
           const res = await axios.post(`${API_BASE_URL}api/apple-pay/validate-merchant`, {
             validationURL
           });
+          console.log("Validation URL", validationURL);
+          console.log("Merchant validation response", res.data);
           session.completeMerchantValidation(res.data);
         } catch (err) {
           console.error("Merchant validation failed", err);
