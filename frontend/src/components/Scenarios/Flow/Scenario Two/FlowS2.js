@@ -144,6 +144,38 @@ const FlowS2 = () => {
         loadScript();
     }, []);
 
+    Frames.addEventHandler(
+        Frames.Events.CARD_VALIDATION_CHANGED,
+        function (event) {
+            document.getElementById('pay-button').disabled = !event.isValid;
+        }
+    );
+
+    Frames.addEventHandler(
+        Frames.Events.CARD_TOKENIZED,
+        function (event) {
+            var paymentResult = document.getElementById('payment-result');
+            paymentResult.innerHTML = "Card tokenized successfully. Token: " + event.token;
+        }
+    );
+
+    document.getElementById('payment-form').addEventListener('submit', function (event) {
+        Frames.cardholder = {
+            name: ' Space InFront',
+            billingAddress: {
+            addressLine1: '123 Anywhere St.',
+            addressLine2: 'Apt. 456',
+            zip: '123456',
+            city: 'Anytown',
+            state: 'Alabama',
+            country: 'US',
+            },
+            phone: '5551234567',
+        };
+        event.preventDefault();
+        Frames.submitCard();
+    });
+
     return (
         <div>
             <h1 className="text-center">Flow Scenario Two</h1>
@@ -175,9 +207,11 @@ const FlowS2 = () => {
                                 )}
 
                                 <br />
-                                <div class="card-frame">
-                                    
-                                </div>
+                                <form id="payment-form">
+                                <div class="card-frame"></div>
+                                <button id="pay-button" disabled>Tokenize Card</button>
+                                </form>
+                                <div id="payment-result"></div>
                             </Card.Text>
                         </Card.Body>
                         <Card.Footer>
