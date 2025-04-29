@@ -54,11 +54,6 @@ const Flow = () => {
         return () => clearInterval(interval);
     }, [lastUpdatedSession, lastUpdatedFlow, lastUpdatedFrames]);
 
-    // Initialize Frames and set third card's timestamp
-    useEffect(() => {
-        Frames.init("pk_sbox_z6zxchef4pyoy3bziidwee4clm4");
-        setLastUpdatedFrames(new Date()); // Update third card when Frames initializes
-    }, []);
 
     const SessionRequest = async () => {
         setLoading(true);
@@ -168,18 +163,6 @@ const Flow = () => {
                         </Card.Footer>
                     </Card>
 
-                    {/* Card 3 - Frames */}
-                    <Card>
-                        <Card.Body>
-                            <Card.Title className="text-center">Frames</Card.Title>
-                            <Card.Text>
-                                <div className="card-frame"></div>
-                            </Card.Text>
-                        </Card.Body>
-                        <Card.Footer>
-                            <small className="text-muted">{timeAgoFrames}</small>
-                        </Card.Footer>
-                    </Card>
                 </CardGroup>
             </div>
             {paymentIdFromUrl && (

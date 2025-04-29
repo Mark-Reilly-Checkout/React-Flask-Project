@@ -36,8 +36,8 @@ const ApplePay = () => {
     }
 
     const paymentRequest = {
-      countryCode: 'US',
-      currencyCode: 'USD',
+      countryCode: 'IE',
+      currencyCode: 'EUR',
       supportedNetworks: ['visa', 'masterCard', 'amex'],
       merchantCapabilities: ['supports3DS'],
       total: {

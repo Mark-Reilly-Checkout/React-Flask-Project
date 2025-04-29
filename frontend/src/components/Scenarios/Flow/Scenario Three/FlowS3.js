@@ -162,7 +162,7 @@ const FlowS3 = () => {
                         <Card.Body>
                             <Card.Title className="text-center">Flow module</Card.Title>
                             <Card.Text>
-                                <div id="flow-container"></div>
+                                Cannot replicate this on sandbox
                             </Card.Text>
                         </Card.Body>
                         <Card.Footer>
