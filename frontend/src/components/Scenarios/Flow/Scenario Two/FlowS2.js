@@ -121,6 +121,29 @@ const FlowS2 = () => {
         }
     }, []);
 
+    function loadScript() {
+        // Check if already loaded to avoid duplicates
+        if (window.Frames) {
+            Frames.init('pk_sbox_z6zxchef4pyoy3bziidwee4clm4');
+            setLastUpdatedFrames(new Date());
+            return;
+        }
+
+        const script = document.createElement("script");
+        script.src = "https://cdn.checkout.com/js/framesv2.min.js";
+        script.async = true;
+        script.onload = () => {
+            console.log("Frames script loaded");
+            Frames.init('pk_sbox_z6zxchef4pyoy3bziidwee4clm4');
+            setLastUpdatedFrames(new Date());
+        };
+        document.body.appendChild(script);
+    }
+
+    useEffect(() => {
+        loadScript();
+    }, []);
+
     return (
         <div>
             <h1 className="text-center">Flow Scenario Two</h1>
@@ -152,25 +175,9 @@ const FlowS2 = () => {
                                 )}
 
                                 <br />
-                                <Frames
-                                    config={{
-                                        publicKey: "pk_sbox_z6zxchef4pyoy3bziidwee4clm4",
-                                    }}
-                                    cardTokenized={(e) => {
-                                        alert(e.token);
-                                    }}
-                                >
-                                    <CardFrame />
-
-                                    <button
-                                        onClick={() => {
-                                            Frames.submitCard();
-                                        }}
-                                    >
-                                        PAY GBP 25.00
-                                    </button>
-                                </Frames>
-
+                                <div class="card-frame">
+                                    
+                                </div>
                             </Card.Text>
                         </Card.Body>
                         <Card.Footer>
