@@ -121,6 +121,23 @@ const FlowS2 = () => {
         }
     }, []);
 
+    //Frames
+
+    const [isCardValid, setIsCardValid] = useState(false);
+    const [token, setToken] = useState("");
+    const [cardholder, setCardholder] = useState({
+    name: "Space InFront",
+    billingAddress: {
+        addressLine1: "123 Anywhere St.",
+        addressLine2: "Apt. 456",
+        zip: "123456",
+        city: "Anytown",
+        state: "Alabama",
+        country: "US",
+    },
+    phone: "5551234567",
+    });
+
     function loadScript() {
         // Check if already loaded to avoid duplicates
         if (window.Frames) {
@@ -143,38 +160,6 @@ const FlowS2 = () => {
     useEffect(() => {
         loadScript();
     }, []);
-
-    Frames.addEventHandler(
-        Frames.Events.CARD_VALIDATION_CHANGED,
-        function (event) {
-            document.getElementById('pay-button').disabled = !event.isValid;
-        }
-    );
-
-    Frames.addEventHandler(
-        Frames.Events.CARD_TOKENIZED,
-        function (event) {
-            var paymentResult = document.getElementById('payment-result');
-            paymentResult.innerHTML = "Card tokenized successfully. Token: " + event.token;
-        }
-    );
-
-    document.getElementById('payment-form').addEventListener('submit', function (event) {
-        Frames.cardholder = {
-            name: ' Space InFront',
-            billingAddress: {
-            addressLine1: '123 Anywhere St.',
-            addressLine2: 'Apt. 456',
-            zip: '123456',
-            city: 'Anytown',
-            state: 'Alabama',
-            country: 'US',
-            },
-            phone: '5551234567',
-        };
-        event.preventDefault();
-        Frames.submitCard();
-    });
 
     return (
         <div>
@@ -207,11 +192,35 @@ const FlowS2 = () => {
                                 )}
 
                                 <br />
-                                <form id="payment-form">
-                                <div class="card-frame"></div>
-                                <button id="pay-button" disabled>Tokenize Card</button>
+                                <form
+                                    id="payment-form"
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        Frames.cardholder = cardholder;
+                                        Frames.submitCard();
+                                    }}
+                                >
+                                    <Frames
+                                        config={{
+                                            publicKey: "pk_sbox_z6zxchef4pyoy3bziidwee4clm4",
+                                            cardholder,
+                                        }}
+                                        cardValidationChanged={(e) => setIsCardValid(e.isValid)}
+                                        cardTokenized={(e) => setToken(e.token)}
+                                    >
+                                        <div className="card-frame">
+                                            <CardNumber />
+                                            <ExpiryDate />
+                                            <Cvv />
+                                        </div>
+                                        <button id="pay-button" type="submit" disabled={!isCardValid}>
+                                            Tokenize Card
+                                        </button>
+                                    </Frames>
+                                    <div id="payment-result">
+                                        {token && <>Card tokenized successfully. Token: {token}</>}
+                                    </div>
                                 </form>
-                                <div id="payment-result"></div>
                             </Card.Text>
                         </Card.Body>
                         <Card.Footer>
