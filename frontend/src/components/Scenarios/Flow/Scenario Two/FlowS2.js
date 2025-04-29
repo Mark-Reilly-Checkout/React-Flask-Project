@@ -177,12 +177,12 @@ const FlowS2 = () => {
                             <Card.Text>
                                 <div className="text-center" >
                                 <FaExclamationCircle color="#3a86ff" style={{marginRight: 8}}/>
-                                <span className="text-muted">Scenario: </span> I have setup Flow on my website but I am not seeing iDeal as an option 
-                                    when I am passing the correct data in the payment session request.
+                                <span className="text-muted">Scenario: </span> My Flow component is showing on the website but after I enter my name in the form, 
+                                I am not able to click on the card number field or the expiry date field. 
                                 </div>
                                 <div className="text-center mt-3" >
                                 <FaQuestionCircle color="#ef233c" style={{marginRight: 8}}/>
-                                What would we check in this scenario ?
+                                What would we check in this scenario ? What could affect the card field ?
                                 </div>
                             </Card.Text>
                         </Card.Body>
@@ -192,14 +192,6 @@ const FlowS2 = () => {
                     </Card>
                 </CardGroup>
             </div>
-            {paymentIdFromUrl && (
-                <div className="text-center my-3">
-                    <p className="text-success">Payment completed!</p>
-                    <p>
-                        <strong>Payment ID:</strong> <code>{paymentIdFromUrl}</code>
-                    </p>
-                </div>
-            )}
         </div>
     );
 };

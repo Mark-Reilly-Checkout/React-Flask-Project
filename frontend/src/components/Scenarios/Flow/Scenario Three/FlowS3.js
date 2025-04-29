@@ -177,8 +177,8 @@ const FlowS3 = () => {
                             <Card.Text>
                                 <div className="text-center" >
                                 <FaExclamationCircle color="#3a86ff" style={{marginRight: 8}}/>
-                                <span className="text-muted">Scenario: </span> I have setup Flow on my website but I am not seeing iDeal as an option 
-                                    when I am passing the correct data in the payment session request.
+                                <span className="text-muted">Scenario: </span> Apple Pay and Google Pay are showing on Flow but every payment fails, 
+                                is there anything else I need to do on my side ?
                                 </div>
                                 <div className="text-center mt-3" >
                                 <FaQuestionCircle color="#ef233c" style={{marginRight: 8}}/>
