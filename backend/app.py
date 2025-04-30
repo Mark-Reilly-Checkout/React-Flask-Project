@@ -34,6 +34,7 @@ payments_client = checkout_api.payments
 def get_data():
     return jsonify({"message": "Hello from Flask!"})
 
+#Route for verify domain with apple pay file. 
 @app.route('/.well-known/apple-developer-merchantid-domain-association.txt')
 def serve_apple_pay_verification():
     well_known_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.well-known')
@@ -128,7 +129,6 @@ def create_payment_session():
         # Create the payment session
         response = payment_sessions_client.create_payment_sessions(payment_request)
 
-
         print(f"Payment Session Token: {response.id}")
 
         return jsonify({
@@ -217,8 +217,6 @@ def paymentLink():
         if response and hasattr(response, 'error_type'):
             error_message["type"] = response.error_type  # Avoids accessing response if it's None
         return jsonify(error_message), 500
-
-from flask import request, jsonify
 
 # POST - Apple Pay session
 # This endpoint is called by the frontend to initiate the Apple Pay session
