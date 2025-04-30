@@ -73,9 +73,9 @@ const ApplePayS2 = () => {
         if (res.data.approved) {
             setPaymentId(res.data.payment_id);      // Store the payment ID
             setPaymentSuccess(true);  // Set payment success state
-            session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
+            //session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
           } else {
-            session.completePayment(window.ApplePaySession.STATUS_FAILURE);
+            //session.completePayment(window.ApplePaySession.STATUS_FAILURE);
           }
         } catch (err) {
           console.error('Payment failed', err);
