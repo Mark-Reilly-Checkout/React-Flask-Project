@@ -10,6 +10,7 @@ from checkout_sdk.payments.sessions.sessions_client import PaymentSessionsClient
 from checkout_sdk.payments.sessions.sessions import PaymentSessionsRequest
 import json, datetime, traceback, os, requests
 
+
 app = Flask(__name__)
 app.config["DEBUG"] = True
 CORS(app, origins="https://react-frontend-elpl.onrender.com") #Frontend is running on https://
@@ -228,46 +229,46 @@ def apple_pay_session():
     data = request.get_json()
     print("Data in Apple Pay session call:", data)
 
-    # 1. Tokenize the Apple Pay token using the SDK
-    # try:
-    #     token_response = checkout_api.tokens.request_wallet_token({
-    #         "type": "applepay",
-    #         "token_data": data["tokenData"]
-    #     })
-    #     token = token_response.token  # The Checkout.com card token
-    #     print("Tokenized Apple Pay token:", token)
-    # except Exception as e:
-    #     print(f"Tokenization failed: {e}")
-    #     return jsonify({"error": "Tokenization failed", "details": str(e)}), 400
+   # 1. Tokenize the Apple Pay token using the SDK
+    try:
+        token_response = checkout_api.tokens.request_wallet_token({
+            "type": "applepay",
+            "token_data": data["tokenData"]
+        })
+        token = token_response.token  # The Checkout.com card token
+        print("Tokenized Apple Pay token:", token)
+    except Exception as e:
+        print(f"Tokenization failed: {e}")
+        return jsonify({"error": "Tokenization failed", "details": str(e)}), 400
 
-    # 2. Use the token to create a payment request
-    # try:
-    #     payment_request = {
-    #         "source": {
-    #             "type": "token",
-    #             "token": token
-    #         },
-    #         "amount": data["amount"],  # Amount from frontend (integer, e.g., 5000)
-    #         "currency": "USD",         # Or use data["currency"] if dynamic
-    #         "reference": "apple_pay_txn_001",
-    #     }
-    #     payment_response = payments_client.request_payment(payment_request)
+   # 2. Use the token to create a payment request
+    try:
+        payment_request = {
+            "source": {
+                "type": "token",
+                "token": token
+            },
+            "amount": data["amount"],  # Amount from frontend (integer, e.g., 5000)
+            "currency": "USD",         # Or use data["currency"] if dynamic
+            "reference": "apple_pay_txn_001",
+        }
+        payment_response = payments_client.request_payment(payment_request)
         
-    #     # Determine payment status
-    #     is_approved = payment_response.status == "Authorized" or payment_response.status == "Captured"
-    #     return jsonify({
-    #         "approved": is_approved,
-    #         "status": payment_response.status,
-    #         "payment_id": payment_response.id
-    #     }), 200
+        # Determine payment status
+        is_approved = payment_response.status == "Authorized" or payment_response.status == "Captured"
+        return jsonify({
+            "approved": is_approved,
+            "status": payment_response.status,
+            "payment_id": payment_response.id
+        }), 200
 
-    # except Exception as e:
-    #     print(f"Payment failed: {str(e)}")
-    #     return jsonify({
-    #         "approved": False,
-    #         "error": str(e),
-    #         "status": "Failed"
-    #     }), 400
+    except Exception as e:
+        print(f"Payment failed: {str(e)}")
+        return jsonify({
+            "approved": False,
+            "error": str(e),
+            "status": "Failed"
+        }), 400
 
 
 @app.route("/api/apple-pay/complete", methods=["POST"])
