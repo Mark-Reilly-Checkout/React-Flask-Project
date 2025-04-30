@@ -61,7 +61,7 @@ const ApplePayS2 = () => {
         }
       };
 
-    session.onpaymentauthorized = async (event) => {
+    //session.onpaymentauthorized = async (event) => {
     //   const token = event.payment.token;
 
     //   try {
@@ -81,7 +81,7 @@ const ApplePayS2 = () => {
     //       console.error('Payment failed', err);
     //       session.completePayment(window.ApplePaySession.STATUS_FAILURE);
     //     }
-     };
+     //};
 
     session.begin();
   };
