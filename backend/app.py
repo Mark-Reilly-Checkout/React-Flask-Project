@@ -229,16 +229,16 @@ def apple_pay_session():
     print("Data in Apple Pay session call:", data)
 
     # 1. Tokenize the Apple Pay token using the SDK
-    try:
-        token_response = checkout_api.tokens.request_wallet_token({
-            "type": "applepay",
-            "token_data": data["tokenData"]
-        })
-        token = token_response.token  # The Checkout.com card token
-        print("Tokenized Apple Pay token:", token)
-    except Exception as e:
-        print(f"Tokenization failed: {e}")
-        return jsonify({"error": "Tokenization failed", "details": str(e)}), 400
+    # try:
+    #     token_response = checkout_api.tokens.request_wallet_token({
+    #         "type": "applepay",
+    #         "token_data": data["tokenData"]
+    #     })
+    #     token = token_response.token  # The Checkout.com card token
+    #     print("Tokenized Apple Pay token:", token)
+    # except Exception as e:
+    #     print(f"Tokenization failed: {e}")
+    #     return jsonify({"error": "Tokenization failed", "details": str(e)}), 400
 
     # 2. Use the token to create a payment request
     # try:
