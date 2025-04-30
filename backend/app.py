@@ -18,7 +18,7 @@ CORS(app, origins="https://react-frontend-elpl.onrender.com") #Frontend is runni
 # Path to your Apple Pay merchant certificate and key
 APPLE_PAY_CERT = './certificate_sandbox.pem'
 APPLE_PAY_KEY = './certificate_sandbox.key'
-MERCHANT_ID = 'merchant.com.reactFlask.sandbo'
+MERCHANT_ID = 'merchant.com.reactFlask.sandbox'
 
 # Initialise Checkout SDK
 checkout_api = CheckoutSdk.builder() \
@@ -101,6 +101,7 @@ def create_payment_session():
                     "country":country
                 }
             },
+            "payment_type": "Recurring",
             "payment_method_configuration": {
                 "googlepay":{
                     "store_payment_details":"disabled" # This enables the user to save their payment details for future use, which returns the src_ in webhook.
@@ -110,8 +111,8 @@ def create_payment_session():
                 {
                 "name":         "Battery Power Pack",
                 "quantity":     1,
-                "unit_price":   1000,
-                "total_amount": 1000,
+                "unit_price":   5000,
+                "total_amount": 5000,
                 "reference":    "SE532"    }
             ],
             "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",

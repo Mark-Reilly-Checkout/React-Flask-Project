@@ -17,22 +17,6 @@ const NavigationBar = () => {
             <Nav.Link href="#googlePay">Google Pay</Nav.Link>
           </Nav>
           <Nav>
-            <NavDropdown title="Apple Pay Scenarios" id="collapsible-nav-dropdown" data-bs-theme="light">
-              <Dropdown.Item href="/applePayScenarioOne">Scenario 1</Dropdown.Item>
-              <Dropdown.Item href="/applePayScenarioTwo">Scenario 2</Dropdown.Item>
-              <Dropdown.Item href="/applePayScenarioThree">Scenario 3</Dropdown.Item>
-
-            </NavDropdown>
-          </Nav>
-          <Nav>
-            <NavDropdown title="Flow Scenarios" id="collapsible-nav-dropdown" data-bs-theme="light">
-              <Dropdown.Item href="/flowScenarioOne">Scenario 1</Dropdown.Item>
-              <Dropdown.Item href="flowScenarioTwo">Scenario 2</Dropdown.Item>
-              <Dropdown.Item href="flowScenarioThree">Scenario 3</Dropdown.Item>
-
-            </NavDropdown>
-          </Nav>
-          <Nav>
             <NavDropdown title="More APMs" id="collapsible-nav-dropdown" data-bs-theme="light">
               <Dropdown.Item href="#klarna">Klarna</Dropdown.Item>
               <Dropdown.Item href="#paypal">PayPal</Dropdown.Item>

@@ -60,7 +60,7 @@ const Flow = () => {
         // Set loading to true when the request starts
         try {
             const response = await axios.post(`${API_BASE_URL}api/create-payment-session`, {
-                amount: 1000,  // Amount in cents ($50.00)
+                amount: 5000,  // Amount in cents ($50.00)
                 email: "test@example.com"
             });
 
