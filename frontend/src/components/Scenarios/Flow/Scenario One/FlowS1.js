@@ -64,7 +64,7 @@ const FlowS1 = () => {
             const response = await axios.post(`${API_BASE_URL}api/create-payment-session`, {
                 amount: 1000,  // Amount in cents ($50.00)
                 email: "test@example.com",
-                country: "AT",
+                country: "NL",
                 currency: "EUR",
             });
 
