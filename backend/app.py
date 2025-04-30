@@ -269,19 +269,6 @@ def apple_pay_session():
             "status": "Failed"
         }), 400
 
-
-@app.route("/api/apple-pay/complete", methods=["POST"])
-def complete_apple_pay():
-    data = request.get_json()
-
-    # This route would typically finalize the order or save to DB
-    # For now we just echo the token for testing
-    return jsonify({
-        "status": "success",
-        "message": "Payment token received",
-        "token": data
-    })
-
 @app.route('/api/apple-pay/validate-merchant', methods=['POST'])
 def validate_merchant():
     data = request.get_json()
@@ -296,9 +283,6 @@ def validate_merchant():
     "initiative": "web",
     "initiativeContext": "react-frontend-elpl.onrender.com"
 }
-
-    
-
     try:
         response = requests.post(
             validation_url,
@@ -313,7 +297,6 @@ def validate_merchant():
         print("❌ Error validating merchant:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
-
 
 if __name__ == '__main__':
     app.run()
