@@ -54,34 +54,34 @@ const ApplePayS2 = () => {
           const res = await axios.post(`${API_BASE_URL}api/apple-pay/validate-merchant`, {
             validationURL
           });
-          //session.completeMerchantValidation(res.data);
+          session.completeMerchantValidation(res.data);
         } catch (err) {
           console.error("Merchant validation failed", err);
           session.abort();
         }
       };
 
-    //session.onpaymentauthorized = async (event) => {
-    //   const token = event.payment.token;
+    session.onpaymentauthorized = async (event) => {
+      const token = event.payment.token;
 
-    //   try {
-    //     const res = await axios.post(`${API_BASE_URL}api/apple-pay-session`, {
-    //       tokenData: token.paymentData,
-    //       amount: amount,
-    //     });
+      try {
+        const res = await axios.post(`${API_BASE_URL}api/apple-pay-session`, {
+          tokenData: token.paymentData,
+          amount: amount,
+        });
 
-    //     if (res.data.approved) {
-    //         setPaymentId(res.data.payment_id);      // Store the payment ID
-    //         setPaymentSuccess(true);  // Set payment success state
-    //         session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
-    //       } else {
-    //         session.completePayment(window.ApplePaySession.STATUS_FAILURE);
-    //       }
-    //     } catch (err) {
-    //       console.error('Payment failed', err);
-    //       session.completePayment(window.ApplePaySession.STATUS_FAILURE);
-    //     }
-     //};
+        if (res.data.approved) {
+          setPaymentId(res.data.payment_id);      // Store the payment ID
+          setPaymentSuccess(true);  // Set payment success state
+          session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
+        } else {
+          session.completePayment(window.ApplePaySession.STATUS_FAILURE);
+        }
+      } catch (err) {
+        console.error('Payment failed', err);
+        session.completePayment(window.ApplePaySession.STATUS_FAILURE);
+      }
+    };
 
     session.begin();
   };
