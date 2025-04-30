@@ -83,7 +83,7 @@ const ApplePayS2 = () => {
     //     }
      //};
 
-    //session.begin();
+    session.begin();
   };
 
   return (
