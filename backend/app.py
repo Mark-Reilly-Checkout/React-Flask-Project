@@ -18,7 +18,7 @@ CORS(app, origins="https://react-frontend-elpl.onrender.com") #Frontend is runni
 # Path to your Apple Pay merchant certificate and key
 APPLE_PAY_CERT = './certificate_sandbox.pem'
 APPLE_PAY_KEY = './certificate_sandbox.key'
-MERCHANT_ID = 'merchant.com.reactFlask.sandbox'
+MERCHANT_ID = 'merchant.com.reactFlask.sandbo'
 
 # Initialise Checkout SDK
 checkout_api = CheckoutSdk.builder() \
