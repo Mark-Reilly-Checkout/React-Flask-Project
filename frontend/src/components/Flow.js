@@ -5,7 +5,7 @@ import CardGroup from 'react-bootstrap/CardGroup';
 import { Frames, CardNumber, ExpiryDate, Cvv } from "frames-react";
 import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components';
 import { toast } from 'react-toastify';
-import { useSearchParams } from "react-router-dom";
+import { data, useSearchParams } from "react-router-dom";
 
 
 
@@ -81,6 +81,14 @@ const Flow = () => {
                 paymentSession,
                 publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4',  // Replace with your actual public key
                 environment: 'sandbox', // Or 'production' based on your environment
+                componentOptions: {
+                    card: {
+                        data: {
+                            cardholderName: 'Jia Tsang' // Pre-fill the name
+                        },
+                        displayCardholderName: 'top' // Position: 'top', 'bottom', or 'hidden'
+                    }
+                },
                 onPaymentCompleted: (_component, paymentResponse) => {
                     toast.success('Payment completed successfully!');
                     toast.info('Payment ID: ' + paymentResponse.id);
@@ -103,6 +111,8 @@ const Flow = () => {
                     }
                 })();
             }).catch(err => console.error("Checkout Web Components Error:", err));
+
+            
         }
     }, [paymentSession]);
 
