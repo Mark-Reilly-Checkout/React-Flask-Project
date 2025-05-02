@@ -61,7 +61,7 @@ const Flow = () => {
         try {
             const response = await axios.post(`${API_BASE_URL}api/create-payment-session`, {
                 amount: 5000,  // Amount in cents ($50.00)
-                email: "test@example.com"
+                email: "testfry@example.com"
             });
 
             setPaymentSession(response.data); // Store session data in state

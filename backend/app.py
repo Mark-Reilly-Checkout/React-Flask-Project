@@ -90,10 +90,10 @@ def create_payment_session():
         payment_request = {
             "amount": data["amount"],  
             "currency": currency,
-            "reference": "order-12345",
+            "reference": "order-123454",
             "capture": True,  
             "customer": {
-                "name":"Mark Reilly",
+                "name":"Mark Reillyss",
                 "email": email
             },
             "billing":{
