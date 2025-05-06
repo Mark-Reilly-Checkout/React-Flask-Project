@@ -5,6 +5,8 @@
   "homepage": "https://react-flask-75jd.onrender.com",
   "dependencies": {
     "@checkout.com/checkout-web-components": "^0.6.0-beta",
+    "@google-pay/button-element": "^3.1.0",
+    "@google-pay/button-react": "^3.1.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",

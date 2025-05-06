@@ -79,7 +79,7 @@ const Flow = () => {
         en: {
           'form.required': 'Please provide this field',
           'form.full_name.placeholder': 'Mark Reilly',
-          'pay': 'Pay now',
+          'pay_button.pay': 'Pay now',
           'pay_button.payment_failed': 'Payment failed, please try again',
         },
       };
