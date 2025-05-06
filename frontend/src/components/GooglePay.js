@@ -37,7 +37,7 @@ const GooglePay = () => {
           transactionInfo: {
             totalPriceStatus: 'FINAL',
             totalPriceLabel: 'Total',
-            totalPrice: props.amount,
+            totalPrice: '1.00',
             currencyCode: 'USD',
             countryCode: 'US',
           },
@@ -45,55 +45,12 @@ const GooglePay = () => {
         onLoadPaymentData={paymentRequest => {
           console.log('Success', paymentRequest);
         }}
-        existingPaymentMethodRequired={props.existingPaymentMethodRequired}
-        buttonColor={props.buttonColor}
-        buttonType={props.buttonType}
-        buttonRadius={props.buttonRadius}
-        buttonLocale={props.buttonLocale}
+        existingPaymentMethodRequired={true}
+        buttonColor='black'
+        buttonType='checkout'
+        buttonLocale='en'
       />
-      <GooglePayButton
-        environment="TEST"
-        paymentRequest={{
-          apiVersion: 2,
-          apiVersionMinor: 0,
-          allowedPaymentMethods: [
-            {
-              type: 'CARD',
-              parameters: {
-                allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
-                allowedCardNetworks: ['VISA'],
-              },
-              tokenizationSpecification: {
-                type: 'PAYMENT_GATEWAY',
-                parameters: {
-                gateway: 'checkoutltd',
-                gatewayMerchantId: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4'
-                },
-              },
-            },
-          ],
-          merchantInfo: {
-            merchantId: '12345678901234567890',
-            merchantName: 'Mark Stores',
-          },
-          transactionInfo: {
-            totalPriceStatus: 'FINAL',
-            totalPriceLabel: 'Total',
-            totalPrice: props.amount,
-            currencyCode: 'USD',
-            countryCode: 'US',
-          },
-        }}
-        onLoadPaymentData={paymentRequest => {
-          console.log('Success', paymentRequest);
-        }}
-        existingPaymentMethodRequired={props.existingPaymentMethodRequired}
-        buttonColor={props.buttonColor}
-        buttonType={props.buttonType}
-        buttonRadius={props.buttonRadius}
-        buttonLocale={props.buttonLocale}
-      />
-
+      
     {/* Conditional Rendering */}
     {!paymentSuccess ? (
         // Show Apple Pay button container if payment hasn't succeeded
