@@ -75,6 +75,15 @@ const Flow = () => {
         }
     };
 
+    const translations = {
+        en: {
+          'form.required': 'Please provide this field',
+          'form.full_name.placeholder': 'Mark Reilly',
+          'pay': 'Pay now',
+          'pay_button.payment_failed': 'Payment failed, please try again',
+        },
+      };
+
     useEffect(() => {
         if (paymentSession) {
             loadCheckoutWebComponents({
@@ -82,13 +91,17 @@ const Flow = () => {
                 publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4',  // Replace with your actual public key
                 environment: 'sandbox', // Or 'production' based on your environment
                 componentOptions: {
+                    flow: {
+                      expandFirstPaymentMethod: false,
+                    },
                     card: {
-                        data: {
-                            cardholderName: 'Jia Tsang' // Pre-fill the name
-                        },
-                        displayCardholderName: 'top' // Position: 'top', 'bottom', or 'hidden'
-                    }
-                },
+                      displayCardholderName: 'bottom',
+                      data: {
+                        email: 'mark.reilly1234@checkot.com',
+                      },
+                    },
+                  },
+                
                 onPaymentCompleted: (_component, paymentResponse) => {
                     toast.success('Payment completed successfully!');
                     toast.info('Payment ID: ' + paymentResponse.id);
@@ -150,6 +163,7 @@ const Flow = () => {
                                     <br />
                                     <div>
                                         {paymentSession && <p>Payment Session ID: {paymentSession.id}</p>}
+                                        
                                     </div>
                                 </div>
                             </Card.Text>
