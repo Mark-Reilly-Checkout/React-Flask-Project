@@ -89,7 +89,9 @@ const Flow = () => {
             loadCheckoutWebComponents({
                 paymentSession,
                 publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4',  // Replace with your actual public key
-                environment: 'sandbox', // Or 'production' based on your environment
+                environment: 'sandbox',// Or 'production' based on your environment
+                locale: 'en',
+                translations, 
                 componentOptions: {
                     flow: {
                       expandFirstPaymentMethod: false,
@@ -100,7 +102,7 @@ const Flow = () => {
                         email: 'mark.reilly1234@checkot.com',
                       },
                     },
-                    translations
+                   
                   },
                 
                 onPaymentCompleted: (_component, paymentResponse) => {
