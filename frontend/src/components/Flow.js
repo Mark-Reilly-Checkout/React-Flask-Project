@@ -100,6 +100,7 @@ const Flow = () => {
                         email: 'mark.reilly1234@checkot.com',
                       },
                     },
+                    translations
                   },
                 
                 onPaymentCompleted: (_component, paymentResponse) => {
