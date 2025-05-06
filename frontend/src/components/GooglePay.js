@@ -51,21 +51,7 @@ const GooglePay = () => {
         buttonLocale='en'
       />
       
-    {/* Conditional Rendering */}
-    {!paymentSuccess ? (
-        // Show Apple Pay button container if payment hasn't succeeded
-        <div ref={containerRef} className="text-center" />
-      ) : (
-        // Show success message and payment ID after successful payment
-        <div className="text-center mt-4">
-          <p className="text-success">✅ Payment successful!</p>
-          {paymentId && (
-            <p className="text-muted">
-              Payment ID: <code>{paymentId}</code>
-            </p>
-          )}
-        </div>
-      )}
+    
     </div>
 );
 };
