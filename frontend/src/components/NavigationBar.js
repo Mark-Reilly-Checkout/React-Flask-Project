@@ -14,7 +14,7 @@ const NavigationBar = () => {
             <Nav.Link href="/requestPayment">Hosted Payment Pages</Nav.Link>
             <Nav.Link href="/paymentLink">Payment Link</Nav.Link>
             <Nav.Link href="/applePay">Apple Pay</Nav.Link>
-            <Nav.Link href="#googlePay">Google Pay</Nav.Link>
+            <Nav.Link href="/googlePay">Google Pay</Nav.Link>
           </Nav>
           <Nav>
             <NavDropdown title="More APMs" id="collapsible-nav-dropdown" data-bs-theme="light">

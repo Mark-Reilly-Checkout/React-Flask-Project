@@ -10,6 +10,7 @@ import { ToastContainer } from 'react-toastify';
 import ToastHandler from './components/ToastHandler';
 import 'react-toastify/dist/ReactToastify.css';
 import Success from './components/Redirects/Success';
+import GooglePay from './components/GooglePay';
 import Failure from './components/Redirects/Failure';
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
         <Route path="/" element={<div>Welcome to the Payment App</div>} />
         <Route path="/success" element={<Success />} />
         <Route path="/failure" element={<Failure />} />
+        <Route path="/googlePay" element={<GooglePay />} />
       </Routes>
     </>
   );
