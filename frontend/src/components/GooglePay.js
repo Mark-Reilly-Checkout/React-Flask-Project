@@ -1,6 +1,4 @@
-/* global ApplePaySession */
 import React, { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
 import GooglePayButton from '@google-pay/button-react';
 
 const GooglePay = () => {
