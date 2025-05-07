@@ -7,14 +7,14 @@ const GooglePay = () => {
   const [paymentToken, setPaymentToken] = useState(null);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-gray-100 p-6">
       <h1 className="text-3xl font-bold text-center mb-8">Google Pay Test Suite</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Configuration Panel */}
-        <div className="bg-white p-6 rounded-xl shadow space-y-4">
-          <h2 className="text-xl font-semibold">Configuration</h2>
-          <div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Left Panel: Configuration */}
+        <div className="bg-white p-6 rounded-xl shadow-md">
+          <h2 className="text-xl font-semibold mb-4">Configuration</h2>
+          <div className="mb-4">
             <label className="block text-sm font-medium mb-1">Merchant ID</label>
             <input
               type="text"
@@ -23,7 +23,7 @@ const GooglePay = () => {
               className="w-full border rounded px-3 py-2"
             />
           </div>
-          <div>
+          <div className="mb-4">
             <label className="block text-sm font-medium mb-1">Gateway Merchant ID</label>
             <input
               type="text"
@@ -34,53 +34,54 @@ const GooglePay = () => {
           </div>
         </div>
 
-        {/* Google Pay and Output */}
-        <div className="flex flex-col items-center space-y-6">
-          <GooglePayButton
-            environment="TEST"
-            paymentRequest={{
-              apiVersion: 2,
-              apiVersionMinor: 0,
-              allowedPaymentMethods: [
-                {
-                  type: 'CARD',
-                  parameters: {
-                    allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
-                    allowedCardNetworks: ['MASTERCARD', 'VISA', 'AMEX', 'DISCOVER', 'INTERAC', 'JCB'],
-                  },
-                  tokenizationSpecification: {
-                    type: 'PAYMENT_GATEWAY',
+        {/* Right Panel: Pay Button + Terminal */}
+        <div className="flex flex-col h-full">
+          <div className="flex justify-center items-center mb-6">
+            <GooglePayButton
+              environment="TEST"
+              paymentRequest={{
+                apiVersion: 2,
+                apiVersionMinor: 0,
+                allowedPaymentMethods: [
+                  {
+                    type: 'CARD',
                     parameters: {
-                      gateway: 'checkoutltd',
-                      gatewayMerchantId: gatewayMerchantId,
+                      allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
+                      allowedCardNetworks: ['MASTERCARD', 'VISA', 'AMEX', 'DISCOVER', 'INTERAC', 'JCB'],
+                    },
+                    tokenizationSpecification: {
+                      type: 'PAYMENT_GATEWAY',
+                      parameters: {
+                        gateway: 'checkoutltd',
+                        gatewayMerchantId: gatewayMerchantId,
+                      },
                     },
                   },
+                ],
+                merchantInfo: {
+                  merchantId: merchantId,
+                  merchantName: 'TestBusiness',
                 },
-              ],
-              merchantInfo: {
-                merchantId: merchantId,
-                merchantName: 'TestBusiness',
-              },
-              transactionInfo: {
-                totalPriceStatus: 'FINAL',
-                totalPriceLabel: 'Total',
-                totalPrice: '1.00',
-                currencyCode: 'USD',
-                countryCode: 'US',
-              },
-            }}
-            onLoadPaymentData={paymentRequest => {
-              console.log('Success', paymentRequest);
-              setPaymentToken(JSON.stringify(paymentRequest.paymentMethodData, null, 2));
-            }}
-            existingPaymentMethodRequired={true}
-            buttonColor='black'
-            buttonType='checkout'
-            buttonLocale='en'
-          />
+                transactionInfo: {
+                  totalPriceStatus: 'FINAL',
+                  totalPriceLabel: 'Total',
+                  totalPrice: '1.00',
+                  currencyCode: 'USD',
+                  countryCode: 'US',
+                },
+              }}
+              onLoadPaymentData={paymentRequest => {
+                console.log('Success', paymentRequest);
+                setPaymentToken(JSON.stringify(paymentRequest.paymentMethodData, null, 2));
+              }}
+              existingPaymentMethodRequired={true}
+              buttonColor='black'
+              buttonType='checkout'
+              buttonLocale='en'
+            />
+          </div>
 
-          {/* Command Line Output */}
-          <div className="w-full bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-60">
+          <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-64">
             {paymentToken ? paymentToken : 'Waiting for payment...'}
           </div>
         </div>
