@@ -7,7 +7,9 @@ const GooglePay = () => {
     const [paymentToken, setPaymentToken] = useState(null);
 
     return (
-        <div className="min-h-screen bg-gray-100 p-6">
+        <header>
+        <section class="">
+        <div class="grid h-screen grid-cols-2">
             <h1 className="text-3xl font-bold text-center mb-8">Google Pay Test Suite</h1>
 
             <div className="flex flex-col md:flex-row gap-6">
@@ -87,6 +89,8 @@ const GooglePay = () => {
                 </div>
             </div>
         </div>
+        </section>
+        </header>
     );
 };
 
