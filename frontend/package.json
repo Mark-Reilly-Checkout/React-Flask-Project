@@ -7,7 +7,6 @@
     "@checkout.com/checkout-web-components": "^0.6.0-beta",
     "@google-pay/button-element": "^3.1.0",
     "@google-pay/button-react": "^3.1.0",
-    "@tailwindcss/postcss": "^4.1.5",
     "@tailwindcss/vite": "^4.1.5",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -51,6 +50,7 @@
     ]
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.5",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.5"
