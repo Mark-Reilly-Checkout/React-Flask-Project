@@ -82,7 +82,7 @@ const GooglePay = () => {
             />
           </div>
 
-          <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-64">
+          <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg text-wrap overflow-auto h-64">
             {paymentToken ? paymentToken : 'Waiting for payment...'}
           </div>
         </div>
