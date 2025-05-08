@@ -72,7 +72,8 @@ const GooglePay = () => {
               }}
               onLoadPaymentData={paymentRequest => {
                 console.log('Success', JSON.parse(paymentRequest.paymentMethodData.tokenizationData.token));
-                setPaymentToken(JSON.stringify(paymentRequest.paymentMethodData, null, 2));
+                testPaymentRequest(SON.parse(paymentRequest.paymentMethodData.tokenizationData.token));
+                setPaymentToken(JSON.stringify(testPaymentRequest, null, 2));
               }}
               existingPaymentMethodRequired={true}
               buttonColor='black'
