@@ -223,34 +223,40 @@ const GooglePay = () => {
                         />
                     </div>
 
-                    {/* Token Display */}
+                    {/* Token Display + Download */}
                     <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-64 whitespace-pre-wrap break-words">
                         {paymentToken ? (
                             viewRaw ? paymentToken : (() => {
                                 try {
                                     return JSON.stringify(JSON.parse(paymentToken), null, 2);
-                                } catch {
-                                    return paymentToken;
+                                } catch (err) {
+                                    return 'Error formatting JSON';
                                 }
                             })()
                         ) : 'Waiting for payment...'}
                     </div>
 
-                    {/* Download + Toggle Buttons */}
-                    {paymentToken && (
+                    {/* Controls */}
+                    <div className="flex justify-between items-center mt-4">
+                        {paymentToken && (
+                            <button
+                                onClick={handleDownload}
+                                className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+                            >
+                                Download Token as JSON
+                            </button>
+                        )}
+
                         <button
-                            onClick={handleDownload}
-                            className="mt-4 px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 self-start"
+                            className={`px-3 py-1 text-sm rounded ${paymentToken ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                            onClick={() => {
+                                if (paymentToken) setViewRaw(!viewRaw);
+                            }}
+                            disabled={!paymentToken}
                         >
-                            Download Token as JSON
+                            {viewRaw ? 'Pretty View' : 'Raw View'}
                         </button>
-                    )}
-                    <button
-                        className="self-end mt-2 px-3 py-1 text-sm rounded bg-gray-700 text-white hover:bg-gray-600"
-                        onClick={() => setViewRaw(!viewRaw)}
-                    >
-                        {viewRaw ? 'Pretty View' : 'Raw View'}
-                    </button>
+                    </div>
                 </div>
             </div>
         </div>
