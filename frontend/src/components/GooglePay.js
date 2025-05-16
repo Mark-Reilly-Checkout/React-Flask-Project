@@ -225,9 +225,15 @@ const GooglePay = () => {
 
                     {/* Token Display */}
                     <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-64 whitespace-pre-wrap break-words">
-                        {paymentToken
-                            ? (viewRaw ? paymentToken : JSON.stringify(JSON.parse(paymentToken), null, 2))
-                            : 'Waiting for payment...'}
+                        {paymentToken ? (
+                            viewRaw ? paymentToken : (() => {
+                                try {
+                                    return JSON.stringify(JSON.parse(paymentToken), null, 2);
+                                } catch {
+                                    return paymentToken;
+                                }
+                            })()
+                        ) : 'Waiting for payment...'}
                     </div>
 
                     {/* Download + Toggle Buttons */}
