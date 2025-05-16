@@ -2,245 +2,254 @@ import React, { useEffect, useState } from 'react';
 import GooglePayButton from '@google-pay/button-react';
 
 const defaultConfig = {
-  merchantId: 'BCR2DN4T43P6RORP',
-  gatewayMerchantId: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4',
-  buttonType: 'checkout',
-  buttonColor: 'black',
-  acquirerCountry: 'GB',
-  currencyCode: 'GBP',
-  amount: '1.00',
-  selectedNetworks: ['MASTERCARD', 'VISA'],
+    merchantId: 'BCR2DN4T43P6RORP',
+    gatewayMerchantId: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4',
+    buttonType: 'checkout',
+    buttonColor: 'black',
+    acquirerCountry: 'GB',
+    currencyCode: 'GBP',
+    amount: '1.00',
+    selectedNetworks: ['MASTERCARD', 'VISA'],
 };
 
 const GooglePay = () => {
-  const [config, setConfig] = useState(defaultConfig);
-  const [paymentToken, setPaymentToken] = useState(null);
+    const [config, setConfig] = useState(defaultConfig);
+    const [paymentToken, setPaymentToken] = useState(null);
+    const [viewRaw, setViewRaw] = useState(false);
 
-  const allNetworks = ['MASTERCARD', 'VISA', 'AMEX', 'DISCOVER', 'INTERAC', 'JCB'];
 
-  // Load config from localStorage on mount
-  useEffect(() => {
-    const savedConfig = localStorage.getItem('googlePayConfig');
-    if (savedConfig) {
-      setConfig(JSON.parse(savedConfig));
-    }
-  }, []);
+    const allNetworks = ['MASTERCARD', 'VISA', 'AMEX', 'DISCOVER', 'INTERAC', 'JCB'];
 
-  // Save config to localStorage on change
-  useEffect(() => {
-    localStorage.setItem('googlePayConfig', JSON.stringify(config));
-  }, [config]);
+    // Load config from localStorage on mount
+    useEffect(() => {
+        const savedConfig = localStorage.getItem('googlePayConfig');
+        if (savedConfig) {
+            setConfig(JSON.parse(savedConfig));
+        }
+    }, []);
 
-  const toggleNetwork = (network) => {
-    setConfig((prev) => ({
-      ...prev,
-      selectedNetworks: prev.selectedNetworks.includes(network)
-        ? prev.selectedNetworks.filter((n) => n !== network)
-        : [...prev.selectedNetworks, network],
-    }));
-  };
+    // Save config to localStorage on change
+    useEffect(() => {
+        localStorage.setItem('googlePayConfig', JSON.stringify(config));
+    }, [config]);
 
-  const handleReset = () => {
-    setConfig(defaultConfig);
-    localStorage.removeItem('googlePayConfig');
-    setPaymentToken(null);
-  };
+    const toggleNetwork = (network) => {
+        setConfig((prev) => ({
+            ...prev,
+            selectedNetworks: prev.selectedNetworks.includes(network)
+                ? prev.selectedNetworks.filter((n) => n !== network)
+                : [...prev.selectedNetworks, network],
+        }));
+    };
 
-  const handleDownload = () => {
-    if (!paymentToken) return;
-    const blob = new Blob([paymentToken], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'payment-token.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+    const handleReset = () => {
+        setConfig(defaultConfig);
+        localStorage.removeItem('googlePayConfig');
+        setPaymentToken(null);
+    };
 
-  return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold text-center mb-8">Google Pay Test Suite</h1>
+    const handleDownload = () => {
+        if (!paymentToken) return;
+        const blob = new Blob([paymentToken], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'payment-token.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    };
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Configuration Panel */}
-        <div className="bg-white p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Configuration</h2>
+    return (
+        <div className="min-h-screen bg-gray-100 p-6">
+            <h1 className="text-3xl font-bold text-center mb-8">Google Pay Test Suite</h1>
 
-          {/* Merchant ID */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Merchant ID</label>
-            <input
-              type="text"
-              value={config.merchantId}
-              onChange={(e) => setConfig({ ...config, merchantId: e.target.value })}
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Configuration Panel */}
+                <div className="bg-white p-6 rounded-xl shadow-md">
+                    <h2 className="text-xl font-semibold mb-4">Configuration</h2>
 
-          {/* Gateway Merchant ID */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Gateway Merchant ID</label>
-            <input
-              type="text"
-              value={config.gatewayMerchantId}
-              onChange={(e) => setConfig({ ...config, gatewayMerchantId: e.target.value })}
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
+                    {/* Merchant ID */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1">Merchant ID</label>
+                        <input
+                            type="text"
+                            value={config.merchantId}
+                            onChange={(e) => setConfig({ ...config, merchantId: e.target.value })}
+                            className="w-full border rounded px-3 py-2"
+                        />
+                    </div>
 
-          {/* Button Type & Color */}
-          <div className="flex gap-4 mb-4">
-            <div className="w-1/2">
-              <label className="block text-sm font-medium mb-1">Button Type</label>
-              <select
-                value={config.buttonType}
-                onChange={(e) => setConfig({ ...config, buttonType: e.target.value })}
-                className="w-full border rounded px-3 py-2"
-              >
-                {['book', 'buy', 'checkout', 'donate', 'order', 'plain', 'subscribe'].map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
+                    {/* Gateway Merchant ID */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1">Gateway Merchant ID</label>
+                        <input
+                            type="text"
+                            value={config.gatewayMerchantId}
+                            onChange={(e) => setConfig({ ...config, gatewayMerchantId: e.target.value })}
+                            className="w-full border rounded px-3 py-2"
+                        />
+                    </div>
+
+                    {/* Button Type & Color */}
+                    <div className="flex gap-4 mb-4">
+                        <div className="w-1/2">
+                            <label className="block text-sm font-medium mb-1">Button Type</label>
+                            <select
+                                value={config.buttonType}
+                                onChange={(e) => setConfig({ ...config, buttonType: e.target.value })}
+                                className="w-full border rounded px-3 py-2"
+                            >
+                                {['book', 'buy', 'checkout', 'donate', 'order', 'plain', 'subscribe'].map(type => (
+                                    <option key={type} value={type}>{type}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="w-1/2">
+                            <label className="block text-sm font-medium mb-1">Button Color</label>
+                            <select
+                                value={config.buttonColor}
+                                onChange={(e) => setConfig({ ...config, buttonColor: e.target.value })}
+                                className="w-full border rounded px-3 py-2"
+                            >
+                                {['default', 'black', 'white'].map(color => (
+                                    <option key={color} value={color}>{color}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Country, Currency, Amount */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1">Acquirer Country</label>
+                        <input
+                            type="text"
+                            value={config.acquirerCountry}
+                            onChange={(e) => setConfig({ ...config, acquirerCountry: e.target.value })}
+                            className="w-full border rounded px-3 py-2"
+                        />
+                    </div>
+
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1">Currency Code</label>
+                        <input
+                            type="text"
+                            value={config.currencyCode}
+                            onChange={(e) => setConfig({ ...config, currencyCode: e.target.value })}
+                            className="w-full border rounded px-3 py-2"
+                        />
+                    </div>
+
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1">Amount</label>
+                        <input
+                            type="number"
+                            value={config.amount}
+                            onChange={(e) => setConfig({ ...config, amount: e.target.value })}
+                            className="w-full border rounded px-3 py-2"
+                        />
+                    </div>
+
+                    {/* Card Networks */}
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium mb-1">Allowed Card Networks</label>
+                        <div className="flex flex-wrap gap-2">
+                            {allNetworks.map(network => (
+                                <button
+                                    key={network}
+                                    onClick={() => toggleNetwork(network)}
+                                    className={`px-3 py-1 rounded border text-sm ${config.selectedNetworks.includes(network)
+                                            ? 'bg-blue-600 text-white border-blue-600'
+                                            : 'bg-white text-gray-800 border-gray-300'
+                                        }`}
+                                >
+                                    {network}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Reset Button */}
+                    <button
+                        onClick={handleReset}
+                        className="mt-2 px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                    >
+                        Reset to Defaults
+                    </button>
+                </div>
+
+                {/* Right Panel: Google Pay & Token */}
+                <div className="flex flex-col h-full">
+                    <div className="flex justify-center items-center mb-6">
+                        <GooglePayButton
+                            environment="TEST"
+                            paymentRequest={{
+                                apiVersion: 2,
+                                apiVersionMinor: 0,
+                                allowedPaymentMethods: [
+                                    {
+                                        type: 'CARD',
+                                        parameters: {
+                                            allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
+                                            allowedCardNetworks: config.selectedNetworks,
+                                        },
+                                        tokenizationSpecification: {
+                                            type: 'PAYMENT_GATEWAY',
+                                            parameters: {
+                                                gateway: 'checkoutltd',
+                                                gatewayMerchantId: config.gatewayMerchantId,
+                                            },
+                                        },
+                                    },
+                                ],
+                                merchantInfo: {
+                                    merchantId: config.merchantId,
+                                    merchantName: 'TestBusiness',
+                                },
+                                transactionInfo: {
+                                    totalPriceStatus: 'FINAL',
+                                    totalPriceLabel: 'Total',
+                                    totalPrice: config.amount,
+                                    currencyCode: config.currencyCode,
+                                    countryCode: config.acquirerCountry,
+                                },
+                            }}
+                            onLoadPaymentData={paymentRequest => {
+                                const token = JSON.parse(paymentRequest.paymentMethodData.tokenizationData.token);
+                                setPaymentToken(JSON.stringify(token, null, 2));
+                            }}
+                            existingPaymentMethodRequired={true}
+                            buttonColor={config.buttonColor}
+                            buttonType={config.buttonType}
+                            buttonLocale="en"
+                        />
+                    </div>
+
+                    {/* Token Display + Download */}
+                    <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-64 whitespace-pre-wrap break-words">
+                        {paymentToken
+                            ? (viewRaw ? paymentToken : JSON.stringify(JSON.parse(paymentToken), null, 2))
+                            : 'Waiting for payment...'}
+                    </div>
+
+                    {paymentToken && (
+                        <button
+                            onClick={handleDownload}
+                            className="mt-4 px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 self-start"
+                        >
+                            Download Token as JSON
+                        </button>
+                    )}
+                    <button
+                        className="self-end mb-2 px-3 py-1 text-sm rounded bg-gray-700 text-white hover:bg-gray-600"
+                        onClick={() => setViewRaw(!viewRaw)}
+                    >
+                        {viewRaw ? 'Pretty View' : 'Raw View'}
+                    </button>
+                </div>
             </div>
-
-            <div className="w-1/2">
-              <label className="block text-sm font-medium mb-1">Button Color</label>
-              <select
-                value={config.buttonColor}
-                onChange={(e) => setConfig({ ...config, buttonColor: e.target.value })}
-                className="w-full border rounded px-3 py-2"
-              >
-                {['default', 'black', 'white'].map(color => (
-                  <option key={color} value={color}>{color}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Country, Currency, Amount */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Acquirer Country</label>
-            <input
-              type="text"
-              value={config.acquirerCountry}
-              onChange={(e) => setConfig({ ...config, acquirerCountry: e.target.value })}
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Currency Code</label>
-            <input
-              type="text"
-              value={config.currencyCode}
-              onChange={(e) => setConfig({ ...config, currencyCode: e.target.value })}
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Amount</label>
-            <input
-              type="number"
-              value={config.amount}
-              onChange={(e) => setConfig({ ...config, amount: e.target.value })}
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
-
-          {/* Card Networks */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium mb-1">Allowed Card Networks</label>
-            <div className="flex flex-wrap gap-2">
-              {allNetworks.map(network => (
-                <button
-                  key={network}
-                  onClick={() => toggleNetwork(network)}
-                  className={`px-3 py-1 rounded border text-sm ${
-                    config.selectedNetworks.includes(network)
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-gray-800 border-gray-300'
-                  }`}
-                >
-                  {network}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Reset Button */}
-          <button
-            onClick={handleReset}
-            className="mt-2 px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
-          >
-            Reset to Defaults
-          </button>
         </div>
-
-        {/* Right Panel: Google Pay & Token */}
-        <div className="flex flex-col h-full">
-          <div className="flex justify-center items-center mb-6">
-            <GooglePayButton
-              environment="TEST"
-              paymentRequest={{
-                apiVersion: 2,
-                apiVersionMinor: 0,
-                allowedPaymentMethods: [
-                  {
-                    type: 'CARD',
-                    parameters: {
-                      allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
-                      allowedCardNetworks: config.selectedNetworks,
-                    },
-                    tokenizationSpecification: {
-                      type: 'PAYMENT_GATEWAY',
-                      parameters: {
-                        gateway: 'checkoutltd',
-                        gatewayMerchantId: config.gatewayMerchantId,
-                      },
-                    },
-                  },
-                ],
-                merchantInfo: {
-                  merchantId: config.merchantId,
-                  merchantName: 'TestBusiness',
-                },
-                transactionInfo: {
-                  totalPriceStatus: 'FINAL',
-                  totalPriceLabel: 'Total',
-                  totalPrice: config.amount,
-                  currencyCode: config.currencyCode,
-                  countryCode: config.acquirerCountry,
-                },
-              }}
-              onLoadPaymentData={paymentRequest => {
-                const token = JSON.parse(paymentRequest.paymentMethodData.tokenizationData.token);
-                setPaymentToken(JSON.stringify(token, null, 2));
-              }}
-              existingPaymentMethodRequired={true}
-              buttonColor={config.buttonColor}
-              buttonType={config.buttonType}
-              buttonLocale="en"
-            />
-          </div>
-
-          {/* Token Display + Download */}
-          <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-64">
-            {paymentToken ? paymentToken : 'Waiting for payment...'}
-          </div>
-
-          {paymentToken && (
-            <button
-              onClick={handleDownload}
-              className="mt-4 px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 self-start"
-            >
-              Download Token as JSON
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default GooglePay;
