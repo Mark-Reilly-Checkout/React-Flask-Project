@@ -16,8 +16,6 @@ const GooglePay = () => {
     const [config, setConfig] = useState(defaultConfig);
     const [paymentToken, setPaymentToken] = useState(null);
     const [viewRaw, setViewRaw] = useState(false);
-
-
     const allNetworks = ['MASTERCARD', 'VISA', 'AMEX', 'DISCOVER', 'INTERAC', 'JCB'];
 
     // Load config from localStorage on mount
@@ -120,47 +118,47 @@ const GooglePay = () => {
                     </div>
 
                     {/* Country, Currency, Amount */}
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium mb-1">Acquirer Country</label>
-                        <input
-                            type="text"
-                            value={config.acquirerCountry}
-                            onChange={(e) => setConfig({ ...config, acquirerCountry: e.target.value })}
-                            className="w-full border rounded px-3 py-2"
-                        />
-                    </div>
-
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium mb-1">Currency Code</label>
-                        <input
-                            type="text"
-                            value={config.currencyCode}
-                            onChange={(e) => setConfig({ ...config, currencyCode: e.target.value })}
-                            className="w-full border rounded px-3 py-2"
-                        />
-                    </div>
-
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium mb-1">Amount</label>
-                        <input
-                            type="number"
-                            value={config.amount}
-                            onChange={(e) => setConfig({ ...config, amount: e.target.value })}
-                            className="w-full border rounded px-3 py-2"
-                        />
+                    <div className="flex gap-4 mb-4">
+                        <div className="flex-1">
+                            <label className="block text-sm font-medium mb-1">Acquirer Country</label>
+                            <input
+                                type="text"
+                                value={config.acquirerCountry}
+                                onChange={(e) => setConfig({ ...config, acquirerCountry: e.target.value })}
+                                className="w-full border rounded px-3 py-2"
+                            />
+                        </div>
+                        <div className="flex-1">
+                            <label className="block text-sm font-medium mb-1">Currency</label>
+                            <input
+                                type="text"
+                                value={config.currencyCode}
+                                onChange={(e) => setConfig({ ...config, currencyCode: e.target.value })}
+                                className="w-full border rounded px-3 py-2"
+                            />
+                        </div>
+                        <div className="flex-1">
+                            <label className="block text-sm font-medium mb-1">Amount</label>
+                            <input
+                                type="text"
+                                value={config.amount}
+                                onChange={(e) => setConfig({ ...config, amount: e.target.value })}
+                                className="w-full border rounded px-3 py-2"
+                            />
+                        </div>
                     </div>
 
                     {/* Card Networks */}
-                    <div className="mb-6">
-                        <label className="block text-sm font-medium mb-1">Allowed Card Networks</label>
-                        <div className="flex flex-wrap gap-2">
+                    <div className="mb-6 text-center">
+                        <label className="block text-sm font-medium mb-2">Allowed Card Networks</label>
+                        <div className="flex flex-wrap justify-center gap-2">
                             {allNetworks.map(network => (
                                 <button
                                     key={network}
                                     onClick={() => toggleNetwork(network)}
                                     className={`px-3 py-1 rounded border text-sm ${config.selectedNetworks.includes(network)
-                                            ? 'bg-blue-600 text-white border-blue-600'
-                                            : 'bg-white text-gray-800 border-gray-300'
+                                        ? 'bg-blue-600 text-white border-blue-600'
+                                        : 'bg-white text-gray-800 border-gray-300'
                                         }`}
                                 >
                                     {network}
@@ -178,7 +176,7 @@ const GooglePay = () => {
                     </button>
                 </div>
 
-                {/* Right Panel: Google Pay & Token */}
+                {/* Right Panel */}
                 <div className="flex flex-col h-full">
                     <div className="flex justify-center items-center mb-6">
                         <GooglePayButton
@@ -225,13 +223,14 @@ const GooglePay = () => {
                         />
                     </div>
 
-                    {/* Token Display + Download */}
+                    {/* Token Display */}
                     <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-64 whitespace-pre-wrap break-words">
                         {paymentToken
                             ? (viewRaw ? paymentToken : JSON.stringify(JSON.parse(paymentToken), null, 2))
                             : 'Waiting for payment...'}
                     </div>
 
+                    {/* Download + Toggle Buttons */}
                     {paymentToken && (
                         <button
                             onClick={handleDownload}
@@ -241,7 +240,7 @@ const GooglePay = () => {
                         </button>
                     )}
                     <button
-                        className="self-end mb-2 px-3 py-1 text-sm rounded bg-gray-700 text-white hover:bg-gray-600"
+                        className="self-end mt-2 px-3 py-1 text-sm rounded bg-gray-700 text-white hover:bg-gray-600"
                         onClick={() => setViewRaw(!viewRaw)}
                     >
                         {viewRaw ? 'Pretty View' : 'Raw View'}
