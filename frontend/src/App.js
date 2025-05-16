@@ -12,6 +12,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Success from './components/Redirects/Success';
 import GooglePay from './components/GooglePay';
 import Failure from './components/Redirects/Failure';
+import Test from './components/Test';
 
 function App() {
   const [data, setData] = useState('');
@@ -39,6 +40,7 @@ function App() {
         <Route path="/success" element={<Success />} />
         <Route path="/failure" element={<Failure />} />
         <Route path="/googlePay" element={<GooglePay />} />
+        <Route path="/test" element={<Test />} />
       </Routes>
     </>
   );
