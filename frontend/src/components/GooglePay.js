@@ -19,6 +19,8 @@ const GooglePay = () => {
     const [paymentToken, setPaymentToken] = useState(null);
     const [viewRaw, setViewRaw] = useState(false);
     const allNetworks = ['MASTERCARD', 'VISA', 'AMEX', 'DISCOVER', 'INTERAC', 'JCB'];
+    const [billingAddress, setBillingAddress] = useState(null);
+
 
     // Load config from localStorage on mount
     useEffect(() => {
@@ -149,27 +151,22 @@ const GooglePay = () => {
                             />
                         </div>
                         <div className="flex-1">
-                            <label className="block text-sm font-medium mb-1">Billing Address</label>
-                            <select
-                                value={config.billingAddressRequired ? config.billingAddressParameters?.format : 'False'}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (val === 'False') {
-                                        setConfig({ ...config, billingAddressRequired: false, billingAddressParameters: null });
-                                    } else {
-                                        setConfig({
-                                            ...config,
-                                            billingAddressRequired: true,
-                                            billingAddressParameters: { format: val },
-                                        });
-                                    }
-                                }}
-                                className="w-full border rounded px-3 py-2"
-                            >
-                                <option value="False">False</option>
-                                <option value="MIN">MIN</option>
-                                <option value="FULL">FULL</option>
-                            </select>
+                        <label className="block text-sm font-medium mb-1">Billing Address</label>
+  <select
+    value={config.billingAddressFormat}
+    onChange={(e) =>
+      setConfig({
+        ...config,
+        billingAddressFormat: e.target.value,
+        billingAddressRequired: e.target.value !== 'false',
+      })
+    }
+    className="w-full border rounded px-3 py-2"
+  >
+    <option value="false">False</option>
+    <option value="MIN">MIN</option>
+    <option value="FULL">FULL</option>
+  </select>
                         </div>
                     </div>
 
@@ -215,12 +212,12 @@ const GooglePay = () => {
                                         parameters: {
                                             allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
                                             allowedCardNetworks: config.selectedNetworks,
-                                            ...(config.billingAddressRequired && {
-                                                billingAddressRequired: true,
-                                                billingAddressParameters: {
-                                                    format: config.billingAddressParameters?.format || 'MIN',
-                                                },
-                                            }),
+                                            billingAddressRequired: config.billingAddressFormat !== 'false',
+    ...(config.billingAddressFormat !== 'false' && {
+      billingAddressParameters: {
+        format: config.billingAddressFormat
+      }
+    })
                                         },
                                         tokenizationSpecification: {
                                             type: 'PAYMENT_GATEWAY',
@@ -244,9 +241,17 @@ const GooglePay = () => {
                                 },
                             }}
                             onLoadPaymentData={paymentRequest => {
-                                const token = JSON.parse(paymentRequest.paymentMethodData.tokenizationData.token);
-                                setPaymentToken(JSON.stringify(token, null, 2));
-                            }}
+                                const tokenData = JSON.parse(paymentRequest.paymentMethodData.tokenizationData.token);
+                              
+                                const billing = paymentRequest.paymentMethodData.info?.billingAddress;
+                                const combined = {
+                                  token: tokenData,
+                                  ...(billing ? { billingAddress: billing } : {})
+                                };
+                              
+                                setBillingAddress(billing || null);
+                                setPaymentToken(JSON.stringify(combined));
+                              }}
                             existingPaymentMethodRequired={true}
                             buttonColor={config.buttonColor}
                             buttonType={config.buttonType}
@@ -256,16 +261,12 @@ const GooglePay = () => {
 
                     {/* Token Display + Download */}
                     <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-64 whitespace-pre-wrap break-words">
-                        {paymentToken ? (
-                            viewRaw ? paymentToken : (() => {
-                                try {
-                                    return JSON.stringify(JSON.parse(paymentToken), null, 2);
-                                } catch (err) {
-                                    return 'Error formatting JSON';
-                                }
-                            })()
-                        ) : 'Waiting for payment...'}
-                    </div>
+  {paymentToken
+    ? viewRaw
+      ? paymentToken
+      : JSON.stringify(JSON.parse(paymentToken), null, 2)
+    : 'Waiting for payment...'}
+</div>
 
                     {/* Controls */}
                     <div className="flex justify-between items-center mt-4">
