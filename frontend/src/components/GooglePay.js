@@ -10,6 +10,8 @@ const defaultConfig = {
     currencyCode: 'GBP',
     amount: '1.00',
     selectedNetworks: ['MASTERCARD', 'VISA'],
+    billingAddressRequired: false,
+    billingAddressParameters: null, // or { format: 'MIN' | 'FULL' }
 };
 
 const GooglePay = () => {
@@ -97,7 +99,7 @@ const GooglePay = () => {
                                 onChange={(e) => setConfig({ ...config, buttonType: e.target.value })}
                                 className="w-full border rounded px-3 py-2"
                             >
-                                {['book', 'buy', 'checkout', 'donate', 'order', 'plain', 'subscribe'].map(type => (
+                                {['Book', 'Buy', 'Checkout', 'Donate', 'Order', 'Plain', 'Subscribe'].map(type => (
                                     <option key={type} value={type}>{type}</option>
                                 ))}
                             </select>
@@ -110,7 +112,7 @@ const GooglePay = () => {
                                 onChange={(e) => setConfig({ ...config, buttonColor: e.target.value })}
                                 className="w-full border rounded px-3 py-2"
                             >
-                                {['default', 'black', 'white'].map(color => (
+                                {['Default', 'Black', 'White'].map(color => (
                                     <option key={color} value={color}>{color}</option>
                                 ))}
                             </select>
@@ -145,6 +147,29 @@ const GooglePay = () => {
                                 onChange={(e) => setConfig({ ...config, amount: e.target.value })}
                                 className="w-full border rounded px-3 py-2"
                             />
+                        </div>
+                        <div className="flex-1">
+                            <label className="block text-sm font-medium mb-1">Billing Address</label>
+                            <select
+                                value={config.billingAddressRequired ? config.billingAddressParameters?.format : 'False'}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === 'False') {
+                                        setConfig({ ...config, billingAddressRequired: false, billingAddressParameters: null });
+                                    } else {
+                                        setConfig({
+                                            ...config,
+                                            billingAddressRequired: true,
+                                            billingAddressParameters: { format: val },
+                                        });
+                                    }
+                                }}
+                                className="w-full border rounded px-3 py-2"
+                            >
+                                <option value="False">False</option>
+                                <option value="MIN">MIN</option>
+                                <option value="FULL">FULL</option>
+                            </select>
                         </div>
                     </div>
 
@@ -190,6 +215,12 @@ const GooglePay = () => {
                                         parameters: {
                                             allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
                                             allowedCardNetworks: config.selectedNetworks,
+                                            ...(config.billingAddressRequired && {
+                                                billingAddressRequired: true,
+                                                billingAddressParameters: {
+                                                    format: config.billingAddressParameters?.format || 'MIN',
+                                                },
+                                            }),
                                         },
                                         tokenizationSpecification: {
                                             type: 'PAYMENT_GATEWAY',
