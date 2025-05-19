@@ -22,7 +22,7 @@ MERCHANT_ID = 'merchant.com.reactFlask.sandbox'
 
 # Initialise Checkout SDK
 checkout_api = CheckoutSdk.builder() \
-    .secret_key('sk_sbox_efqcycdrb74sgukp3lryhta45ym') \
+    .secret_key('sk_sbox_vyafhd3nyddbhrs6ks53gpx2mi5') \
     .public_key('pk_sbox_z6zxchef4pyoy3bziidwee4clm4')\
     .environment(Environment.sandbox()) \
     .build() 
@@ -115,7 +115,7 @@ def create_payment_session():
                 "total_amount": 5000,
                 "reference":    "SE532"    }
             ],
-            "processing_channel_id":"pc_m5vvxuxyefhu5ptn27i3ivnrty",
+            "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
             "success_url": "https://react-frontend-elpl.onrender.com/success",
             "failure_url": "https://react-frontend-elpl.onrender.com/failure"
         }
