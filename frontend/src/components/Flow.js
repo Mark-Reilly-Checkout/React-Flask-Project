@@ -88,7 +88,7 @@ const Flow = () => {
         if (paymentSession) {
             loadCheckoutWebComponents({
                 paymentSession,
-                publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4',  // Replace with your actual public key
+                publicKey: 'pk_sbox_xw3cok43omz5a6fmal5hbjgqliv',  // Replace with your actual public key
                 environment: 'sandbox',// Or 'production' based on your environment
                 locale: 'en',
                 translations, 
