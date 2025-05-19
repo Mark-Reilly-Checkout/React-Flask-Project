@@ -115,7 +115,7 @@ def create_payment_session():
                 "total_amount": 5000,
                 "reference":    "SE532"    }
             ],
-            "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
+            "processing_channel_id":"pc_m5vvxuxyefhu5ptn27i3ivnrty",
             "success_url": "https://react-frontend-elpl.onrender.com/success",
             "failure_url": "https://react-frontend-elpl.onrender.com/failure"
         }
