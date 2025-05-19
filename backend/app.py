@@ -22,7 +22,7 @@ MERCHANT_ID = 'merchant.com.reactFlask.sandbox'
 
 # Initialise Checkout SDK
 checkout_api = CheckoutSdk.builder() \
-    .secret_key('sk_sbox_vyafhd3nyddbhrs6ks53gpx2mi5') \
+    .secret_key('sk_sbox_efqcycdrb74sgukp3lryhta45ym') \
     .public_key('pk_sbox_z6zxchef4pyoy3bziidwee4clm4')\
     .environment(Environment.sandbox()) \
     .build() 
