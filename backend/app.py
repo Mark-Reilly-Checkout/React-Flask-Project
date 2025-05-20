@@ -93,7 +93,7 @@ def create_payment_session():
             "reference": "order-123454",
             "capture": True,  
             "customer": {
-                "name":"Mark Reillyss",
+                "name":"Mark Reillys",
                 "email": email
             },
             "display_name": "Online shop",
@@ -103,7 +103,6 @@ def create_payment_session():
                 }
             },
             "locale": "en-GB",
-            "payment_type": "Recurring",
             "payment_method_configuration": {
                 "googlepay":{
                     "store_payment_details":"disabled" # This enables the user to save their payment details for future use, which returns the src_ in webhook.
