@@ -102,6 +102,7 @@ def create_payment_session():
                     "country":country
                 }
             },
+            "locale": "en-GB",
             "payment_type": "Recurring",
             "payment_method_configuration": {
                 "googlepay":{
@@ -114,7 +115,7 @@ def create_payment_session():
                 "quantity":     1,
                 "unit_price":   5000,
                 "total_amount": 5000,
-                "reference":    "SE532"    }
+                "reference":    "Test"    }
             ],
             "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
             "success_url": "https://react-frontend-elpl.onrender.com/success",
