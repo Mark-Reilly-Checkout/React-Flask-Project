@@ -128,17 +128,25 @@ const Flow = () => {
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
                 }
             }).then(checkout => {
-                const flowComponent = checkout.create('flow');
-                flowComponent.mount('#flow-container');
+                /* const flowComponent = checkout.create('flow');
+                flowComponent.mount('#flow-container'); */
+                
                 setLastUpdatedFlow(new Date());
                 
                 // Klarna component mounting (optional, depends on your setup)
                 (async () => {
-                    const klarnaComponent = checkout.create("klarna");
+                    console.log("In async func...");
+                    const paypalComponent = checkout.create("paypal");
+                    const isAvail = await paypalComponent.isAvailable();
+                    if (isAvail) {
+                        console.log("Paypal is available");
+                    paypalComponent.mount(document.getElementById("paypal-container"));
+                    }
+                    /* const klarnaComponent = checkout.create("klarna");
                     const klarnaElement = document.getElementById('klarna-container');
                     if (await klarnaComponent.isAvailable()) {
                         klarnaComponent.mount(klarnaElement);
-                    }
+                    } */
                 })();
 
             }).catch(err => console.error("Checkout Web Components Error:", err));
@@ -203,8 +211,8 @@ const Flow = () => {
                                     />
                                     <label htmlFor="termsCheckbox" className="ms-2">I accept the <a href="/terms" target="_blank">Terms and Conditions</a></label>
                                 </div>
-                                <div id="flow-container"></div>
-                                <div id='klarna-container'></div>
+                                {/* <div id="flow-container"></div> */}
+                                <div id='paypal-container'></div>
                             </Card.Text>
                         </Card.Body>
                         <Card.Footer>
