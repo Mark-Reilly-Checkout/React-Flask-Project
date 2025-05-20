@@ -2,12 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Card } from 'react-bootstrap';
 import axios from 'axios';
 import CardGroup from 'react-bootstrap/CardGroup';
-import { Frames, CardNumber, ExpiryDate, Cvv } from "frames-react";
+import { Frames, CardNumber, ExpiryDate, Cvv } from "frames-react"; // Frames related imports, not directly used by Flow
 import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components';
 import { toast } from 'react-toastify';
 import { data, useSearchParams } from "react-router-dom";
-
-
 
 
 const Flow = () => {
@@ -21,12 +19,16 @@ const Flow = () => {
     // Separate states for each card's last updated time
     const [lastUpdatedSession, setLastUpdatedSession] = useState(null);
     const [lastUpdatedFlow, setLastUpdatedFlow] = useState(null);
-    const [lastUpdatedFrames, setLastUpdatedFrames] = useState(null);
+    const [lastUpdatedFrames, setLastUpdatedFrames] = useState(null); // Not directly used by Flow, but kept for context
 
     // Time display strings for each card
     const [timeAgoSession, setTimeAgoSession] = useState('');
     const [timeAgoFlow, setTimeAgoFlow] = useState('');
-    const [timeAgoFrames, setTimeAgoFrames] = useState('');
+    const [timeAgoFrames, setTimeAgoFrames] = useState(''); // Not directly used by Flow, but kept for context
+
+    // State for our custom check (e.g., terms and conditions)
+    const [acceptedTermsAndConditions, setAcceptedTermsAndConditions] = useState(false);
+
 
     // Helper function to calculate time ago
     const getTimeAgo = (timestamp) => {
@@ -57,15 +59,14 @@ const Flow = () => {
 
     const SessionRequest = async () => {
         setLoading(true);
-        // Set loading to true when the request starts
         try {
             const response = await axios.post(`${API_BASE_URL}api/create-payment-session`, {
                 amount: 5000,  // Amount in cents ($50.00)
                 email: "testfry@example.com"
             });
 
-            setPaymentSession(response.data); // Store session data in state
-            setLastUpdatedSession(new Date()); // Update first card's timestamp
+            setPaymentSession(response.data);
+            setLastUpdatedSession(new Date());
 
         } catch (error) {
             console.error("Payment Error:", error.response ? error.response.data : error.message);
@@ -91,10 +92,22 @@ const Flow = () => {
                 publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4',  // Replace with your actual public key
                 environment: 'sandbox',// Or 'production' based on your environment
                 locale: 'en',
-                translations, 
+                translations,
                 componentOptions: {
                     flow: {
                       expandFirstPaymentMethod: false,
+                      // --- ADDING handleClick HERE ---
+                      handleClick: (_self) => {
+                          // Our custom check: user must accept terms and conditions
+                          if (acceptedTermsAndConditions) {
+                              toast.info("Proceeding with payment...");
+                              return { continue: true }; // Allow the payment to continue
+                          } else {
+                              toast.warn("Please accept the terms and conditions before paying.");
+                              return { continue: false }; // Prevent the payment from starting
+                          }
+                      },
+                      // --- END handleClick ---
                     },
                     card: {
                       displayCardholderName: 'bottom',
@@ -102,7 +115,6 @@ const Flow = () => {
                         email: 'mark.reilly1234@checkot.com',
                       },
                     },
-                   
                   },
                 
                 onPaymentCompleted: (_component, paymentResponse) => {
@@ -117,8 +129,10 @@ const Flow = () => {
                 }
             }).then(checkout => {
                 const flowComponent = checkout.create('flow');
-                flowComponent.mount('#flow-container');  // Mount the Flow component to a div
-                setLastUpdatedFlow(new Date()); // Update second card when flow mounts
+                flowComponent.mount('#flow-container');
+                setLastUpdatedFlow(new Date());
+                
+                // Klarna component mounting (optional, depends on your setup)
                 (async () => {
                     const klarnaComponent = checkout.create("klarna");
                     const klarnaElement = document.getElementById('klarna-container');
@@ -126,22 +140,21 @@ const Flow = () => {
                         klarnaComponent.mount(klarnaElement);
                     }
                 })();
-            }).catch(err => console.error("Checkout Web Components Error:", err));
 
-            
+            }).catch(err => console.error("Checkout Web Components Error:", err));
         }
-    }, [paymentSession]);
+    }, [paymentSession, acceptedTermsAndConditions]); // Add acceptedTermsAndConditions to dependency array
+
 
     useEffect(() => {
-        // Check URL parameters on component mount
         const urlParams = new URLSearchParams(window.location.search);
         const paymentStatus = urlParams.get('status');
         const paymentId = urlParams.get('cko-payment-id');
 
         if (paymentStatus === 'succeeded') {
-            toast.success('Payment succeeded!', 'success');
+            toast.success('Payment succeeded!'); // Simplified toast call
         } else if (paymentStatus === 'failed') {
-            toast.error('Payment failed. Please try again.', 'error');
+            toast.error('Payment failed. Please try again.'); // Simplified toast call
         }
 
         if (paymentId) {
@@ -166,7 +179,6 @@ const Flow = () => {
                                     <br />
                                     <div>
                                         {paymentSession && <p>Payment Session ID: {paymentSession.id}</p>}
-                                        
                                     </div>
                                 </div>
                             </Card.Text>
@@ -181,6 +193,16 @@ const Flow = () => {
                         <Card.Body>
                             <Card.Title className="text-center">Flow module</Card.Title>
                             <Card.Text>
+                                {/* Add a checkbox for terms and conditions */}
+                                <div className="mb-3">
+                                    <input
+                                        type="checkbox"
+                                        id="termsCheckbox"
+                                        checked={acceptedTermsAndConditions}
+                                        onChange={(e) => setAcceptedTermsAndConditions(e.target.checked)}
+                                    />
+                                    <label htmlFor="termsCheckbox" className="ms-2">I accept the <a href="/terms" target="_blank">Terms and Conditions</a></label>
+                                </div>
                                 <div id="flow-container"></div>
                                 <div id='klarna-container'></div>
                             </Card.Text>
@@ -203,6 +225,5 @@ const Flow = () => {
         </div>
     );
 };
-
 
 export default Flow;
