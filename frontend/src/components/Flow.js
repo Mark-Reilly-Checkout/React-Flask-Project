@@ -116,7 +116,7 @@ const Flow = () => {
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
                 }
             }).then(checkout => {
-                const flowComponent = checkout.create('flow');
+                const flowComponent = checkout.create('applepay');
                 flowComponent.mount('#flow-container');  // Mount the Flow component to a div
                 setLastUpdatedFlow(new Date()); // Update second card when flow mounts
                 (async () => {
