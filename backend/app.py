@@ -96,6 +96,7 @@ def create_payment_session():
                 "name":"Mark Reillyss",
                 "email": email
             },
+            "display_name": "Online shop",
             "billing":{
                 "address":{
                     "country":country
