@@ -138,7 +138,7 @@ const Flow = () => {
                 setLastUpdatedFlow(new Date());
                 
                 // APM flow component mounting (optional, depends on your setup)
-                (async () => {
+                /* (async () => {
                     console.log("In async func...");
                     const paypalComponent = checkout.create("paypal");
                     //const klarnaComponent = checkout.create("klarna");
@@ -147,7 +147,7 @@ const Flow = () => {
                         console.log("Paypal is available");
                     paypalComponent.mount(document.getElementById("paypal-container"));
                     }
-                })();
+                })(); */
 
             }).catch(err => console.error("Checkout Web Components Error:", err));
         }
@@ -212,7 +212,7 @@ const Flow = () => {
                                     <label htmlFor="termsCheckbox" className="ms-2">I accept the <a href="/terms" target="_blank">Terms and Conditions</a></label>
                                 </div>
                                 <div id="flow-container"></div> 
-                                <div id='paypal-container'></div>
+                                {/* <div id='paypal-container'></div> */}
                             </Card.Text>
                         </Card.Body>
                         <Card.Footer>
