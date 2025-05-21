@@ -119,7 +119,7 @@ const Flow = () => {
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
                 }
             }).then(checkout => {
-                const flowComponent = checkout.create('flow', {
+                const flowComponent = checkout.create('googlepay', {
         handleClick: (_self) => {
             console.log("handleClick triggered");
             if (acceptedTermsRef.current) {
@@ -136,7 +136,7 @@ const Flow = () => {
         }
     });
 
-    flowComponent.mount('#flow-container');
+    flowComponent.mount('#googlepay-container');
     setLastUpdatedFlow(new Date());
 
     /* (async () => {
@@ -205,8 +205,7 @@ const Flow = () => {
                                     />
                                     <label htmlFor="termsCheckbox" className="ms-2">I accept the <a href="/terms" target="_blank">Terms and Conditions</a></label>
                                 </div>
-                                <div id="flow-container"></div>
-                                <div id='klarna-container'></div>
+                                <div id="googlepay-container"></div>
                             </Card.Text>
                         </Card.Body>
                         <Card.Footer>
