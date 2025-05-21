@@ -139,13 +139,13 @@ const Flow = () => {
     flowComponent.mount('#flow-container');
     setLastUpdatedFlow(new Date());
 
-    (async () => {
+    /* (async () => {
         const klarnaComponent = checkout.create("klarna");
         const klarnaElement = document.getElementById('klarna-container');
         if (await klarnaComponent.isAvailable()) {
             klarnaComponent.mount(klarnaElement);
         }
-    })();
+    })(); */
 
             }).catch(err => console.error("Checkout Web Components Error:", err));
         }
