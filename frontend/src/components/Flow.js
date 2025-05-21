@@ -119,7 +119,7 @@ const Flow = () => {
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
                 }
             }).then(checkout => {
-                const flowComponent = checkout.create('googlepay', {
+                const googlepayComponenet = checkout.create('googlepay', {
         handleClick: (_self) => {
             console.log("handleClick triggered");
             if (acceptedTermsRef.current) {
@@ -136,16 +136,15 @@ const Flow = () => {
         }
     });
 
-    flowComponent.mount('#googlepay-container');
+    //flowComponent.mount('#googlepay-container');
     setLastUpdatedFlow(new Date());
 
-    /* (async () => {
-        const klarnaComponent = checkout.create("klarna");
-        const klarnaElement = document.getElementById('klarna-container');
-        if (await klarnaComponent.isAvailable()) {
-            klarnaComponent.mount(klarnaElement);
+    (async () => {
+        const isAvail = await googlepayComponenet.isAvailable();
+        if (isAvail) {
+            googlepayComponenet.mount(document.getElementById("googlepay-container"));
         }
-    })(); */
+    })(); 
 
             }).catch(err => console.error("Checkout Web Components Error:", err));
         }
