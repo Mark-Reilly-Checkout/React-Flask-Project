@@ -108,6 +108,14 @@ def create_payment_session():
                     "store_payment_details":"disabled" # This enables the user to save their payment details for future use, which returns the src_ in webhook.
                 }
             },
+            "items": [
+                {
+                "name":         "Battery Power Pack",
+                "quantity":     1,
+                "unit_price":   5000,
+                "total_amount": 5000,
+                "reference":    "Test"    }
+            ],
             "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
             "success_url": "https://react-frontend-elpl.onrender.com/success",
             "failure_url": "https://react-frontend-elpl.onrender.com/failure"

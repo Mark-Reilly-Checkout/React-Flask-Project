@@ -136,7 +136,7 @@ const Flow = () => {
                 // Klarna component mounting (optional, depends on your setup)
                 (async () => {
                     console.log("In async func...");
-                    const paypalComponent = checkout.create("paypal");
+                    const paypalComponent = checkout.create("flow");
                     const isAvail = await paypalComponent.isAvailable();
                     if (isAvail) {
                         console.log("Paypal is available");
