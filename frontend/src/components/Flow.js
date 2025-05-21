@@ -81,12 +81,12 @@ const Flow = () => {
 
     const translations = {
         en: {
-            'form.required': 'Please provide this field',
-            'form.full_name.placeholder': 'Mark Reilly',
-            'pay_button.pay': 'Pay now',
-            'pay_button.payment_failed': 'Payment failed, please try again',
+          'form.required': 'Please provide this field',
+          'form.full_name.placeholder': 'Mark Reilly',
+          'pay_button.pay': 'Pay now',
+          'pay_button.payment_failed': 'Payment failed, please try again',
         },
-    };
+      };
 
     useEffect(() => {
         if (paymentSession) {
@@ -98,15 +98,15 @@ const Flow = () => {
                 translations,
                 componentOptions: {
                     flow: {
-                        expandFirstPaymentMethod: false
+                      expandFirstPaymentMethod: false
                     },
                     card: {
-                        displayCardholderName: 'bottom',
-                        data: {
-                            email: 'mark.reilly1234@checkot.com',
-                        },
+                      displayCardholderName: 'bottom',
+                      data: {
+                        email: 'mark.reilly1234@checkot.com',
+                      },
                     },
-                },
+                  },
 
                 onPaymentCompleted: (_component, paymentResponse) => {
                     toast.success('Payment completed successfully!');
@@ -120,23 +120,32 @@ const Flow = () => {
                 }
             }).then(checkout => {
                 const flowComponent = checkout.create('flow', {
-                    handleClick: (_self) => {
-                        if (acceptedTermsAndConditions) {
-                            return { continue: true };
-                        }
-                        return { continue: false };
-                    },
-                });
-                flowComponent.mount('#flow-container');
-                setLastUpdatedFlow(new Date());
+        handleClick: (_self) => {
+            console.log("handleClick triggered");
+            if (acceptedTermsRef.current) {
+                console.log("Terms accepted, proceeding with payment...");
+                // Proceed with payment
+                toast.info("Proceeding with payment...");
+                return { continue: true };
+            } else {
+                console.log("Terms not accepted, showing warning...");
+                // Show warning
+                toast.warn("Please accept the terms and conditions before paying.");
+                return { continue: false };
+            }
+        }
+    });
 
-                (async () => {
-                    const klarnaComponent = checkout.create("klarna");
-                    const klarnaElement = document.getElementById('klarna-container');
-                    if (await klarnaComponent.isAvailable()) {
-                        klarnaComponent.mount(klarnaElement);
-                    }
-                })();
+    flowComponent.mount('#flow-container');
+    setLastUpdatedFlow(new Date());
+
+    (async () => {
+        const klarnaComponent = checkout.create("klarna");
+        const klarnaElement = document.getElementById('klarna-container');
+        if (await klarnaComponent.isAvailable()) {
+            klarnaComponent.mount(klarnaElement);
+        }
+    })();
 
             }).catch(err => console.error("Checkout Web Components Error:", err));
         }
