@@ -98,12 +98,16 @@ const Flow = () => {
                       expandFirstPaymentMethod: false,
                       // --- ADDING handleClick HERE ---
                       handleClick: (_self) => {
+                        console.log("handleClick triggered!");
+                        console.log("acceptedTermsAndConditions:", acceptedTermsAndConditions); 
                           // Our custom check: user must accept terms and conditions
                           if (acceptedTermsAndConditions) {
                               toast.info("Proceeding with payment...");
+                              console.log("Proceeding with payment...");
                               return { continue: true }; // Allow the payment to continue
                           } else {
                               toast.warn("Please accept the terms and conditions before paying.");
+                              console.log("User did not accept terms and conditions.");
                               return { continue: false }; // Prevent the payment from starting
                           }
                       },
@@ -128,25 +132,21 @@ const Flow = () => {
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
                 }
             }).then(checkout => {
-                /* const flowComponent = checkout.create('flow');
-                flowComponent.mount('#flow-container'); */
+                const flowComponent = checkout.create('flow');
+                flowComponent.mount('#flow-container');
                 
                 setLastUpdatedFlow(new Date());
                 
-                // Klarna component mounting (optional, depends on your setup)
+                // APM flow component mounting (optional, depends on your setup)
                 (async () => {
                     console.log("In async func...");
-                    const paypalComponent = checkout.create("flow");
+                    const paypalComponent = checkout.create("paypal");
+                    //const klarnaComponent = checkout.create("klarna");
                     const isAvail = await paypalComponent.isAvailable();
                     if (isAvail) {
                         console.log("Paypal is available");
                     paypalComponent.mount(document.getElementById("paypal-container"));
                     }
-                    /* const klarnaComponent = checkout.create("klarna");
-                    const klarnaElement = document.getElementById('klarna-container');
-                    if (await klarnaComponent.isAvailable()) {
-                        klarnaComponent.mount(klarnaElement);
-                    } */
                 })();
 
             }).catch(err => console.error("Checkout Web Components Error:", err));
@@ -211,7 +211,7 @@ const Flow = () => {
                                     />
                                     <label htmlFor="termsCheckbox" className="ms-2">I accept the <a href="/terms" target="_blank">Terms and Conditions</a></label>
                                 </div>
-                                {/* <div id="flow-container"></div> */}
+                                <div id="flow-container"></div> 
                                 <div id='paypal-container'></div>
                             </Card.Text>
                         </Card.Body>
