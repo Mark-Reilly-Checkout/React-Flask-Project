@@ -81,12 +81,12 @@ const Flow = () => {
 
     const translations = {
         en: {
-          'form.required': 'Please provide this field',
-          'form.full_name.placeholder': 'Mark Reilly',
-          'pay_button.pay': 'Pay now',
-          'pay_button.payment_failed': 'Payment failed, please try again',
+            'form.required': 'Please provide this field',
+            'form.full_name.placeholder': 'Mark Reilly',
+            'pay_button.pay': 'Pay now',
+            'pay_button.payment_failed': 'Payment failed, please try again',
         },
-      };
+    };
 
     useEffect(() => {
         if (paymentSession) {
@@ -98,15 +98,15 @@ const Flow = () => {
                 translations,
                 componentOptions: {
                     flow: {
-                      expandFirstPaymentMethod: false
+                        expandFirstPaymentMethod: false
                     },
                     card: {
-                      displayCardholderName: 'bottom',
-                      data: {
-                        email: 'mark.reilly1234@checkot.com',
-                      },
+                        displayCardholderName: 'bottom',
+                        data: {
+                            email: 'mark.reilly1234@checkot.com',
+                        },
                     },
-                  },
+                },
 
                 onPaymentCompleted: (_component, paymentResponse) => {
                     toast.success('Payment completed successfully!');
@@ -120,31 +120,48 @@ const Flow = () => {
                 }
             }).then(checkout => {
                 const googlepayComponenet = checkout.create('googlepay', {
-        handleClick: (_self) => {
-            console.log("handleClick triggered");
-            if (acceptedTermsRef.current) {
-                console.log("Terms accepted, proceeding with payment...");
-                // Proceed with payment
-                toast.info("Proceeding with payment...");
-                return { continue: true };
-            } else {
-                console.log("Terms not accepted, showing warning...");
-                // Show warning
-                toast.warn("Please accept the terms and conditions before paying.");
-                return { continue: false };
-            }
-        }
-    });
+                    handleClick: (_self) => {
+                        console.log("handleClick triggered");
+                        if (acceptedTermsRef.current) {
+                            console.log("Terms accepted, proceeding with payment...");
+                            // Proceed with payment
+                            toast.info("Proceeding with payment...");
+                            return { continue: true };
+                        } else {
+                            console.log("Terms not accepted, showing warning...");
+                            // Show warning
+                            toast.warn("Please accept the terms and conditions before paying.");
+                            return { continue: false };
+                        }
+                    }
+                });
 
-    //flowComponent.mount('#googlepay-container');
-    setLastUpdatedFlow(new Date());
+                const paypalComponent = checkout.create('paypal', {
+                    handleClick: (_self) => {
+                        if (acceptedTermsRef.current) {
+                            toast.success('Proceeding with PayPal');
+                            return { continue: true };
+                        } else {
+                            toast.warn('Please accept the terms and conditions.');
+                            return { continue: false };
+                        }
+                    },
+                });
 
-    (async () => {
-        const isAvail = await googlepayComponenet.isAvailable();
-        if (isAvail) {
-            googlepayComponenet.mount(document.getElementById("googlepay-container"));
-        }
-    })(); 
+                //flowComponent.mount('#googlepay-container');
+                setLastUpdatedFlow(new Date());
+
+                (async () => {
+                    const isGooglePayAvailable = await googlepayComponent.isAvailable();
+                    if (isGooglePayAvailable) {
+                        googlepayComponent.mount(document.getElementById("googlepay-container"));
+                    }
+
+                    const isPayPalAvailable = await paypalComponent.isAvailable();
+                    if (isPayPalAvailable) {
+                        paypalComponent.mount(document.getElementById("paypal-container"));
+                    }
+                })();
 
             }).catch(err => console.error("Checkout Web Components Error:", err));
         }
@@ -205,6 +222,7 @@ const Flow = () => {
                                     <label htmlFor="termsCheckbox" className="ms-2">I accept the <a href="/terms" target="_blank">Terms and Conditions</a></label>
                                 </div>
                                 <div id="googlepay-container"></div>
+                                <div id="paypal-container"></div>
                             </Card.Text>
                         </Card.Body>
                         <Card.Footer>
