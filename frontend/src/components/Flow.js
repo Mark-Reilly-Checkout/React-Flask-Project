@@ -119,7 +119,7 @@ const Flow = () => {
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
                 }
             }).then(checkout => {
-                const googlepayComponent = checkout.create('flow', {
+                const googlepayComponent = checkout.create('applepay', {
                     handleClick: (_self) => {
                         console.log("handleClick triggered");
                         if (acceptedTermsRef.current) {
