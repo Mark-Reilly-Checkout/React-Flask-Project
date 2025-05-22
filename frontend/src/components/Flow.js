@@ -119,7 +119,7 @@ const Flow = () => {
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
                 }
             }).then(checkout => {
-                const googlepayComponent = checkout.create('googlepay', {
+                const googlepayComponent = checkout.create('flow', {
                     handleClick: (_self) => {
                         console.log("handleClick triggered");
                         if (acceptedTermsRef.current) {
@@ -136,7 +136,7 @@ const Flow = () => {
                     }
                 });
 
-                const paypalComponent = checkout.create('paypal', {
+                /* const paypalComponent = checkout.create('paypal', {
                     handleClick: (_self) => {
                         if (acceptedTermsRef.current) {
                             toast.success('Proceeding with PayPal');
@@ -146,7 +146,7 @@ const Flow = () => {
                             return { continue: false };
                         }
                     },
-                });
+                }); */
 
                 //flowComponent.mount('#googlepay-container');
                 setLastUpdatedFlow(new Date());
@@ -157,10 +157,10 @@ const Flow = () => {
                         googlepayComponent.mount(document.getElementById("googlepay-container"));
                     }
 
-                    const isPayPalAvailable = await paypalComponent.isAvailable();
+                    /* const isPayPalAvailable = await paypalComponent.isAvailable();
                     if (isPayPalAvailable) {
                         paypalComponent.mount(document.getElementById("paypal-container"));
-                    }
+                    } */
                 })();
 
             }).catch(err => console.error("Checkout Web Components Error:", err));
@@ -222,7 +222,7 @@ const Flow = () => {
                                     <label htmlFor="termsCheckbox" className="ms-2">I accept the <a href="/terms" target="_blank">Terms and Conditions</a></label>
                                 </div>
                                 <div id="googlepay-container"></div>
-                                <div id="paypal-container"></div>
+                                {/* <div id="paypal-container"></div> */}
                             </Card.Text>
                         </Card.Body>
                         <Card.Footer>
