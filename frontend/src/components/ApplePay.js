@@ -8,7 +8,7 @@ const ApplePay = () => {
   const amount = 1.00; // Amount in dollars
   const currencyCode = 'GBP'; // Currency Code
   const acquirerCountry = 'GB'; // Acquirer Country
-  const [paymentToken, setPaymentToken] = useState(null);
+  const [paymentId, setPaymentId] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [viewRaw, setViewRaw] = useState(false); // For raw/pretty view toggle
 
