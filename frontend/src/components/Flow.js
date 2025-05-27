@@ -119,7 +119,7 @@ const Flow = () => {
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
                 }
             }).then(checkout => {
-                const googlepayComponent = checkout.create('flow', {
+                const flowComponent = checkout.create('flow', {
                     handleClick: (_self) => {
                         console.log("handleClick triggered");
                         if (acceptedTermsRef.current) {
@@ -152,9 +152,9 @@ const Flow = () => {
                 setLastUpdatedFlow(new Date());
 
                 (async () => {
-                    const isGooglePayAvailable = await googlepayComponent.isAvailable();
-                    if (isGooglePayAvailable) {
-                        googlepayComponent.mount(document.getElementById("googlepay-container"));
+                    const isFlowAvailable = await flowComponent.isAvailable();
+                    if (isFlowAvailable) {
+                        flowComponent.mount(document.getElementById("flow-container"));
                     }
 
                     /* const isPayPalAvailable = await paypalComponent.isAvailable();
@@ -221,7 +221,7 @@ const Flow = () => {
                                     />
                                     <label htmlFor="termsCheckbox" className="ms-2">I accept the <a href="/terms" target="_blank">Terms and Conditions</a></label>
                                 </div>
-                                <div id="googlepay-container"></div>
+                                <div id="flow-container"></div>
                                 {/* <div id="paypal-container"></div> */}
                             </Card.Text>
                         </Card.Body>
