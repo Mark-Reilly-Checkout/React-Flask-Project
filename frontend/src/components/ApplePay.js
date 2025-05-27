@@ -5,9 +5,12 @@ import axios from 'axios';
 const ApplePay = () => {
   const containerRef = useRef(null);
   const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
-  const amount = 50.00; // Amount in dollars
-  const [paymentId, setPaymentId] = useState(null);
+  const amount = 1.00; // Amount in dollars
+  const currencyCode = 'GBP'; // Currency Code
+  const acquirerCountry = 'GB'; // Acquirer Country
+  const [paymentToken, setPaymentToken] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [viewRaw, setViewRaw] = useState(false); // For raw/pretty view toggle
 
   useEffect(() => {
     // Remove any existing button to avoid duplicates
@@ -16,9 +19,9 @@ const ApplePay = () => {
 
     // Create new Apple Pay button
     const applePayButton = document.createElement('apple-pay-button');
-    applePayButton.setAttribute('buttonstyle', 'black');
+    applePayButton.setAttribute('buttonstyle', 'black'); // Match Google Pay button color
     applePayButton.setAttribute('type', 'plain');
-    applePayButton.setAttribute('locale', 'en-US');
+    applePayButton.setAttribute('locale', 'en-GB'); // Match Google Pay locale
     containerRef.current?.appendChild(applePayButton);
 
     // Add click listener
@@ -36,8 +39,8 @@ const ApplePay = () => {
     }
 
     const paymentRequest = {
-      countryCode: 'IE',
-      currencyCode: 'EUR',
+      countryCode: acquirerCountry, // Use acquirerCountry
+      currencyCode: currencyCode, // Use currencyCode
       supportedNetworks: ['visa', 'masterCard', 'amex'],
       merchantCapabilities: ['supports3DS'],
       total: {
@@ -49,19 +52,19 @@ const ApplePay = () => {
     const session = new window.ApplePaySession(3, paymentRequest);
 
     session.onvalidatemerchant = async (event) => {
-        const validationURL = event.validationURL;
-        try {
-          const res = await axios.post(`${API_BASE_URL}api/apple-pay/validate-merchant`, {
-            validationURL
-          });
-          console.log("Validation URL", validationURL);
-          console.log("Merchant validation response", res.data);
-          session.completeMerchantValidation(res.data);
-        } catch (err) {
-          console.error("Merchant validation failed", err);
-          session.abort();
-        }
-      };
+      const validationURL = event.validationURL;
+      try {
+        const res = await axios.post(`${API_BASE_URL}api/apple-pay/validate-merchant`, {
+          validationURL
+        });
+        console.log("Validation URL", validationURL);
+        console.log("Merchant validation response", res.data);
+        session.completeMerchantValidation(res.data);
+      } catch (err) {
+        console.error("Merchant validation failed", err);
+        session.abort();
+      }
+    };
 
     session.onpaymentauthorized = async (event) => {
       const token = event.payment.token;
@@ -73,23 +76,81 @@ const ApplePay = () => {
         });
 
         if (res.data.approved) {
-            setPaymentId(res.data.payment_id);      // Store the payment ID
-            setPaymentSuccess(true);  // Set payment success state
-            session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
-          } else {
-            session.completePayment(window.ApplePaySession.STATUS_FAILURE);
-          }
-        } catch (err) {
-          console.error('Payment failed', err);
+          setPaymentId(res.data.payment_id);      // Store the payment ID
+          setPaymentToken(JSON.stringify(token.paymentData)); // Store token for display
+          setPaymentSuccess(true);  // Set payment success state
+          session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
+        } else {
           session.completePayment(window.ApplePaySession.STATUS_FAILURE);
         }
+      } catch (err) {
+        console.error('Payment failed', err);
+        session.completePayment(window.ApplePaySession.STATUS_FAILURE);
+      }
     };
 
     session.begin();
   };
 
+  const handleDownload = () => {
+    if (!paymentToken) return;
+    const blob = new Blob([paymentToken], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'payment-token.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div>
+    <div className="min-h-screen bg-gray-100 p-6">
+      <h1 className="text-3xl font-bold text-center mb-8">Apple Pay</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-xl shadow-md">
+          <h2 className="text-xl font-semibold mb-4">Configuration</h2>
+          <p>Apple Pay configurations are handled natively and are not configurable within this component.</p>
+        </div>
+
+        <div className="flex flex-col h-full">
+          <div className="flex justify-center items-center mb-6">
+            {/* Apple Pay Button */}
+            <div ref={containerRef} className="text-center" />
+          </div>
+
+          {/* Token Display + Download */}
+          <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-64 whitespace-pre-wrap break-words">
+            {paymentToken
+              ? viewRaw
+                ? paymentToken
+                : JSON.stringify(JSON.parse(paymentToken), null, 2)
+              : 'Waiting for payment...'}
+          </div>
+
+          {/* Controls */}
+          <div className="flex justify-between items-center mt-4">
+            {paymentToken && (
+              <button
+                onClick={handleDownload}
+                className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+              >
+                Download Token as JSON
+              </button>
+            )}
+
+            <button
+              className={`px-3 py-1 text-sm rounded ${paymentToken ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+              onClick={() => {
+                if (paymentToken) setViewRaw(!viewRaw);
+              }}
+              disabled={!paymentToken}
+            >
+              {viewRaw ? 'Pretty View' : 'Raw View'}
+            </button>
+          </div>
+        </div>
+      </div>
       <style>
         {`
           apple-pay-button {
@@ -117,26 +178,8 @@ const ApplePay = () => {
           }
         `}
       </style>
-
-      <h1 className="text-center">Apple Pay</h1>
-    
-    {/* Conditional Rendering */}
-    {!paymentSuccess ? (
-      // Show Apple Pay button container if payment hasn't succeeded
-      <div ref={containerRef} className="text-center" />
-    ) : (
-      // Show success message and payment ID after successful payment
-      <div className="text-center mt-4">
-        <p className="text-success">✅ Payment successful!</p>
-        {paymentId && (
-          <p className="text-muted">
-            Payment ID: <code>{paymentId}</code>
-          </p>
-        )}
-      </div>
-    )}
-  </div>
-);
+    </div>
+  );
 };
 
 export default ApplePay;
