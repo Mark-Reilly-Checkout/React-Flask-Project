@@ -136,6 +136,9 @@ const Flow = () => {
                     }
                 });
 
+                const klarnaComponent = checkout.create("klarna");
+
+
                 /* const paypalComponent = checkout.create('paypal', {
                     handleClick: (_self) => {
                         if (acceptedTermsRef.current) {
@@ -153,8 +156,10 @@ const Flow = () => {
 
                 (async () => {
                     const isFlowAvailable = await flowComponent.isAvailable();
-                    if (isFlowAvailable) {
+                    const isKlarnaAvailable = await klarnaComponent.isAvailable();
+                    if (isFlowAvailable && isKlarnaAvailable) {
                         flowComponent.mount(document.getElementById("flow-container"));
+                        klarnaComponent.mount(document.getElementById("klarna-container"));
                     }
 
                     /* const isPayPalAvailable = await paypalComponent.isAvailable();
@@ -222,6 +227,7 @@ const Flow = () => {
                                     <label htmlFor="termsCheckbox" className="ms-2">I accept the <a href="/terms" target="_blank">Terms and Conditions</a></label>
                                 </div>
                                 <div id="flow-container"></div>
+                                <div id="klarna-container"></div>
                                 {/* <div id="paypal-container"></div> */}
                             </Card.Text>
                         </Card.Body>
