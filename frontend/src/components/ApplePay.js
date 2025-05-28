@@ -46,7 +46,7 @@ const ApplePay = () => {
       merchantCapabilities: ['supports3DS'],
       total: {
         label: 'Test Purchase',
-        amount: amount.toFixed(2), // Format to 2 decimal places
+        amount: parseFloat(amount).toFixed(2), // Format to 2 decimal places
       },
     };
 
