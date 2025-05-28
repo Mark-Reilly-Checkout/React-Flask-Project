@@ -282,7 +282,7 @@ def validate_merchant():
     "merchantIdentifier": MERCHANT_ID,
     "displayName": "My Store",
     "initiative": "web",
-    "initiativeContext": "react-flask-project-kpyi.onrender.com"  # Replace with your domain
+    "initiativeContext": "react-flask-project-kpyi.onrender.com"  # Replace with your domain, when updating main branch change this to react-frontend-elpl.onrender.com
 }
     try:
         response = requests.post(

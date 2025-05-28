@@ -39,8 +39,8 @@ return(
             <Card.Title>Payment Link Demo</Card.Title>
             <Card.Text>
             <div text-center="true">
-                <button onClick={RequestPaymentLink} disabled={loading}>
-                    {loading ? "Processing..." : "Requesting Payment Link"}
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onClick={RequestPaymentLink} disabled={loading}>
+                    Request a Payment Link
                 </button>
             </div>
             </Card.Text>
