@@ -85,7 +85,7 @@ def create_payment_session():
     try:
         data = request.json
         email = data.get("email", "test@example.com")  # Default email if not sent from FE
-        country = data.get("country", "PL")  # Default country if not sent from FE
+        country = data.get("country", "DE")  # Default country if not sent from FE
         currency = data.get("currency", "EUR")  # Default currency if not sent from FE
         payment_request = {
             "amount": data["amount"],  
