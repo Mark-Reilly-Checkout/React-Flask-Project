@@ -119,7 +119,7 @@ const Flow = () => {
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
                 }
             }).then(checkout => {
-                const flowComponent = checkout.create('klarna', {
+                const flowComponent = checkout.create('flow', {
                     handleClick: (_self) => {
                         console.log("handleClick triggered");
                         if (acceptedTermsRef.current) {
@@ -194,7 +194,7 @@ const Flow = () => {
                             <Card.Title className="text-center">Request a session for Flow</Card.Title>
                             <Card.Text>
                                 <div className="text-center">
-                                    <button onClick={SessionRequest} disabled={loading}>
+                                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onClick={SessionRequest} disabled={loading}>
                                         {loading ? "Processing..." : "Request Session"}
                                     </button>
                                     <br />
@@ -214,13 +214,13 @@ const Flow = () => {
                             <Card.Title className="text-center">Flow module</Card.Title>
                             <Card.Text>
                                 <div className="mb-3">
-                                    <input
+                                    {/* <input
                                         type="checkbox"
                                         id="termsCheckbox"
                                         checked={acceptedTermsAndConditions}
                                         onChange={(e) => setAcceptedTermsAndConditions(e.target.checked)}
-                                    />
-                                    <label htmlFor="termsCheckbox" className="ms-2">I accept the <a href="/terms" target="_blank">Terms and Conditions</a></label>
+                                    /> */}
+                                    {/* <label htmlFor="termsCheckbox" className="ms-2">I accept the <a href="/terms" target="_blank">Terms and Conditions</a></label> */}
                                 </div>
                                 <div id="flow-container"></div>
                                 {/* <div id="paypal-container"></div> */}
