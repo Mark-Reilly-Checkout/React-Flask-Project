@@ -5,9 +5,9 @@ import axios from 'axios';
 const ApplePay = () => {
   const containerRef = useRef(null);
   const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
-  const amount = 50.00; // Amount in dollars
-  const currencyCode = 'EUR'; // Currency Code
-  const acquirerCountry = 'IE'; // Acquirer Country
+  const [amount, setAmount] = useState('50.00');
+  const [currencyCode, setCurrencyCode] = useState('GBP');
+  const [countryCode, setCountryCode] = useState('GB'); 
   const [paymentToken, setPaymentToken] = useState(null);
   const [paymentId, setPaymentId] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -31,7 +31,7 @@ const ApplePay = () => {
     return () => {
       applePayButton.removeEventListener('click', handleApplePay);
     };
-  }, []);
+  }, [amount, currencyCode, countryCode]);
 
   const handleApplePay = async () => {
     if (!window.ApplePaySession || !ApplePaySession.canMakePayments()) {
@@ -40,7 +40,7 @@ const ApplePay = () => {
     }
 
     const paymentRequest = {
-      countryCode: acquirerCountry, // Use acquirerCountry
+      countryCode: countryCode,
       currencyCode: currencyCode, // Use currencyCode
       supportedNetworks: ['visa', 'masterCard', 'amex'],
       merchantCapabilities: ['supports3DS'],
@@ -111,8 +111,36 @@ const ApplePay = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-xl font-semibold mb-4">Configuration</h2>
-          <p>Apple Pay configurations are handled natively and are not configurable within this component.</p>
-        </div>
+          <div className="flex gap-4 mb-4">
+    <div className="flex-1">
+        <label className="block text-sm font-medium mb-1">Country Code</label>
+        <input
+            type="text"
+            value={countryCode}
+            onChange={(e) => setCountryCode(e.target.value)}
+            className="w-full border rounded px-3 py-2"
+        />
+    </div>
+    <div className="flex-1">
+        <label className="block text-sm font-medium mb-1">Currency Code</label>
+        <input
+            type="text"
+            value={currencyCode}
+            onChange={(e) => setCurrencyCode(e.target.value)}
+            className="w-full border rounded px-3 py-2"
+        />
+    </div>
+    <div className="flex-1">
+        <label className="block text-sm font-medium mb-1">Amount</label>
+        <input
+            type="text"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="w-full border rounded px-3 py-2"
+        />
+    </div>
+</div>
+</div>
 
         <div className="flex flex-col h-full">
           <div className="flex justify-center items-center mb-6">
