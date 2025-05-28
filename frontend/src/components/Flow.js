@@ -202,6 +202,9 @@ const Flow = () => {
                                         {paymentSession && <p>Payment Session ID: {paymentSession.id}</p>}
                                     </div>
                                 </div>
+                                <div>
+                                    <p className="text-muted">Configuration panel coming soon...</p>
+                                </div>
                             </Card.Text>
                         </Card.Body>
                         <Card.Footer>
@@ -211,7 +214,7 @@ const Flow = () => {
 
                     <Card>
                         <Card.Body>
-                            <Card.Title className="text-center">Flow module</Card.Title>
+                            <Card.Title className="text-center">Flow component</Card.Title>
                             <Card.Text>
                                 <div className="mb-3">
                                     {/* <input

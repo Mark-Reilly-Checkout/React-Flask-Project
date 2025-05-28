@@ -43,6 +43,9 @@ return(
                     Request a Payment Link
                 </button>
             </div>
+            <div>
+                <p className="text-muted">Fidning the time to continue building...</p>
+            </div>
             </Card.Text>
             </Card.Body>
             <Card.Footer>
