@@ -5,9 +5,9 @@ import axios from 'axios';
 const ApplePay = () => {
   const containerRef = useRef(null);
   const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
-  const amount = 1.00; // Amount in dollars
-  const currencyCode = 'GBP'; // Currency Code
-  const acquirerCountry = 'GB'; // Acquirer Country
+  const amount = 50.00; // Amount in dollars
+  const currencyCode = 'EUR'; // Currency Code
+  const acquirerCountry = 'IE'; // Acquirer Country
   const [paymentToken, setPaymentToken] = useState(null);
   const [paymentId, setPaymentId] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
