@@ -12,6 +12,18 @@ const ApplePay = () => {
   const [paymentId, setPaymentId] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [viewRaw, setViewRaw] = useState(false); // For raw/pretty view toggle
+  const allNetworks = ['masterCard', 'visa', 'amex', 'discover', 'cartesBancaires', 'jcb']; // Note: Apple Pay networks are typically lowercase for constants
+  const [supportedNetworks, setSupportedNetworks] = useState(['masterCard', 'visa', 'amex']); // Default selected
+
+  const toggleNetwork = (network) => {
+      setConfig((prev) => ({
+          ...prev,
+          selectedNetworks: prev.selectedNetworks.includes(network)
+              ? prev.selectedNetworks.filter((n) => n !== network)
+              : [...prev.selectedNetworks, network],
+      }));
+  };
+
 
   useEffect(() => {
     // Remove any existing button to avoid duplicates
@@ -31,7 +43,7 @@ const ApplePay = () => {
     return () => {
       applePayButton.removeEventListener('click', handleApplePay);
     };
-  }, [amount, currencyCode, countryCode]);
+  }, [amount, currencyCode, countryCode,supportedNetworks]);
 
   const handleApplePay = async () => {
     if (!window.ApplePaySession || !ApplePaySession.canMakePayments()) {
@@ -42,7 +54,7 @@ const ApplePay = () => {
     const paymentRequest = {
       countryCode: countryCode,
       currencyCode: currencyCode, // Use currencyCode
-      supportedNetworks: ['visa', 'masterCard', 'amex'],
+      supportedNetworks: supportedNetworks,
       merchantCapabilities: ['supports3DS'],
       total: {
         label: 'Test Purchase',
@@ -112,35 +124,53 @@ const ApplePay = () => {
         <div className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-xl font-semibold mb-4">Configuration</h2>
           <div className="flex gap-4 mb-4">
-    <div className="flex-1">
-        <label className="block text-sm font-medium mb-1">Country Code</label>
-        <input
-            type="text"
-            value={countryCode}
-            onChange={(e) => setCountryCode(e.target.value)}
-            className="w-full border rounded px-3 py-2"
-        />
-    </div>
-    <div className="flex-1">
-        <label className="block text-sm font-medium mb-1">Currency Code</label>
-        <input
-            type="text"
-            value={currencyCode}
-            onChange={(e) => setCurrencyCode(e.target.value)}
-            className="w-full border rounded px-3 py-2"
-        />
-    </div>
-    <div className="flex-1">
-        <label className="block text-sm font-medium mb-1">Amount</label>
-        <input
-            type="text"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="w-full border rounded px-3 py-2"
-        />
-    </div>
-</div>
-</div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium mb-1">Country Code</label>
+              <input
+                type="text"
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                className="w-full border rounded px-3 py-2"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium mb-1">Currency Code</label>
+              <input
+                type="text"
+                value={currencyCode}
+                onChange={(e) => setCurrencyCode(e.target.value)}
+                className="w-full border rounded px-3 py-2"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium mb-1">Amount</label>
+              <input
+                type="text"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full border rounded px-3 py-2"
+              />
+            </div>
+          </div>
+          {/* Card Networks */}
+            <div className="mb-6 text-center">
+              <label className="block text-sm font-medium mb-2">Supported Card Networks</label>
+              <div className="flex flex-wrap justify-center gap-2">
+                  {allNetworks.map(network => (
+                      <button
+                          key={network}
+                          onClick={() => toggleNetwork(network)}
+                          className={`px-3 py-1 rounded border text-sm ${supportedNetworks.includes(network)
+                              ? 'bg-blue-600 text-white border-blue-600'
+                              : 'bg-white text-gray-800 border-gray-300'
+                              }`}
+                      >
+                          {network}
+                      </button>
+                  ))}
+              </div>
+          </div>
+        </div>
 
         <div className="flex flex-col h-full">
           <div className="flex justify-center items-center mb-6">

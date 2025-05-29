@@ -246,10 +246,13 @@ def apple_pay_session():
         payment_request = {
             "source": {
                 "type": "token",
-                "token": token
+                "token": token,
+                "billing_address": {
+                    "country": data.get("country", "IE"),  # Default country if not sent from FE
+                }
             },
             "amount": data["amount"],  # Amount from frontend (integer, e.g., 5000)
-            "currency": "USD",         # Or use data["currency"] if dynamic
+            "currency": data["currencyCode"],         # Or use data["currency"] if dynamic
             "reference": "apple_pay_txn_001",
         }
         payment_response = payments_client.request_payment(payment_request)
