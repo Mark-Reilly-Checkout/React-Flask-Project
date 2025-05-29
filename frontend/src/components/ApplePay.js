@@ -111,11 +111,13 @@ const ApplePay = () => {
 
     session.onpaymentauthorized = async (event) => {
       const token = event.payment.token;
+      console.log("Payment token received", token);
+      console.log("Payment amount", config.amount); // Log the amount being used
 
       try {
         const res = await axios.post(`${API_BASE_URL}api/apple-pay-session`, {
           tokenData: token.paymentData,
-          amount: parseFloat(config.amount), // Use config amount here too
+          amount: config.amount, // Use config amount here too
         });
 
         if (res.data.approved) {
