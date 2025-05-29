@@ -214,7 +214,7 @@ const ApplePay = () => {
         // Initial screen for mode selection
         <div className="flex items-center justify-center min-h-[calc(100vh-100px)]">
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
-                <h2 className="text-2xl font-bold mb-6 text-gray-800">Choose Apple Pay Testing Mode</h2>
+                <h2 className="text-2xl font-bold mb-6 text-gray-800">Choose the Apple Pay flow</h2>
                 <div className="mb-6">
                     <label htmlFor="paymentModeSelect" className="block text-lg font-medium text-gray-700 mb-2">
                         Select Action:
@@ -225,8 +225,8 @@ const ApplePay = () => {
                         onChange={(e) => setInitialPaymentMode(e.target.value)}
                         className="w-full border rounded-lg px-4 py-3 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
                     >
-                        <option value="processPayment">Test Full Payment (Generate Token & Send to Backend)</option>
-                        <option value="generateTokenOnly">Only Generate Apple Pay Token (Frontend)</option>
+                        <option value="processPayment">Full payment flow</option>
+                        <option value="generateTokenOnly">Token generation only</option>
                     </select>
                 </div>
                 <button
@@ -257,7 +257,7 @@ const ApplePay = () => {
                             onChange={() => setConfig({...config, paymentMode: 'processPayment'})}
                             className="form-radio h-4 w-4 text-blue-600"
                         />
-                        <span className="ml-2 text-gray-700">Process Full Payment (Generate Token & Send to Backend)</span>
+                        <span className="ml-2 text-gray-700">Full payment flow</span>
                     </label>
                     <label className="inline-flex items-center">
                         <input
@@ -268,7 +268,7 @@ const ApplePay = () => {
                             onChange={() => setConfig({...config, paymentMode: 'generateTokenOnly'})}
                             className="form-radio h-4 w-4 text-blue-600"
                         />
-                        <span className="ml-2 text-gray-700">Only Generate Apple Pay Token (Frontend Only)</span>
+                        <span className="ml-2 text-gray-700">Token generation only</span>
                     </label>
                 </div>
             </div>
