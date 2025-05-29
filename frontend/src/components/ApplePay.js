@@ -2,8 +2,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 
+const defaultConfig = {
+    amount: '1.00',
+    currencyCode: 'GBP',
+    countryCode: 'GB',
+    supportedNetworks: ['masterCard', 'visa', 'amex'], // Default networks for Apple Pay
+};
+
 const ApplePay = () => {
   const containerRef = useRef(null);
+  const [config, setConfig] = useState(defaultConfig);
   const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
   const [amount, setAmount] = useState('50.00');
   const [currencyCode, setCurrencyCode] = useState('GBP');
@@ -15,14 +23,17 @@ const ApplePay = () => {
   const allNetworks = ['masterCard', 'visa', 'amex', 'discover', 'cartesBancaires', 'jcb']; // Note: Apple Pay networks are typically lowercase for constants
   const [supportedNetworks, setSupportedNetworks] = useState(['masterCard', 'visa', 'amex']); // Default selected
 
-  const toggleNetwork = (network) => {
-      setConfig((prev) => ({
-          ...prev,
-          selectedNetworks: prev.selectedNetworks.includes(network)
-              ? prev.selectedNetworks.filter((n) => n !== network)
-              : [...prev.selectedNetworks, network],
-      }));
-  };
+  //--- Load config from localStorage on mount ---
+  useEffect(() => {
+    const savedConfig = localStorage.getItem('applePayConfig');
+    if (savedConfig) {
+        setConfig(JSON.parse(savedConfig));
+    }
+  }, []);
+  // --- Save config to localStorage on change ---
+  useEffect(() => {
+    localStorage.setItem('applePayConfig', JSON.stringify(config));
+  }, [config]);
 
 
   useEffect(() => {
@@ -43,7 +54,24 @@ const ApplePay = () => {
     return () => {
       applePayButton.removeEventListener('click', handleApplePay);
     };
-  }, [amount, currencyCode, countryCode,supportedNetworks]);
+  }, [config.amount, config.currencyCode, config.countryCode, config.supportedNetworks]);
+
+  const toggleNetwork = (network) => {
+    setConfig((prev) => ({
+      ...prev,
+      supportedNetworks: prev.supportedNetworks.includes(network)
+        ? prev.supportedNetworks.filter((n) => n !== network)
+        : [...prev.supportedNetworks, network],
+    }));
+  };
+
+  // --- NEW: Reset function ---
+  const handleReset = () => {
+    setConfig(defaultConfig);
+    localStorage.removeItem('applePayConfig');
+    setPaymentToken(null);
+    setPaymentSuccess(false); // Reset success state too
+  };
 
   const handleApplePay = async () => {
     if (!window.ApplePaySession || !ApplePaySession.canMakePayments()) {
@@ -52,13 +80,13 @@ const ApplePay = () => {
     }
 
     const paymentRequest = {
-      countryCode: countryCode,
-      currencyCode: currencyCode, // Use currencyCode
-      supportedNetworks: supportedNetworks,
+      countryCode: config.countryCode,
+      currencyCode: config.currencyCode, // Use currencyCode
+      supportedNetworks: config.supportedNetworks,
       merchantCapabilities: ['supports3DS'],
       total: {
         label: 'Test Purchase',
-        amount: parseFloat(amount).toFixed(2), // Format to 2 decimal places
+        amount: parseFloat(config.amount).toFixed(2), // Format to 2 decimal places
       },
     };
 
@@ -85,7 +113,7 @@ const ApplePay = () => {
       try {
         const res = await axios.post(`${API_BASE_URL}api/apple-pay-session`, {
           tokenData: token.paymentData,
-          amount: amount,
+          amount: config.amount,
         });
 
         if (res.data.approved) {
@@ -160,7 +188,7 @@ const ApplePay = () => {
                       <button
                           key={network}
                           onClick={() => toggleNetwork(network)}
-                          className={`px-3 py-1 rounded border text-sm ${supportedNetworks.includes(network)
+                          className={`px-3 py-1 rounded border text-sm ${config.supportedNetworks.includes(network) // Use config.supportedNetworks
                               ? 'bg-blue-600 text-white border-blue-600'
                               : 'bg-white text-gray-800 border-gray-300'
                               }`}
@@ -170,6 +198,11 @@ const ApplePay = () => {
                   ))}
               </div>
           </div>
+          <button
+            onClick={handleReset}
+            className="mt-2 px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700">
+            Reset to Config
+          </button>
         </div>
 
         <div className="flex flex-col h-full">
