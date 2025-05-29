@@ -248,7 +248,7 @@ def apple_pay_session():
                 "type": "token",
                 "token": token,
                 "billing_address": {
-                    "country": data.get("country", "IE"),  # Default country if not sent from FE
+                    "country": data.get("countryCode", "IE"),  # Default country if not sent from FE
                 }
             },
             "amount": data["amount"],  # Amount from frontend (integer, e.g., 5000)

@@ -81,6 +81,8 @@ const ApplePay = () => {
       return;
     }
 
+    amount: Math.round(parseFloat(config.amount) * 100)
+
     const paymentRequest = {
       countryCode: config.countryCode, // Use config
       currencyCode: config.currencyCode, // Use config
@@ -117,7 +119,9 @@ const ApplePay = () => {
       try {
         const res = await axios.post(`${API_BASE_URL}api/apple-pay-session`, {
           tokenData: token.paymentData,
-          amount: config.amount, // Use config amount here too
+          amount: parseFloat(config.amount), // Use config amount here too
+          currencyCode: config.currencyCode,   // <--- ADD THIS
+          countryCode: config.countryCode,
         });
 
         if (res.data.approved) {
