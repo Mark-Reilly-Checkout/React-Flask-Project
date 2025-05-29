@@ -257,9 +257,13 @@ def apple_pay_session():
 def validate_merchant():
     data = request.get_json()
     validation_url = data.get('validationURL')
+    print("Validation URL:", validation_url)
     merchant_identifier = data.get('merchantIdentifier', MERCHANT_ID)  # Default to the defined MERCHANT_I
+    print("Merchant Identifier:", merchant_identifier)
     display_name = data.get('displayName', "CKO Integrations")  # Default display name
+    print("Display Name:", display_name)
     initiative_context = data.get('initiativeContext',"react-flask-project-kpyi.onrender.com")
+    print("Initiative Context:", initiative_context)
 
     if not validation_url:
         return jsonify({"error": "Missing validationURL"}), 400
