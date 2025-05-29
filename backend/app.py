@@ -55,27 +55,22 @@ def make_json_serializable(data):
         return data.href  # Assuming href holds the URL link
     else:
         return str(data)
+
 # GET - payment details
 @app.route('/api/payment-details/<payment_id>')
 def get_payment_details(payment_id):
     try:
         payment_details = payments_client.get_payment_details(payment_id)
-        
-
         # Recursively convert the payment details to a JSON-serializable structure
         response_data = make_json_serializable(vars(payment_details))
-
         print("Extracted Payment Details:", response_data)
         return jsonify(response_data)
-
     except Exception as e:
         print(f"An error occurred: {str(e)}")
-
         if hasattr(e, 'http_status_code'):
             print(f"HTTP Status Code: {e.http_status_code}")
         if hasattr(e, 'error_details'):
             print(f"Error Details: {e.error_details}")
-
         return jsonify({"error": "Failed to fetch payment details", "details": str(e)}), 500
     
 # POST - Flow - Create payment session
@@ -110,36 +105,29 @@ def create_payment_session():
             },
             "items": [
                 {
-                "name":         "Battery Power Pack",
-                "quantity":     1,
-                "unit_price":   5000,
-                "total_amount": 5000,
-                "reference":    "Test"    }
+                    "name":         "Battery Power Pack",
+                    "quantity":     1,
+                    "unit_price":   5000,
+                    "total_amount": 5000,
+                    "reference":    "Test"    }
             ],
             "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
             "success_url": "https://react-frontend-elpl.onrender.com/success",
             "failure_url": "https://react-frontend-elpl.onrender.com/failure"
         }
-
         # ✅ Check if `sessions` exists in `checkout_api`
         if not hasattr(checkout_api, "sessions"):
             return jsonify({"error": "Sessions API is not available in the SDK"}), 500
-
-       # Access payment sessions client correctly
+        # Access payment sessions client correctly
         payment_sessions_client = checkout_api.payment_sessions
-        
         # Create the payment session
         response = payment_sessions_client.create_payment_sessions(payment_request)
-
         print(f"Payment Session Token: {response.id}")
-
         return jsonify({
-
             "id": response.id,
             "payment_session_secret ": response.payment_session_secret,
             "payment_session_token": response.payment_session_token
         })
-
     except Exception as e:
         error_message = {"error": str(e)}
         if response and hasattr(response, 'error_type'):
@@ -177,15 +165,12 @@ def regularPayment():
             "success_url": "https://react-frontend-elpl.onrender.com/success",
             "failure_url": "https://react-frontend-elpl.onrender.com/failure"
         }
-
         response = checkout_api.payments.request_payment(payment_request)
         #Display the API response response.id will find the field with id from the response
         return jsonify({"payment_id": response.id, "amount": response.amount, "status":response.status, "Response code": response.response_code, "Response Summary":response.response_summary})
-
     except Exception as e:
         #When there is an error display responses error codes and type
         return jsonify({"error": str(e), "error Code": response.error_codes, "Error Type": response.error_type}), 500
-
 
 # POST - Regular - Payment Link
 @app.route('/api/paymentLink', methods=['POST'])
@@ -210,7 +195,6 @@ def paymentLink():
             "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
             "return_url":"https://react-frontend-elpl.onrender.com/paymentLink"
         }
-
         response = checkout_api.payments_links.create_payment_link(requestPaymentLink)
         #Display the API response response.id will find the field with id from the response
         return jsonify({"id": response.id, "redirect_href": response._links.redirect.href, "expires_on":response.expires_on, "reference": response.reference})
@@ -228,8 +212,7 @@ def paymentLink():
 def apple_pay_session():
     data = request.get_json()
     print("Data in Apple Pay session call:", data)
-
-   # 1. Tokenize the Apple Pay token using the SDK
+    # 1. Tokenize the Apple Pay token using the SDK
     try:
         token_response = checkout_api.tokens.request_wallet_token({
             "type": "applepay",
@@ -240,8 +223,7 @@ def apple_pay_session():
     except Exception as e:
         print(f"Tokenization failed: {e}")
         return jsonify({"error": "Tokenization failed", "details": str(e)}), 400
-
-   # 2. Use the token to create a payment request
+    # 2. Use the token to create a payment request
     try:
         payment_request = {
             "source": {
@@ -256,7 +238,6 @@ def apple_pay_session():
             "reference": "apple_pay_txn_001",
         }
         payment_response = payments_client.request_payment(payment_request)
-        
         # Determine payment status
         is_approved = payment_response.status == "Authorized" or payment_response.status == "Captured"
         return jsonify({
@@ -264,7 +245,6 @@ def apple_pay_session():
             "status": payment_response.status,
             "payment_id": payment_response.id
         }), 200
-
     except Exception as e:
         print(f"Payment failed: {str(e)}")
         return jsonify({
@@ -277,16 +257,19 @@ def apple_pay_session():
 def validate_merchant():
     data = request.get_json()
     validation_url = data.get('validationURL')
+    merchant_identifier = data.get('merchantIdentifier', MERCHANT_ID)  # Default to the defined MERCHANT_I
+    display_name = data.get('displayName', "CKO Integrations")  # Default display name
+    initiative_context = data.get('initiativeContext',"react-flask-project-kpyi.onrender.com")
 
     if not validation_url:
         return jsonify({"error": "Missing validationURL"}), 400
-
     payload = {
-    "merchantIdentifier": MERCHANT_ID,
-    "displayName": "My Store",
-    "initiative": "web",
-    "initiativeContext": "react-flask-project-kpyi.onrender.com"  # Replace with your domain, when updating main branch change this to react-frontend-elpl.onrender.com
-}
+        "merchantIdentifier": merchant_identifier,
+        "displayName": display_name,
+        "initiative": "web",
+        "initiativeContext": initiative_context  
+    }
+    
     try:
         response = requests.post(
             validation_url,
