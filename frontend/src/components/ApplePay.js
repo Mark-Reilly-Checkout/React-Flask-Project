@@ -9,33 +9,33 @@ const defaultConfig = {
     supportedNetworks: ['masterCard', 'visa', 'amex'], // Default networks for Apple Pay
 };
 
+const allNetworks = ['masterCard', 'visa', 'amex', 'discover', 'cartesBancaires', 'jcb']; // All possible networks
+
 const ApplePay = () => {
   const containerRef = useRef(null);
-  const [config, setConfig] = useState(defaultConfig);
   const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
-  const [amount, setAmount] = useState('50.00');
-  const [currencyCode, setCurrencyCode] = useState('GBP');
-  const [countryCode, setCountryCode] = useState('GB'); 
-  const [paymentToken, setPaymentToken] = useState(null);
-  const [paymentId, setPaymentId] = useState(null);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [viewRaw, setViewRaw] = useState(false); // For raw/pretty view toggle
-  const allNetworks = ['masterCard', 'visa', 'amex', 'discover', 'cartesBancaires', 'jcb']; // Note: Apple Pay networks are typically lowercase for constants
-  const [supportedNetworks, setSupportedNetworks] = useState(['masterCard', 'visa', 'amex']); // Default selected
 
-  //--- Load config from localStorage on mount ---
+  // Use defaultConfig for initial state
+  const [config, setConfig] = useState(defaultConfig);
+
+  const [paymentToken, setPaymentToken] = useState(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [viewRaw, setViewRaw] = useState(false);
+
+  // --- NEW: Load config from localStorage on mount ---
   useEffect(() => {
     const savedConfig = localStorage.getItem('applePayConfig');
     if (savedConfig) {
         setConfig(JSON.parse(savedConfig));
     }
   }, []);
-  // --- Save config to localStorage on change ---
+
+  // --- NEW: Save config to localStorage on change ---
   useEffect(() => {
     localStorage.setItem('applePayConfig', JSON.stringify(config));
   }, [config]);
 
-
+  // Update the useEffect dependencies to use config properties
   useEffect(() => {
     // Remove any existing button to avoid duplicates
     const existingButton = document.querySelector('apple-pay-button');
@@ -43,9 +43,9 @@ const ApplePay = () => {
 
     // Create new Apple Pay button
     const applePayButton = document.createElement('apple-pay-button');
-    applePayButton.setAttribute('buttonstyle', 'black'); // Match Google Pay button color
+    applePayButton.setAttribute('buttonstyle', 'black');
     applePayButton.setAttribute('type', 'plain');
-    applePayButton.setAttribute('locale', 'en-GB'); // Match Google Pay locale
+    applePayButton.setAttribute('locale', 'en-GB'); // Or dynamically set based on config.countryCode
     containerRef.current?.appendChild(applePayButton);
 
     // Add click listener
@@ -54,7 +54,8 @@ const ApplePay = () => {
     return () => {
       applePayButton.removeEventListener('click', handleApplePay);
     };
-  }, [config.amount, config.currencyCode, config.countryCode, config.supportedNetworks]);
+  }, [config.amount, config.currencyCode, config.countryCode, config.supportedNetworks]); // Dependencies changed to config properties
+
 
   const toggleNetwork = (network) => {
     setConfig((prev) => ({
@@ -73,6 +74,7 @@ const ApplePay = () => {
     setPaymentSuccess(false); // Reset success state too
   };
 
+
   const handleApplePay = async () => {
     if (!window.ApplePaySession || !ApplePaySession.canMakePayments()) {
       alert("Apple Pay is not available on this device/browser.");
@@ -80,32 +82,32 @@ const ApplePay = () => {
     }
 
     const paymentRequest = {
-      countryCode: config.countryCode,
-      currencyCode: config.currencyCode, // Use currencyCode
-      supportedNetworks: config.supportedNetworks,
+      countryCode: config.countryCode, // Use config
+      currencyCode: config.currencyCode, // Use config
+      supportedNetworks: config.supportedNetworks, // Use config
       merchantCapabilities: ['supports3DS'],
       total: {
         label: 'Test Purchase',
-        amount: parseFloat(config.amount).toFixed(2), // Format to 2 decimal places
+        amount: parseFloat(config.amount).toFixed(2), // Use config
       },
     };
 
     const session = new window.ApplePaySession(3, paymentRequest);
 
     session.onvalidatemerchant = async (event) => {
-      const validationURL = event.validationURL;
-      try {
-        const res = await axios.post(`${API_BASE_URL}api/apple-pay/validate-merchant`, {
-          validationURL
-        });
-        console.log("Validation URL", validationURL);
-        console.log("Merchant validation response", res.data);
-        session.completeMerchantValidation(res.data);
-      } catch (err) {
-        console.error("Merchant validation failed", err);
-        session.abort();
-      }
-    };
+        const validationURL = event.validationURL;
+        try {
+          const res = await axios.post(`${API_BASE_URL}api/apple-pay/validate-merchant`, {
+            validationURL
+          });
+          console.log("Validation URL", validationURL);
+          console.log("Merchant validation response", res.data);
+          session.completeMerchantValidation(res.data);
+        } catch (err) {
+          console.error("Merchant validation failed", err);
+          session.abort();
+        }
+      };
 
     session.onpaymentauthorized = async (event) => {
       const token = event.payment.token;
@@ -113,21 +115,20 @@ const ApplePay = () => {
       try {
         const res = await axios.post(`${API_BASE_URL}api/apple-pay-session`, {
           tokenData: token.paymentData,
-          amount: config.amount,
+          amount: parseFloat(config.amount), // Use config amount here too
         });
 
         if (res.data.approved) {
-          setPaymentId(res.data.payment_id);      // Store the payment ID
-          setPaymentToken(JSON.stringify(token.paymentData)); // Store token for display
-          setPaymentSuccess(true);  // Set payment success state
-          session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
-        } else {
+            setPaymentToken(JSON.stringify(token.paymentData));
+            setPaymentSuccess(true);
+            session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
+          } else {
+            session.completePayment(window.ApplePaySession.STATUS_FAILURE);
+          }
+        } catch (err) {
+          console.error('Payment failed', err);
           session.completePayment(window.ApplePaySession.STATUS_FAILURE);
         }
-      } catch (err) {
-        console.error('Payment failed', err);
-        session.completePayment(window.ApplePaySession.STATUS_FAILURE);
-      }
     };
 
     session.begin();
@@ -149,39 +150,43 @@ const ApplePay = () => {
       <h1 className="text-3xl font-bold text-center mb-8">Apple Pay</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Configuration Panel */}
         <div className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-xl font-semibold mb-4">Configuration</h2>
+
+          {/* Country, Currency, Amount inputs */}
           <div className="flex gap-4 mb-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-1">Country Code</label>
-              <input
-                type="text"
-                value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-1">Currency Code</label>
-              <input
-                type="text"
-                value={currencyCode}
-                onChange={(e) => setCurrencyCode(e.target.value)}
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-1">Amount</label>
-              <input
-                type="text"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
+              <div className="flex-1">
+                  <label className="block text-sm font-medium mb-1">Country Code</label>
+                  <input
+                      type="text"
+                      value={config.countryCode} // Use config.countryCode
+                      onChange={(e) => setConfig({ ...config, countryCode: e.target.value })}
+                      className="w-full border rounded px-3 py-2"
+                  />
+              </div>
+              <div className="flex-1">
+                  <label className="block text-sm font-medium mb-1">Currency Code</label>
+                  <input
+                      type="text"
+                      value={config.currencyCode} // Use config.currencyCode
+                      onChange={(e) => setConfig({ ...config, currencyCode: e.target.value })}
+                      className="w-full border rounded px-3 py-2"
+                  />
+              </div>
+              <div className="flex-1">
+                  <label className="block text-sm font-medium mb-1">Amount</label>
+                  <input
+                      type="text"
+                      value={config.amount} // Use config.amount
+                      onChange={(e) => setConfig({ ...config, amount: e.target.value })}
+                      className="w-full border rounded px-3 py-2"
+                  />
+              </div>
           </div>
-          {/* Card Networks */}
-            <div className="mb-6 text-center">
+
+          {/* Card Networks Section */}
+          <div className="mb-6 text-center">
               <label className="block text-sm font-medium mb-2">Supported Card Networks</label>
               <div className="flex flex-wrap justify-center gap-2">
                   {allNetworks.map(network => (
@@ -198,13 +203,21 @@ const ApplePay = () => {
                   ))}
               </div>
           </div>
+
+          <p className="text-sm text-gray-600 mt-4">
+              Note: Other Apple Pay configurations like merchant capabilities are typically fixed or derived by your backend.
+          </p>
+
+          {/* --- NEW: Reset Button --- */}
           <button
             onClick={handleReset}
-            className="mt-2 px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700">
-            Reset to Config
+            className="mt-2 px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+          >
+            Reset to Defaults
           </button>
         </div>
 
+        {/* Right Panel (Button and Token Display) */}
         <div className="flex flex-col h-full">
           <div className="flex justify-center items-center mb-6">
             {/* Apple Pay Button */}
