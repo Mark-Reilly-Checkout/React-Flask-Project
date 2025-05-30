@@ -214,7 +214,7 @@ const ApplePay = () => {
         // Initial screen for mode selection
         <div className="flex items-center justify-center min-h-[calc(100vh-100px)]">
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
-                <h2 className="text-2xl font-bold mb-6 text-gray-800">Choose the Apple Pay flow</h2>
+                <h2 className="text-2xl font-bold mb-6 text-gray-800">Choose your Apple Pay flow</h2>
                 <div className="mb-6">
                     <label htmlFor="paymentModeSelect" className="block text-lg font-medium text-gray-700 mb-2">
                         Select Action:
@@ -225,8 +225,8 @@ const ApplePay = () => {
                         onChange={(e) => setInitialPaymentMode(e.target.value)}
                         className="w-full border rounded-lg px-4 py-3 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
                     >
-                        <option value="processPayment">Full payment flow</option>
-                        <option value="generateTokenOnly">Token generation only</option>
+                        <option value="processPayment">Full payment</option>
+                        <option value="generateTokenOnly">Token generation</option>
                     </select>
                 </div>
                 <button
@@ -257,7 +257,7 @@ const ApplePay = () => {
                             onChange={() => setConfig({...config, paymentMode: 'processPayment'})}
                             className="form-radio h-4 w-4 text-blue-600"
                         />
-                        <span className="ml-2 text-gray-700">Full payment flow</span>
+                        <span className="ml-2 text-gray-700">Full payment</span>
                     </label>
                     <label className="inline-flex items-center">
                         <input
@@ -268,7 +268,7 @@ const ApplePay = () => {
                             onChange={() => setConfig({...config, paymentMode: 'generateTokenOnly'})}
                             className="form-radio h-4 w-4 text-blue-600"
                         />
-                        <span className="ml-2 text-gray-700">Token generation only</span>
+                        <span className="ml-2 text-gray-700">Token generation</span>
                     </label>
                 </div>
             </div>
@@ -298,7 +298,7 @@ const ApplePay = () => {
 
             {/* Initiative Context */}
             <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Initiative Context (for Backend Validation)</label>
+                <label className="block text-sm font-medium mb-1">Initiative Context (The current domain)</label>
                 <input
                     type="text"
                     value={config.initiativeContext}
@@ -373,7 +373,7 @@ const ApplePay = () => {
                         <button
                             key={capability}
                             onClick={() => toggleMerchantCapability(capability)}
-                            className={`px-3 py-1 rounded border text-sm ${config.merchantCapabilities.includes(capability)
+                            className={`px-3 py-1 rounded border text-sm ${(config.merchantCapabilities || []).includes(capability)
                                 ? 'bg-blue-600 text-white border-blue-600'
                                 : 'bg-white text-gray-800 border-gray-300'
                                 }`}
@@ -383,10 +383,6 @@ const ApplePay = () => {
                     ))}
                 </div>
             </div>
-
-            <p className="text-sm text-gray-600 mt-4">
-                Note: Ensure your Apple Merchant ID is correctly configured in the backend and matches the 'Merchant Identifier' here.
-            </p>
 
             {/* Reset Button */}
             <button
