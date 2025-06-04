@@ -29,6 +29,7 @@ const Flow = () => {
     const [showMainContent, setShowMainContent] = useState(false);
     const [lastUpdatedSession, setLastUpdatedSession] = useState(null);
     const [lastUpdatedFlow, setLastUpdatedFlow] = useState(null);
+    const [lastUpdatedConfig, setLastUpdatedConfig] = useState(null);
     const [timeAgoSession, setTimeAgoSession] = useState('');
     const [timeAgoFlow, setTimeAgoFlow] = useState('');
     const [timeAgoConfig, setTimeAgoConfig] = useState(''); // New time ago string for config
@@ -57,7 +58,7 @@ const Flow = () => {
         }, 60000);
 
         return () => clearInterval(interval);
-    }, [lastUpdatedSession, lastUpdatedFlow]);
+    }, [lastUpdatedSession, lastUpdatedFlow, lastUpdatedConfig]);
 
 
     useEffect(() => {
@@ -66,6 +67,7 @@ const Flow = () => {
             try {
                 const parsedConfig = JSON.parse(savedConfig);
                 setConfig(parsedConfig);
+                setLastUpdatedConfig(new Date());
             } catch (e) {
                 console.error("Failed to parse flowConfig from localStorage", e);
                 localStorage.removeItem('flowConfig');
@@ -75,6 +77,7 @@ const Flow = () => {
 
     useEffect(() => {
         localStorage.setItem('flowConfig', JSON.stringify(config));
+        setLastUpdatedConfig(new Date());
     }, [config]);
 
 
@@ -84,6 +87,7 @@ const Flow = () => {
         setPaymentSessionDetails(null);
         setLastUpdatedSession(null);
         setLastUpdatedFlow(null);
+        setLastUpdatedConfig(null);
         acceptedTermsRef.current = false;
         setShowMainContent(false);
     };
