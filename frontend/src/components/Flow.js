@@ -16,31 +16,19 @@ const defaultConfig = {
     cardDisplayCardholderName: 'bottom',
     cardDataEmail: 'mark.reilly1234@checkot.com',
     forceTermsAcceptance: true,
-    // --- Removed flowMode and existingSessionId as options ---
-    // flowMode: 'createNewSession',
-    // existingSessionId: ''
 };
 
 const Flow = () => {
     const [loading, setLoading] = useState(false);
-    const [paymentSessionDetails, setPaymentSessionDetails] = useState(null); // Holds the FULL session object
+    const [paymentSessionDetails, setPaymentSessionDetails] = useState(null);
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
     const [searchParams] = useSearchParams();
     const paymentIdFromUrl = searchParams.get("cko-payment-id");
-
     const [config, setConfig] = useState(defaultConfig);
     const acceptedTermsRef = useRef(false);
-
-    // --- Simplified initial selection state ---
     const [showMainContent, setShowMainContent] = useState(false);
-    // Removed initialFlowMode and tempExistingSessionId as they are no longer options
-    // const [initialFlowMode, setInitialFlowMode] = useState(defaultConfig.flowMode);
-    // const [tempExistingSessionId, setTempExistingSessionId] = useState(defaultConfig.existingSessionId);
-
-
     const [lastUpdatedSession, setLastUpdatedSession] = useState(null);
     const [lastUpdatedFlow, setLastUpdatedFlow] = useState(null);
-
     const [timeAgoSession, setTimeAgoSession] = useState('');
     const [timeAgoFlow, setTimeAgoFlow] = useState('');
 
@@ -76,7 +64,6 @@ const Flow = () => {
             try {
                 const parsedConfig = JSON.parse(savedConfig);
                 setConfig(parsedConfig);
-                // No need to sync initialFlowMode or tempExistingSessionId anymore
             } catch (e) {
                 console.error("Failed to parse flowConfig from localStorage", e);
                 localStorage.removeItem('flowConfig');
@@ -96,8 +83,7 @@ const Flow = () => {
         setLastUpdatedSession(null);
         setLastUpdatedFlow(null);
         acceptedTermsRef.current = false;
-        setShowMainContent(false); // Reset to initial screen
-        // No need to reset initialFlowMode or tempExistingSessionId
+        setShowMainContent(false);
     };
 
     const handleTermsAcceptance = (e) => {
@@ -128,18 +114,14 @@ const Flow = () => {
         }
     };
 
-    // Removed loadExistingFlowComponent as the option is no longer available
-    // const loadExistingFlowComponent = async () => { /* ... */ };
-
-
     const translations = {
         en: {
-          'form.required': 'Please provide this field',
-          'form.full_name.placeholder': 'Mark Reilly',
-          'pay_button.pay': 'Pay now',
-          'pay_button.payment_failed': 'Payment failed, please try again',
+            'form.required': 'Please provide this field',
+            'form.full_name.placeholder': 'Mark Reilly',
+            'pay_button.pay': 'Pay now',
+            'pay_button.payment_failed': 'Payment failed, please try again',
         },
-      };
+    };
 
     useEffect(() => {
         if (!showMainContent) return; // Only initialize if main content is visible
@@ -159,47 +141,47 @@ const Flow = () => {
                     translations,
                     componentOptions: {
                         flow: {
-                          expandFirstPaymentMethod: config.flowExpandFirstPaymentMethod,
-                          handleClick: (_self) => {
-                              if (config.forceTermsAcceptance && !acceptedTermsRef.current) {
-                                  toast.warn("Please accept the terms and conditions before paying.");
-                                  return { continue: false };
-                              } else {
-                                  toast.info("Proceeding with payment...");
-                                  return { continue: true };
-                              }
-                          },
+                            expandFirstPaymentMethod: config.flowExpandFirstPaymentMethod,
+                            handleClick: (_self) => {
+                                if (config.forceTermsAcceptance && !acceptedTermsRef.current) {
+                                    toast.warn("Please accept the terms and conditions before paying.");
+                                    return { continue: false };
+                                } else {
+                                    toast.info("Proceeding with payment...");
+                                    return { continue: true };
+                                }
+                            },
                         },
                         card: {
-                          displayCardholderName: config.cardDisplayCardholderName,
-                          data: {
-                            email: config.cardDataEmail,
-                          },
+                            displayCardholderName: config.cardDisplayCardholderName,
+                            data: {
+                                email: config.cardDataEmail,
+                            },
                         },
-                      },
+                    },
 
-                onPaymentCompleted: (_component, paymentResponse) => {
-                    toast.success('Payment completed successfully!');
-                    toast.info('Payment ID: ' + paymentResponse.id);
-                    console.log("Payment ID:", paymentResponse.id);
-                },
-                onError: (component, error) => {
-                    toast.error('Payment failed. Please try again.');
-                    console.error("Payment Error:", error);
-                    toast.info('Request ID: ' + (error?.request_id || 'N/A'));
-                }
-            });
-            const flowComponent = checkout.create('flow');
-            flowComponent.mount('#flow-container');
-            setLastUpdatedFlow(new Date());
+                    onPaymentCompleted: (_component, paymentResponse) => {
+                        toast.success('Payment completed successfully!');
+                        toast.info('Payment ID: ' + paymentResponse.id);
+                        console.log("Payment ID:", paymentResponse.id);
+                    },
+                    onError: (component, error) => {
+                        toast.error('Payment failed. Please try again.');
+                        console.error("Payment Error:", error);
+                        toast.info('Request ID: ' + (error?.request_id || 'N/A'));
+                    }
+                });
+                const flowComponent = checkout.create('flow');
+                flowComponent.mount('#flow-container');
+                setLastUpdatedFlow(new Date());
 
-            (async () => {
-                const klarnaComponent = checkout.create("klarna");
-                const klarnaElement = document.getElementById('klarna-container');
-                if (await klarnaComponent.isAvailable()) {
-                    klarnaComponent.mount(klarnaElement);
-                }
-            })();
+                (async () => {
+                    const klarnaComponent = checkout.create("klarna");
+                    const klarnaElement = document.getElementById('klarna-container');
+                    if (await klarnaComponent.isAvailable()) {
+                        klarnaComponent.mount(klarnaElement);
+                    }
+                })();
 
             } catch (err) {
                 console.error("Checkout Web Components Error:", err);
@@ -236,7 +218,6 @@ const Flow = () => {
 
     // Simplified handleInitialModeSelection
     const handleInitialModeSelection = () => {
-        // No more dropdown selection, just proceed to show main content
         setShowMainContent(true);
     };
 
@@ -246,7 +227,6 @@ const Flow = () => {
             <h1 className="text-3xl font-bold text-center mb-8">Checkout.com Flow Test Suite</h1>
 
             {!showMainContent ? (
-                // Initial screen: Simplified to only show "Create New Session"
                 <div className="flex items-center justify-center min-h-[calc(100vh-100px)]">
                     <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
                         <h2 className="text-2xl font-bold mb-6 text-gray-800">Ready to test the Flow Component?</h2>
@@ -260,14 +240,117 @@ const Flow = () => {
                     </div>
                 </div>
             ) : (
-                // Main content: Grid layout
+                // Main content: Grid layout with two columns
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Card 1: Session Request (Always shown and only option) */}
-                    <Card>
-                        <Card.Body>
-                            <Card.Title className="text-center">Request a new payment session</Card.Title>
-                            <Card.Text>
-                                <>
+                    {/* LEFT COLUMN: Contains two stacked cards */}
+                    <div className="flex flex-col gap-6">
+                        {/* TOP LEFT CARD: Flow Configuration Panel */}
+                        <Card>
+                            <Card.Body>
+                                <Card.Title className="text-center">Flow Component & Configuration</Card.Title>
+                                <div className="p-4 bg-gray-50 rounded-lg shadow-inner mb-4">
+                                    <h3 className="text-lg font-semibold mb-3">Core Flow Settings</h3>
+
+                                    <div className="flex gap-4 mb-4">
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-medium mb-1">Public Key</label>
+                                            <input
+                                                type="text"
+                                                value={config.publicKey}
+                                                onChange={(e) => setConfig({ ...config, publicKey: e.target.value })}
+                                                className="w-full border rounded px-3 py-2"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-medium mb-1">Environment</label>
+                                            <select
+                                                value={config.environment}
+                                                onChange={(e) => setConfig({ ...config, environment: e.target.value })}
+                                                className="w-full border rounded px-3 py-2"
+                                            >
+                                                <option value="sandbox">Sandbox</option>
+                                                <option value="production">Production</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium mb-1">Locale (e.g., en, es, fr)</label>
+                                        <input
+                                            type="text"
+                                            value={config.locale}
+                                            onChange={(e) => setConfig({ ...config, locale: e.target.value })}
+                                            className="w-full border rounded px-3 py-2"
+                                        />
+                                    </div>
+
+                                    <h3 className="text-lg font-semibold mb-3 mt-4">Flow Component Options</h3>
+                                    <div className="mb-4">
+                                        <label className="inline-flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={config.flowExpandFirstPaymentMethod}
+                                                onChange={(e) => setConfig({ ...config, flowExpandFirstPaymentMethod: e.target.checked })}
+                                                className="form-checkbox h-4 w-4 text-blue-600"
+                                            />
+                                            <span className="ml-2 text-gray-700">Expand First Payment Method (on load)</span>
+                                        </label>
+                                    </div>
+
+                                    <h3 className="text-lg font-semibold mb-3 mt-4">Card Component Options (within Flow)</h3>
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium mb-1">Display Cardholder Name</label>
+                                        <select
+                                            value={config.cardDisplayCardholderName}
+                                            onChange={(e) => setConfig({ ...config, cardDisplayCardholderName: e.target.value })}
+                                            className="w-full border rounded px-3 py-2"
+                                        >
+                                            <option value="top">Top</option>
+                                            <option value="bottom">Bottom</option>
+                                            <option value="hide">Hide</option>
+                                        </select>
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium mb-1">Card Data Email (pre-fill)</label>
+                                        <input
+                                            type="email"
+                                            value={config.cardDataEmail}
+                                            onChange={(e) => setConfig({ ...config, cardDataEmail: e.target.value })}
+                                            className="w-full border rounded px-3 py-2"
+                                        />
+                                    </div>
+
+                                    <h3 className="text-lg font-semibold mb-3 mt-4">`handleClick` Logic</h3>
+                                    <div className="mb-4">
+                                        <label className="inline-flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={config.forceTermsAcceptance}
+                                                onChange={handleTermsAcceptance}
+                                                className="form-checkbox h-4 w-4 text-blue-600"
+                                            />
+                                            <span className="ml-2 text-gray-700">Require Terms Acceptance (controls `handleClick`)</span>
+                                        </label>
+                                    </div>
+
+                                    <button
+                                        onClick={handleReset}
+                                        className="mt-2 px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                                    >
+                                        Reset to Defaults
+                                    </button>
+                                </div>
+                            </Card.Body>
+                            <Card.Footer>
+                                <small className="text-muted">{timeAgoConfig}</small> {/* Footer for config panel */}
+                            </Card.Footer>
+                        </Card>
+
+                        {/* BOTTOM LEFT CARD: Session Request */}
+                        <Card>
+                            <Card.Body>
+                                <Card.Title className="text-center">Request a new payment session</Card.Title>
+                                <Card.Text>
                                     <div className="mb-4">
                                         <label className="block text-sm font-medium mb-1">Amount ($)</label>
                                         <input
@@ -293,117 +376,23 @@ const Flow = () => {
                                         <br />
                                         {paymentSessionDetails && <p className="mt-2 text-sm text-gray-600">Session ID: {paymentSessionDetails.id}</p>}
                                     </div>
-                                </>
-                            </Card.Text>
-                        </Card.Body>
-                        <Card.Footer>
-                            <small className="text-muted">{timeAgoSession}</small>
-                        </Card.Footer>
-                    </Card>
+                                </Card.Text>
+                            </Card.Body>
+                            <Card.Footer>
+                                <small className="text-muted">{timeAgoSession}</small>
+                            </Card.Footer>
+                        </Card>
+                    </div>
 
-
-                    {/* Card 2: Flow Module and General Configuration Panel (Always full width if only one option) */}
-                    <Card className="md:col-span-1"> {/* Always span 1 column, as Card 1 is always present */}
+                    {/* RIGHT COLUMN: Flow Component Display */}
+                    <Card>
                         <Card.Body>
-                            <Card.Title className="text-center">Flow Component & Configuration</Card.Title>
-                            <div className="p-4 bg-gray-50 rounded-lg shadow-inner mb-4">
-                                <h3 className="text-lg font-semibold mb-3">Core Flow Settings</h3>
-
-                                <div className="flex gap-4 mb-4">
-                                    <div className="flex-1">
-                                        <label className="block text-sm font-medium mb-1">Public Key</label>
-                                        <input
-                                            type="text"
-                                            value={config.publicKey}
-                                            onChange={(e) => setConfig({ ...config, publicKey: e.target.value })}
-                                            className="w-full border rounded px-3 py-2"
-                                        />
-                                    </div>
-                                    <div className="flex-1">
-                                        <label className="block text-sm font-medium mb-1">Environment</label>
-                                        <select
-                                            value={config.environment}
-                                            onChange={(e) => setConfig({ ...config, environment: e.target.value })}
-                                            className="w-full border rounded px-3 py-2"
-                                        >
-                                            <option value="sandbox">Sandbox</option>
-                                            <option value="production">Production</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium mb-1">Locale (e.g., en, es, fr)</label>
-                                    <input
-                                        type="text"
-                                        value={config.locale}
-                                        onChange={(e) => setConfig({ ...config, locale: e.target.value })}
-                                        className="w-full border rounded px-3 py-2"
-                                    />
-                                </div>
-
-                                <h3 className="text-lg font-semibold mb-3 mt-4">Flow Component Options</h3>
-                                <div className="mb-4">
-                                    <label className="inline-flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={config.flowExpandFirstPaymentMethod}
-                                            onChange={(e) => setConfig({ ...config, flowExpandFirstPaymentMethod: e.target.checked })}
-                                            className="form-checkbox h-4 w-4 text-blue-600"
-                                        />
-                                        <span className="ml-2 text-gray-700">Expand First Payment Method (on load)</span>
-                                    </label>
-                                </div>
-
-                                <h3 className="text-lg font-semibold mb-3 mt-4">Card Component Options (within Flow)</h3>
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium mb-1">Display Cardholder Name</label>
-                                    <select
-                                        value={config.cardDisplayCardholderName}
-                                        onChange={(e) => setConfig({ ...config, cardDisplayCardholderName: e.target.value })}
-                                        className="w-full border rounded px-3 py-2"
-                                    >
-                                        <option value="top">Top</option>
-                                        <option value="bottom">Bottom</option>
-                                        <option value="hide">Hide</option>
-                                    </select>
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium mb-1">Card Data Email (pre-fill)</label>
-                                    <input
-                                        type="email"
-                                        value={config.cardDataEmail}
-                                        onChange={(e) => setConfig({ ...config, cardDataEmail: e.target.value })}
-                                        className="w-full border rounded px-3 py-2"
-                                    />
-                                </div>
-
-                                <h3 className="text-lg font-semibold mb-3 mt-4">`handleClick` Logic</h3>
-                                <div className="mb-4">
-                                    <label className="inline-flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={config.forceTermsAcceptance}
-                                            onChange={handleTermsAcceptance}
-                                            className="form-checkbox h-4 w-4 text-blue-600"
-                                        />
-                                        <span className="ml-2 text-gray-700">Require Terms Acceptance (controls `handleClick`)</span>
-                                    </label>
-                                </div>
-
-                                <button
-                                    onClick={handleReset}
-                                    className="mt-2 px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
-                                >
-                                    Reset to Defaults
-                                </button>
-                            </div>
-
+                            <Card.Title className="text-center">Flow Component Display</Card.Title>
                             <div id="flow-container" className="mt-4"></div>
                             <div id='klarna-container' className="mt-4"></div>
                         </Card.Body>
                         <Card.Footer>
-                            <small className="text-muted">{timeAgoFlow}</small>
+                            <small className="text-muted">{timeAgoFlow}</small> {/* Footer for Flow component load time */}
                         </Card.Footer>
                     </Card>
 
