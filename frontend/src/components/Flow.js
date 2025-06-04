@@ -156,6 +156,7 @@ const Flow = () => {
         }
 
         if (currentSessionId) {
+            console.log("Loading Flow component with session ID:", currentSessionId);
             loadCheckoutWebComponents({
                 paymentSession: { id: currentSessionId },
                 publicKey: config.publicKey,
