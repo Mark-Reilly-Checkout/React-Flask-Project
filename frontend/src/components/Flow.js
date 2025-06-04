@@ -31,6 +31,7 @@ const Flow = () => {
     const [lastUpdatedFlow, setLastUpdatedFlow] = useState(null);
     const [timeAgoSession, setTimeAgoSession] = useState('');
     const [timeAgoFlow, setTimeAgoFlow] = useState('');
+    const [timeAgoConfig, setTimeAgoConfig] = useState(''); // New time ago string for config
 
 
     const getTimeAgo = (timestamp) => {
@@ -52,6 +53,7 @@ const Flow = () => {
         const interval = setInterval(() => {
             setTimeAgoSession(getTimeAgo(lastUpdatedSession));
             setTimeAgoFlow(getTimeAgo(lastUpdatedFlow));
+            setTimeAgoConfig(getTimeAgo(lastUpdatedConfig));
         }, 60000);
 
         return () => clearInterval(interval);
