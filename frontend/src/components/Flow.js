@@ -220,14 +220,14 @@ const Flow = () => {
                 }
             });
             const flowComponent = checkout.create('flow');
-            flowComponent.mount('#flow-container');
+            
             setLastUpdatedFlow(new Date());
 
             (async () => {
-                const klarnaComponent = checkout.create("klarna");
+                //const klarnaComponent = checkout.create("klarna");
                 //const klarnaElement = document.getElementById('klarna-container');
-                if (await klarnaComponent.isAvailable()) {
-                    klarnaComponent.mount(klarnaElement);
+                if (await flowComponent.isAvailable()) {
+                   flowComponent.mount('#flow-container');
                 }
             })();
 
