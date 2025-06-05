@@ -396,6 +396,31 @@ const Flow = () => {
                             <Card.Body>
                                 <Card.Title className="text-center">Request a new payment session</Card.Title>
                                 <Card.Text>
+                                     {/* ---: Country Dropdown --- */}
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium mb-1">Country</label>
+                                        <select
+                                            value={config.country}
+                                            onChange={handleCountryChange} // New handler for country/currency logic
+                                            className="w-full border rounded px-3 py-2"
+                                        >
+                                            {countries.map((c) => (
+                                                <option key={c.code} value={c.code}>
+                                                    {c.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    {/* ---: Read-only Currency Input --- */}
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium mb-1">Currency (Auto-selected)</label>
+                                        <input
+                                            type="text"
+                                            value={config.currency}
+                                            readOnly // Make it read-only as it's auto-selected
+                                            className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+                                        />
+                                    </div>
                                     <div className="mb-4">
                                         <label className="block text-sm font-medium mb-1">Amount ($)</label>
                                         <input
@@ -414,32 +439,6 @@ const Flow = () => {
                                             className="w-full border rounded px-3 py-2"
                                         />
                                     </div>
-                                    {/* --- NEW: Country Dropdown --- */}
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-1">Country</label>
-                                        <select
-                                            value={config.country}
-                                            onChange={handleCountryChange} // New handler for country/currency logic
-                                            className="w-full border rounded px-3 py-2"
-                                        >
-                                            {countries.map((c) => (
-                                                <option key={c.code} value={c.code}>
-                                                    {c.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    {/* --- NEW: Read-only Currency Input --- */}
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-1">Currency (Auto-selected)</label>
-                                        <input
-                                            type="text"
-                                            value={config.currency}
-                                            readOnly // Make it read-only as it's auto-selected
-                                            className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-                                        />
-                                    </div>
-                                    {/* --- END NEW --- */}
                                     <div className="text-center">
                                         <button onClick={SessionRequest} disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
                                             {loading ? "Processing..." : "Create Session"}
