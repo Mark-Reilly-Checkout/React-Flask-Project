@@ -5,6 +5,23 @@ import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components
 import { toast } from 'react-toastify';
 import { useSearchParams } from "react-router-dom";
 
+// Country to Currency Mapping
+const countries = [
+    { code: 'GB', name: 'United Kingdom', currency: 'GBP' },
+    { code: 'US', name: 'United States', currency: 'USD' },
+    { code: 'AT', name: 'Austria', currency: 'EUR' },
+    { code: 'BE', name: 'Belgium', currency: 'EUR' },
+    { code: 'CN', name: 'China', currency: 'CNY' },
+    { code: 'DE', name: 'Germany', currency: 'EUR' },
+    { code: 'FR', name: 'France', currency: 'EUR' },
+    { code: 'IT', name: 'Italy', currency: 'EUR' },
+    { code: 'KW', name: 'Kuwait', currency: 'KWD' },
+    { code: 'NL', name: 'Netherlands', currency: 'EUR' },
+    { code: 'PT', name: 'Portugal', currency: 'EUR' },
+    { code: 'SA', name: 'Saudi Arabia', currency: 'SAR' },
+    { code: 'ES', name: 'Spain', currency: 'EUR' },
+];
+
 // Default configuration for Flow.js
 const defaultConfig = {
     initialAmount: '50.00',
@@ -16,6 +33,8 @@ const defaultConfig = {
     cardDisplayCardholderName: 'bottom',
     cardDataEmail: 'mark.reilly1234@checkot.com',
     forceTermsAcceptance: true,
+    country: 'GB', // Default country for session creation
+    currency: 'GBP', // Default currency for session creation
 };
 
 const Flow = () => {
@@ -24,15 +43,19 @@ const Flow = () => {
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
     const [searchParams] = useSearchParams();
     const paymentIdFromUrl = searchParams.get("cko-payment-id");
+
     const [config, setConfig] = useState(defaultConfig);
     const acceptedTermsRef = useRef(false);
+
     const [showMainContent, setShowMainContent] = useState(false);
+
     const [lastUpdatedSession, setLastUpdatedSession] = useState(null);
     const [lastUpdatedFlow, setLastUpdatedFlow] = useState(null);
     const [lastUpdatedConfig, setLastUpdatedConfig] = useState(null);
+
     const [timeAgoSession, setTimeAgoSession] = useState('');
     const [timeAgoFlow, setTimeAgoFlow] = useState('');
-    const [timeAgoConfig, setTimeAgoConfig] = useState(''); // New time ago string for config
+    const [timeAgoConfig, setTimeAgoConfig] = useState('');
 
 
     const getTimeAgo = (timestamp) => {
@@ -97,6 +120,19 @@ const Flow = () => {
         setConfig(prevConfig => ({ ...prevConfig, forceTermsAcceptance: e.target.checked }));
     };
 
+    // --- NEW: handleCountryChange function for country/currency validation ---
+    const handleCountryChange = (e) => {
+        const selectedCountryCode = e.target.value;
+        const selectedCountry = countries.find(c => c.code === selectedCountryCode);
+
+        setConfig(prevConfig => ({
+            ...prevConfig,
+            country: selectedCountryCode,
+            // Automatically update currency based on selected country
+            currency: selectedCountry ? selectedCountry.currency : prevConfig.currency // Keep old currency if not found
+        }));
+    };
+
 
     const SessionRequest = async () => {
         setLoading(true);
@@ -104,7 +140,9 @@ const Flow = () => {
         try {
             const response = await axios.post(`${API_BASE_URL}api/create-payment-session`, {
                 amount: Math.round(parseFloat(config.initialAmount) * 100),
-                email: config.initialEmail
+                email: config.initialEmail,
+                country: config.country, // --- UPDATED: Send country to backend ---
+                currency: config.currency, // --- UPDATED: Send currency to backend ---
             });
 
             setPaymentSessionDetails(response.data);
@@ -122,19 +160,19 @@ const Flow = () => {
 
     const translations = {
         en: {
-            'form.required': 'Please provide this field',
-            'form.full_name.placeholder': 'Mark Reilly',
-            'pay_button.pay': 'Pay now',
-            'pay_button.payment_failed': 'Payment failed, please try again',
+          'form.required': 'Please provide this field',
+          'form.full_name.placeholder': 'Mark Reilly',
+          'pay_button.pay': 'Pay now',
+          'pay_button.payment_failed': 'Payment failed, please try again',
         },
-    };
+      };
 
     useEffect(() => {
-        if (!showMainContent) return; // Only initialize if main content is visible
+        if (!showMainContent) return;
 
         const flowContainer = document.getElementById('flow-container');
         if (flowContainer) {
-            flowContainer.innerHTML = ''; // Clear previous component if any
+            flowContainer.innerHTML = '';
         }
 
         const initializeFlowComponent = async (sessionObject) => {
@@ -147,47 +185,51 @@ const Flow = () => {
                     translations,
                     componentOptions: {
                         flow: {
-                            expandFirstPaymentMethod: config.flowExpandFirstPaymentMethod,
-                            handleClick: (_self) => {
-                                if (config.forceTermsAcceptance && !acceptedTermsRef.current) {
-                                    toast.warn("Please accept the terms and conditions before paying.");
-                                    return { continue: false };
-                                } else {
-                                    toast.info("Proceeding with payment...");
-                                    return { continue: true };
-                                }
-                            },
+                          expandFirstPaymentMethod: config.flowExpandFirstPaymentMethod,
+                          handleClick: (_self) => {
+                              if (config.forceTermsAcceptance && !acceptedTermsRef.current) {
+                                  toast.warn("Please accept the terms and conditions before paying.");
+                                  return { continue: false };
+                              } else {
+                                  toast.info("Proceeding with payment...");
+                                  return { continue: true };
+                              }
+                          },
                         },
                         card: {
                             displayCardholderName: config.cardDisplayCardholderName,
                             data: {
                                 email: config.cardDataEmail,
+                                // Adding country and currency to card data for consistency, though Checkout.com
+                                // usually derives this from the session itself.
+                                country: config.country,
+                                currency: config.currency,
                             },
                         },
                     },
 
-                    onPaymentCompleted: (_component, paymentResponse) => {
-                        toast.success('Payment completed successfully!');
-                        toast.info('Payment ID: ' + paymentResponse.id);
-                        console.log("Payment ID:", paymentResponse.id);
-                    },
-                    onError: (component, error) => {
-                        toast.error('Payment failed. Please try again.');
-                        console.error("Payment Error:", error);
-                        toast.info('Request ID: ' + (error?.request_id || 'N/A'));
-                    }
-                });
-                const flowComponent = checkout.create('flow');
-                flowComponent.mount('#flow-container');
-                setLastUpdatedFlow(new Date());
+                onPaymentCompleted: (_component, paymentResponse) => {
+                    toast.success('Payment completed successfully!');
+                    toast.info('Payment ID: ' + paymentResponse.id);
+                    console.log("Payment ID:", paymentResponse.id);
+                },
+                onError: (component, error) => {
+                    toast.error('Payment failed. Please try again.');
+                    console.error("Payment Error:", error);
+                    toast.info('Request ID: ' + (error?.request_id || 'N/A'));
+                }
+            });
+            const flowComponent = checkout.create('flow');
+            flowComponent.mount('#flow-container');
+            setLastUpdatedFlow(new Date());
 
-                (async () => {
-                    const klarnaComponent = checkout.create("klarna");
-                    const klarnaElement = document.getElementById('klarna-container');
-                    if (await klarnaComponent.isAvailable()) {
-                        klarnaComponent.mount(klarnaElement);
-                    }
-                })();
+            (async () => {
+                const klarnaComponent = checkout.create("klarna");
+                const klarnaElement = document.getElementById('klarna-container');
+                if (await klarnaComponent.isAvailable()) {
+                    klarnaComponent.mount(klarnaElement);
+                }
+            })();
 
             } catch (err) {
                 console.error("Checkout Web Components Error:", err);
@@ -197,13 +239,12 @@ const Flow = () => {
             }
         };
 
-        // Simplified logic: Only initialize if paymentSessionDetails is available
         if (paymentSessionDetails?.id) {
             initializeFlowComponent(paymentSessionDetails);
         } else {
             console.log("Waiting for payment session details to load Flow component.");
         }
-    }, [paymentSessionDetails, config, showMainContent]); // Dependencies
+    }, [paymentSessionDetails, config, showMainContent, API_BASE_URL]);
 
 
     useEffect(() => {
@@ -222,7 +263,6 @@ const Flow = () => {
         }
     }, []);
 
-    // Simplified handleInitialModeSelection
     const handleInitialModeSelection = () => {
         setShowMainContent(true);
     };
@@ -246,7 +286,6 @@ const Flow = () => {
                     </div>
                 </div>
             ) : (
-                // Main content: Grid layout with two columns
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* LEFT COLUMN: Contains two stacked cards */}
                     <div className="flex flex-col gap-6">
@@ -348,11 +387,11 @@ const Flow = () => {
                                 </div>
                             </Card.Body>
                             <Card.Footer>
-                                <small className="text-muted">{timeAgoConfig}</small> {/* Footer for config panel */}
+                                <small className="text-muted">{timeAgoConfig}</small>
                             </Card.Footer>
                         </Card>
 
-                        {/* BOTTOM LEFT CARD: Session Request */}
+                        {/* BOTTOM LEFT CARD: Session Request - Now includes Country & Currency selection */}
                         <Card>
                             <Card.Body>
                                 <Card.Title className="text-center">Request a new payment session</Card.Title>
@@ -375,6 +414,32 @@ const Flow = () => {
                                             className="w-full border rounded px-3 py-2"
                                         />
                                     </div>
+                                    {/* --- NEW: Country Dropdown --- */}
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium mb-1">Country</label>
+                                        <select
+                                            value={config.country}
+                                            onChange={handleCountryChange} // New handler for country/currency logic
+                                            className="w-full border rounded px-3 py-2"
+                                        >
+                                            {countries.map((c) => (
+                                                <option key={c.code} value={c.code}>
+                                                    {c.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    {/* --- NEW: Read-only Currency Input --- */}
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium mb-1">Currency (Auto-selected)</label>
+                                        <input
+                                            type="text"
+                                            value={config.currency}
+                                            readOnly // Make it read-only as it's auto-selected
+                                            className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+                                        />
+                                    </div>
+                                    {/* --- END NEW --- */}
                                     <div className="text-center">
                                         <button onClick={SessionRequest} disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
                                             {loading ? "Processing..." : "Create Session"}
@@ -395,9 +460,10 @@ const Flow = () => {
                         <Card.Body>
                             <Card.Title className="text-center">Flow Component Display</Card.Title>
                             <div id="flow-container" className="mt-4"></div>
+                            <div id='klarna-container' className="mt-4"></div>
                         </Card.Body>
                         <Card.Footer>
-                            <small className="text-muted">{timeAgoFlow}</small> {/* Footer for Flow component load time */}
+                            <small className="text-muted">{timeAgoFlow}</small>
                         </Card.Footer>
                     </Card>
 
