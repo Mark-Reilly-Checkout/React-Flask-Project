@@ -112,7 +112,7 @@ def create_payment_session():
                     "reference":    "Test"    }
             ],
             "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
-            "success_url": "https://react-frontend-elpl.onrender.com/success",
+            "success_url": "https://react-frontend-elpl.onrender.com/flow",
             "failure_url": "https://react-frontend-elpl.onrender.com/failure"
         }
         # ✅ Check if `sessions` exists in `checkout_api`
