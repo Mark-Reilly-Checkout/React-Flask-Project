@@ -225,7 +225,7 @@ const Flow = () => {
 
             (async () => {
                 const klarnaComponent = checkout.create("klarna");
-                const klarnaElement = document.getElementById('klarna-container');
+                //const klarnaElement = document.getElementById('klarna-container');
                 if (await klarnaComponent.isAvailable()) {
                     klarnaComponent.mount(klarnaElement);
                 }
