@@ -395,7 +395,6 @@ const Flow = () => {
                         <Card.Body>
                             <Card.Title className="text-center">Flow Component Display</Card.Title>
                             <div id="flow-container" className="mt-4"></div>
-                            <div id='klarna-container' className="mt-4"></div>
                         </Card.Body>
                         <Card.Footer>
                             <small className="text-muted">{timeAgoFlow}</small> {/* Footer for Flow component load time */}
