@@ -74,66 +74,80 @@ def get_payment_details(payment_id):
         return jsonify({"error": "Failed to fetch payment details", "details": str(e)}), 500
     
 # POST - Flow - Create payment session
+# POST - Flow - Create payment session
 @app.route('/api/create-payment-session', methods=['POST'])
 def create_payment_session():
-    response = None
+    response = None # Initialize response to None for error handling
     try:
         data = request.json
-        email = data.get("email", "test@example.com")  # Default email if not sent from FE
-        country = data.get("country", "IE")  # Default country if not sent from FE
-        currency = data.get("currency", "EUR")  # Default currency if not sent from FE
+        email = data.get("email") # Get email from frontend, no default here as frontend should send it
+        country = data.get("country") # Get country from frontend
+        currency = data.get("currency") # Get currency from frontend
+        # Get billing_address from frontend. It will be a dict.
+        billing_address_from_frontend = data.get("billing_address")
+
+        if not email or not country or not currency or not billing_address_from_frontend:
+            return jsonify({"error": "Missing essential payment session data (email, country, currency, billing_address)"}), 400
+
         payment_request = {
-            "amount": data["amount"],  
+            "amount": data["amount"],
             "currency": currency,
-            "reference": "order-123454",
-            "capture": True,  
+            "reference": f"order-{data.get('email', 'unknown')}-{currency}-{data['amount']}-{country}-{uuid.uuid4().hex[:8]}", # More robust unique reference
+            "capture": True,
             "customer": {
-                "name":"Mark Reillys",
-                "email": email
+                "name": data.get("customer_name", "Anonymous Customer"), # Assuming you might add customer name later
+                "email": email,
+                "billing_address": billing_address_from_frontend # <--- CORRECT PLACE FOR BILLING ADDRESS
             },
-            "display_name": "Online shop",
-            "billing_address": {
-        "address_line1": "123 Main St",
-        "address_line2": "Apt 4B",
-        "city": "London",
-        "zip": "SW1A 0AA",
-        "country": country
-    },
-            "locale": "en-GB",
+            "display_name": "Online shop", # This is for the payment session display
+            "locale": "en-GB", # This could also be dynamic based on 'country' or browser settings
             "payment_method_configuration": {
                 "googlepay":{
-                    "store_payment_details":"disabled" # This enables the user to save their payment details for future use, which returns the src_ in webhook.
+                    "store_payment_details":"disabled"
                 }
             },
             "items": [
                 {
-                    "name":         "Battery Power Pack",
-                    "quantity":     1,
-                    "unit_price":   5000,
-                    "total_amount": 5000,
-                    "reference":    "Test"    }
+                    "name":         "Wireless Headphones", # Updated to match demo product
+                    "quantity":     data.get("item_quantity", 1), # Get quantity from frontend
+                    "unit_price":   data.get("item_unit_price", data["amount"]), # Unit price in minor units
+                    "total_amount": data["amount"], # Total amount in minor units
+                    "reference":    "Prod-Headphones"
+                }
             ],
             "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
-            "success_url": "https://react-frontend-elpl.onrender.com/flow",
+            "success_url": "https://react-frontend-elpl.onrender.com/success", # Changed to success page for better flow
             "failure_url": "https://react-frontend-elpl.onrender.com/failure"
         }
-        # ✅ Check if `sessions` exists in `checkout_api`
-        if not hasattr(checkout_api, "sessions"):
-            return jsonify({"error": "Sessions API is not available in the SDK"}), 500
-        # Access payment sessions client correctly
+
+        # Validate existence of SDK client and method
+        if not hasattr(checkout_api, "payment_sessions") or not hasattr(checkout_api.payment_sessions, "create_payment_sessions"):
+            print("Error: Checkout.com SDK 'payment_sessions' client or 'create_payment_sessions' method not found.")
+            return jsonify({"error": "Payment Sessions SDK client not initialized correctly"}), 500
+
         payment_sessions_client = checkout_api.payment_sessions
-        # Create the payment session
         response = payment_sessions_client.create_payment_sessions(payment_request)
-        print(f"Payment Session Token: {response.id}")
+
+        print(f"Payment Session created successfully with ID: {response.id}")
         return jsonify({
             "id": response.id,
-            "payment_session_secret ": response.payment_session_secret,
+            "payment_session_secret": response.payment_session_secret, # Corrected key from `response.payment_session_secret `
             "payment_session_token": response.payment_session_token
-        })
+        }), 200 # Always return 200 on success
+
     except Exception as e:
-        error_message = {"error": str(e)}
-        if response and hasattr(response, 'error_type'):
-            error_message["type"] = response.error_type  # Avoids accessing response if it's None
+        import traceback
+        traceback.print_exc() # Print full traceback for debugging
+        error_message = {"error": "Internal Server Error during payment session creation", "details": str(e)}
+
+        # Attempt to get more specific error details from Checkout.com API if it's a CheckoutApiException
+        if hasattr(e, 'http_metadata') and e.http_metadata and hasattr(e.http_metadata, 'status_code'):
+             error_message["http_status_code"] = e.http_metadata.status_code
+             if hasattr(e, 'error_details') and e.error_details:
+                 error_message["api_errors"] = e.error_details
+             print(f"Checkout API Error: Status {e.http_metadata.status_code}, Details: {e.error_details}")
+        elif response and hasattr(response, 'error_type'): # Fallback for non-SDK specific errors
+            error_message["type"] = response.error_type
         return jsonify(error_message), 500
 
 # POST - Regular - Payment
