@@ -219,16 +219,16 @@ const Flow = () => {
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
                 }
             });
-            const flowComponent = checkout.create('applepay');
-            flowComponent.mount('#flow-container');
+            const flowComponent = checkout.create('flow');
+            
             setLastUpdatedFlow(new Date());
 
             (async () => {
                 //const klarnaComponent = checkout.create("klarna");
                 //const klarnaElement = document.getElementById('klarna-container');
-                // if (await flowComponent.isAvailable()) {
-                //    flowComponent.mount('#flow-container');
-                // }
+                if (await flowComponent.isAvailable()) {
+                   flowComponent.mount('#flow-container');
+                }
             })();
 
             } catch (err) {
