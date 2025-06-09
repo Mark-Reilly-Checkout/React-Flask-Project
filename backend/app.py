@@ -8,7 +8,7 @@ from checkout_sdk.checkout_configuration import CheckoutConfiguration
 from checkout_sdk.oauth_scopes import OAuthScopes
 from checkout_sdk.payments.sessions.sessions_client import PaymentSessionsClient
 from checkout_sdk.payments.sessions.sessions import PaymentSessionsRequest
-import json, datetime, traceback, os, requests
+import json, datetime, traceback, os, requests, uuid
 
 
 app = Flask(__name__)
