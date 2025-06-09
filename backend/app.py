@@ -92,11 +92,13 @@ def create_payment_session():
                 "email": email
             },
             "display_name": "Online shop",
-            "billing":{
-                "address":{
-                    "country":country
-                }
-            },
+            "billing_address": {
+        "address_line1": "123 Main St",
+        "address_line2": "Apt 4B",
+        "city": "London",
+        "zip": "SW1A 0AA",
+        "country": country
+    },
             "locale": "en-GB",
             "payment_method_configuration": {
                 "googlepay":{

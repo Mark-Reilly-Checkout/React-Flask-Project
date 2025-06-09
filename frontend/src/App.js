@@ -13,6 +13,7 @@ import Success from './components/Redirects/Success';
 import GooglePay from './components/GooglePay';
 import Failure from './components/Redirects/Failure';
 import Test from './components/Test';
+import CheckoutDemoApp from './components/CheckoutDemoApp';
 
 function App() {
   const [data, setData] = useState('');
@@ -41,6 +42,14 @@ function App() {
         <Route path="/failure" element={<Failure />} />
         <Route path="/googlePay" element={<GooglePay />} />
         <Route path="/test" element={<Test />} />
+        <Route path="/success" element={<Success />} />
+        <Route path="/failure" element={<Failure />} />
+
+        {/* --- NEW ROUTE FOR CHECKOUT DEMO --- */}
+        {/* CheckoutDemoApp handles its own nested routes for /checkout-demo and /checkout-demo/delivery */}
+        <Route path="/checkout-demo/*" element={<CheckoutDemoApp />} />
+        {/* --- END NEW ROUTE --- */}
+
       </Routes>
     </>
   );

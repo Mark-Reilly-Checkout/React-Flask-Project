@@ -5,7 +5,7 @@ import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components
 import { toast } from 'react-toastify';
 import { useSearchParams } from "react-router-dom";
 
-// Country to Currency Mapping
+// Country to Currency Mapping (needed for Flow.js if used standalone or for general config)
 const countries = [
     { code: 'GB', name: 'United Kingdom', currency: 'GBP' },
     { code: 'US', name: 'United States', currency: 'USD' },
@@ -22,13 +22,13 @@ const countries = [
     { code: 'ES', name: 'Spain', currency: 'EUR' },
 ];
 
-// Default configuration for Flow.js
+// Default configuration for Flow.js (used when standalone)
 const defaultConfig = {
     initialAmount: '50.00',
     initialEmail: 'testfry@example.com',
-    publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4',
-    environment: 'sandbox',
-    locale: 'en',
+    publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4', // Your Checkout.com Public Key
+    environment: 'sandbox', // 'sandbox' or 'production'
+    locale: 'en', // Component locale
     flowExpandFirstPaymentMethod: false,
     cardDisplayCardholderName: 'bottom',
     cardDataEmail: 'mark.reilly1234@checkot.com',
@@ -37,9 +37,11 @@ const defaultConfig = {
     currency: 'GBP', // Default currency for session creation
 };
 
-const Flow = () => {
+// Flow component can now optionally receive paymentSessionDetails as a prop
+const Flow = ({ passedPaymentSession = null }) => {
     const [loading, setLoading] = useState(false);
-    const [paymentSessionDetails, setPaymentSessionDetails] = useState(null);
+    // Use an internal state for paymentSessionDetails that can be either from prop or internal request
+    const [internalPaymentSessionDetails, setInternalPaymentSessionDetails] = useState(passedPaymentSession);
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
     const [searchParams] = useSearchParams();
     const paymentIdFromUrl = searchParams.get("cko-payment-id");
@@ -47,7 +49,8 @@ const Flow = () => {
     const [config, setConfig] = useState(defaultConfig);
     const acceptedTermsRef = useRef(false);
 
-    const [showMainContent, setShowMainContent] = useState(false);
+    // Initial screen logic is bypassed if paymentSession is passed as a prop
+    const [showMainContent, setShowMainContent] = useState(passedPaymentSession !== null);
 
     const [lastUpdatedSession, setLastUpdatedSession] = useState(null);
     const [lastUpdatedFlow, setLastUpdatedFlow] = useState(null);
@@ -85,34 +88,41 @@ const Flow = () => {
 
 
     useEffect(() => {
-        const savedConfig = localStorage.getItem('flowConfig');
-        if (savedConfig) {
-            try {
-                const parsedConfig = JSON.parse(savedConfig);
-                setConfig(parsedConfig);
-                setLastUpdatedConfig(new Date());
-            } catch (e) {
-                console.error("Failed to parse flowConfig from localStorage", e);
-                localStorage.removeItem('flowConfig');
+        // Only load/save config from localStorage if not receiving a passedPaymentSession
+        // This ensures the component is self-contained when used standalone
+        if (passedPaymentSession === null) {
+            const savedConfig = localStorage.getItem('flowConfig');
+            if (savedConfig) {
+                try {
+                    const parsedConfig = JSON.parse(savedConfig);
+                    setConfig(parsedConfig);
+                    setLastUpdatedConfig(new Date());
+                } catch (e) {
+                    console.error("Failed to parse flowConfig from localStorage", e);
+                    localStorage.removeItem('flowConfig');
+                }
             }
         }
-    }, []);
+    }, [passedPaymentSession]); // Dependency on passedPaymentSession
 
     useEffect(() => {
-        localStorage.setItem('flowConfig', JSON.stringify(config));
-        setLastUpdatedConfig(new Date());
-    }, [config]);
+        // Only save config to localStorage if not receiving a passedPaymentSession
+        if (passedPaymentSession === null) {
+            localStorage.setItem('flowConfig', JSON.stringify(config));
+            setLastUpdatedConfig(new Date());
+        }
+    }, [config, passedPaymentSession]); // Dependency on passedPaymentSession
 
 
     const handleReset = () => {
         setConfig(defaultConfig);
         localStorage.removeItem('flowConfig');
-        setPaymentSessionDetails(null);
+        setInternalPaymentSessionDetails(null); // Reset internal session
         setLastUpdatedSession(null);
         setLastUpdatedFlow(null);
         setLastUpdatedConfig(null);
         acceptedTermsRef.current = false;
-        setShowMainContent(false);
+        setShowMainContent(passedPaymentSession !== null); // Reset initial screen based on prop
     };
 
     const handleTermsAcceptance = (e) => {
@@ -120,7 +130,6 @@ const Flow = () => {
         setConfig(prevConfig => ({ ...prevConfig, forceTermsAcceptance: e.target.checked }));
     };
 
-    // --- NEW: handleCountryChange function for country/currency validation ---
     const handleCountryChange = (e) => {
         const selectedCountryCode = e.target.value;
         const selectedCountry = countries.find(c => c.code === selectedCountryCode);
@@ -128,31 +137,30 @@ const Flow = () => {
         setConfig(prevConfig => ({
             ...prevConfig,
             country: selectedCountryCode,
-            // Automatically update currency based on selected country
-            currency: selectedCountry ? selectedCountry.currency : prevConfig.currency // Keep old currency if not found
+            currency: selectedCountry ? selectedCountry.currency : prevConfig.currency
         }));
     };
 
 
     const SessionRequest = async () => {
         setLoading(true);
-        setPaymentSessionDetails(null);
+        setInternalPaymentSessionDetails(null); // Clear previous internal session
         try {
             const response = await axios.post(`${API_BASE_URL}api/create-payment-session`, {
                 amount: Math.round(parseFloat(config.initialAmount) * 100),
                 email: config.initialEmail,
-                country: config.country, // --- UPDATED: Send country to backend ---
-                currency: config.currency, // --- UPDATED: Send currency to backend ---
+                country: config.country,
+                currency: config.currency,
             });
 
-            setPaymentSessionDetails(response.data);
+            setInternalPaymentSessionDetails(response.data); // Store the full session object internally
             setLastUpdatedSession(new Date());
             toast.success("Payment session created successfully!");
 
         } catch (error) {
             console.error("Payment Error:", error.response ? error.response.data : error.message);
             toast.error('Error creating payment session: ' + (error.response?.data?.error || error.message));
-            setPaymentSessionDetails(null);
+            setInternalPaymentSessionDetails(null);
         } finally {
             setLoading(false);
         }
@@ -168,17 +176,26 @@ const Flow = () => {
       };
 
     useEffect(() => {
-        if (!showMainContent) return;
+        // Determine which session details to use: prop or internal state
+        const sessionToUse = passedPaymentSession || internalPaymentSessionDetails;
+
+        // Only initialize if main content is visible AND we have session details
+        if (!showMainContent || !sessionToUse?.id) {
+            if (showMainContent && !sessionToUse?.id && passedPaymentSession === null) {
+                 console.log("Waiting for payment session details to load Flow component.");
+            }
+            return;
+        }
 
         const flowContainer = document.getElementById('flow-container');
         if (flowContainer) {
-            flowContainer.innerHTML = '';
+            flowContainer.innerHTML = ''; // Clear previous component if any
         }
 
         const initializeFlowComponent = async (sessionObject) => {
             try {
                 const checkout = await loadCheckoutWebComponents({
-                    paymentSession: sessionObject,
+                    paymentSession: sessionObject, // Use the provided session object
                     publicKey: config.publicKey,
                     environment: config.environment,
                     locale: config.locale,
@@ -200,8 +217,6 @@ const Flow = () => {
                             displayCardholderName: config.cardDisplayCardholderName,
                             data: {
                                 email: config.cardDataEmail,
-                                // Adding country and currency to card data for consistency, though Checkout.com
-                                // usually derives this from the session itself.
                                 country: config.country,
                                 currency: config.currency,
                             },
@@ -220,14 +235,14 @@ const Flow = () => {
                 }
             });
             const flowComponent = checkout.create('flow');
-            
+            flowComponent.mount('#flow-container');
             setLastUpdatedFlow(new Date());
 
             (async () => {
-                //const klarnaComponent = checkout.create("klarna");
-                //const klarnaElement = document.getElementById('klarna-container');
-                if (await flowComponent.isAvailable()) {
-                   flowComponent.mount('#flow-container');
+                const klarnaComponent = checkout.create("klarna");
+                const klarnaElement = document.getElementById('klarna-container');
+                if (await klarnaComponent.isAvailable()) {
+                    klarnaComponent.mount(klarnaElement);
                 }
             })();
 
@@ -239,12 +254,10 @@ const Flow = () => {
             }
         };
 
-        if (paymentSessionDetails?.id) {
-            initializeFlowComponent(paymentSessionDetails);
-        } else {
-            console.log("Waiting for payment session details to load Flow component.");
-        }
-    }, [paymentSessionDetails, config, showMainContent, API_BASE_URL]);
+        // Initialize component with the determined session (prop or internal)
+        initializeFlowComponent(sessionToUse);
+
+    }, [internalPaymentSessionDetails, passedPaymentSession, config, showMainContent, API_BASE_URL]);
 
 
     useEffect(() => {
@@ -270,9 +283,11 @@ const Flow = () => {
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">
+            {/* The main title of the page */}
             <h1 className="text-3xl font-bold text-center mb-8">Checkout.com Flow Test Suite</h1>
 
-            {!showMainContent ? (
+            {/* Conditional rendering for the initial selection screen vs. main content */}
+            {!showMainContent && passedPaymentSession === null ? ( // Show initial screen ONLY if no session is passed as prop
                 <div className="flex items-center justify-center min-h-[calc(100vh-100px)]">
                     <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
                         <h2 className="text-2xl font-bold mb-6 text-gray-800">Ready to test the Flow Component?</h2>
@@ -286,179 +301,193 @@ const Flow = () => {
                     </div>
                 </div>
             ) : (
+                // Main content: Grid layout with two columns
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* LEFT COLUMN: Contains two stacked cards */}
                     <div className="flex flex-col gap-6">
                         {/* TOP LEFT CARD: Flow Configuration Panel */}
-                        <Card>
-                            <Card.Body>
-                                <Card.Title className="text-center">Flow Component & Configuration</Card.Title>
-                                <div className="p-4 bg-gray-50 rounded-lg shadow-inner mb-4">
-                                    <h3 className="text-lg font-semibold mb-3">Core Flow Settings</h3>
+                        {passedPaymentSession === null && ( // Hide config panel if session passed as prop
+                            <Card>
+                                <Card.Body>
+                                    <Card.Title className="text-center">Flow Component & Configuration</Card.Title>
+                                    <div className="p-4 bg-gray-50 rounded-lg shadow-inner mb-4">
+                                        <h3 className="text-lg font-semibold mb-3">Core Flow Settings</h3>
 
-                                    <div className="flex gap-4 mb-4">
-                                        <div className="flex-1">
-                                            <label className="block text-sm font-medium mb-1">Public Key</label>
+                                        <div className="flex gap-4 mb-4">
+                                            <div className="flex-1">
+                                                <label className="block text-sm font-medium mb-1">Public Key</label>
+                                                <input
+                                                    type="text"
+                                                    value={config.publicKey}
+                                                    onChange={(e) => setConfig({ ...config, publicKey: e.target.value })}
+                                                    className="w-full border rounded px-3 py-2"
+                                                />
+                                            </div>
+                                            <div className="flex-1">
+                                                <label className="block text-sm font-medium mb-1">Environment</label>
+                                                <select
+                                                    value={config.environment}
+                                                    onChange={(e) => setConfig({ ...config, environment: e.target.value })}
+                                                    className="w-full border rounded px-3 py-2"
+                                                >
+                                                    <option value="sandbox">Sandbox</option>
+                                                    <option value="production">Production</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-1">Locale (e.g., en, es, fr)</label>
                                             <input
                                                 type="text"
-                                                value={config.publicKey}
-                                                onChange={(e) => setConfig({ ...config, publicKey: e.target.value })}
+                                                value={config.locale}
+                                                onChange={(e) => setConfig({ ...config, locale: e.target.value })}
                                                 className="w-full border rounded px-3 py-2"
                                             />
                                         </div>
-                                        <div className="flex-1">
-                                            <label className="block text-sm font-medium mb-1">Environment</label>
+
+                                        <h3 className="text-lg font-semibold mb-3 mt-4">Flow Component Options</h3>
+                                        <div className="mb-4">
+                                            <label className="inline-flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={config.flowExpandFirstPaymentMethod}
+                                                    onChange={(e) => setConfig({ ...config, flowExpandFirstPaymentMethod: e.target.checked })}
+                                                    className="form-checkbox h-4 w-4 text-blue-600"
+                                                />
+                                                <span className="ml-2 text-gray-700">Expand First Payment Method (on load)</span>
+                                            </label>
+                                        </div>
+
+                                        <h3 className="text-lg font-semibold mb-3 mt-4">Card Component Options (within Flow)</h3>
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-1">Display Cardholder Name</label>
                                             <select
-                                                value={config.environment}
-                                                onChange={(e) => setConfig({ ...config, environment: e.target.value })}
+                                                value={config.cardDisplayCardholderName}
+                                                onChange={(e) => setConfig({ ...config, cardDisplayCardholderName: e.target.value })}
                                                 className="w-full border rounded px-3 py-2"
                                             >
-                                                <option value="sandbox">Sandbox</option>
-                                                <option value="production">Production</option>
+                                                <option value="top">Top</option>
+                                                <option value="bottom">Bottom</option>
+                                                <option value="hide">Hide</option>
                                             </select>
                                         </div>
-                                    </div>
-
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-1">Locale (e.g., en, es, fr)</label>
-                                        <input
-                                            type="text"
-                                            value={config.locale}
-                                            onChange={(e) => setConfig({ ...config, locale: e.target.value })}
-                                            className="w-full border rounded px-3 py-2"
-                                        />
-                                    </div>
-
-                                    <h3 className="text-lg font-semibold mb-3 mt-4">Flow Component Options</h3>
-                                    <div className="mb-4">
-                                        <label className="inline-flex items-center">
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-1">Card Data Email (pre-fill)</label>
                                             <input
-                                                type="checkbox"
-                                                checked={config.flowExpandFirstPaymentMethod}
-                                                onChange={(e) => setConfig({ ...config, flowExpandFirstPaymentMethod: e.target.checked })}
-                                                className="form-checkbox h-4 w-4 text-blue-600"
+                                                type="email"
+                                                value={config.cardDataEmail}
+                                                onChange={(e) => setConfig({ ...config, cardDataEmail: e.target.value })}
+                                                className="w-full border rounded px-3 py-2"
                                             />
-                                            <span className="ml-2 text-gray-700">Expand First Payment Method (on load)</span>
-                                        </label>
-                                    </div>
+                                        </div>
 
-                                    <h3 className="text-lg font-semibold mb-3 mt-4">Card Component Options (within Flow)</h3>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-1">Display Cardholder Name</label>
-                                        <select
-                                            value={config.cardDisplayCardholderName}
-                                            onChange={(e) => setConfig({ ...config, cardDisplayCardholderName: e.target.value })}
-                                            className="w-full border rounded px-3 py-2"
+                                        <h3 className="text-lg font-semibold mb-3 mt-4">`handleClick` Logic</h3>
+                                        <div className="mb-4">
+                                            <label className="inline-flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={config.forceTermsAcceptance}
+                                                    onChange={handleTermsAcceptance}
+                                                    className="form-checkbox h-4 w-4 text-blue-600"
+                                                />
+                                                <span className="ml-2 text-gray-700">Require Terms Acceptance (controls `handleClick`)</span>
+                                            </label>
+                                        </div>
+
+                                        <button
+                                            onClick={handleReset}
+                                            className="mt-2 px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
                                         >
-                                            <option value="top">Top</option>
-                                            <option value="bottom">Bottom</option>
-                                            <option value="hide">Hide</option>
-                                        </select>
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-1">Card Data Email (pre-fill)</label>
-                                        <input
-                                            type="email"
-                                            value={config.cardDataEmail}
-                                            onChange={(e) => setConfig({ ...config, cardDataEmail: e.target.value })}
-                                            className="w-full border rounded px-3 py-2"
-                                        />
-                                    </div>
-
-                                    <h3 className="text-lg font-semibold mb-3 mt-4">`handleClick` Logic</h3>
-                                    <div className="mb-4">
-                                        <label className="inline-flex items-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={config.forceTermsAcceptance}
-                                                onChange={handleTermsAcceptance}
-                                                className="form-checkbox h-4 w-4 text-blue-600"
-                                            />
-                                            <span className="ml-2 text-gray-700">Require Terms Acceptance (controls `handleClick`)</span>
-                                        </label>
-                                    </div>
-
-                                    <button
-                                        onClick={handleReset}
-                                        className="mt-2 px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
-                                    >
-                                        Reset to Defaults
-                                    </button>
-                                </div>
-                            </Card.Body>
-                            <Card.Footer>
-                                <small className="text-muted">{timeAgoConfig}</small>
-                            </Card.Footer>
-                        </Card>
-
-                        {/* BOTTOM LEFT CARD: Session Request - Now includes Country & Currency selection */}
-                        <Card>
-                            <Card.Body>
-                                <Card.Title className="text-center">Request a new payment session</Card.Title>
-                                <Card.Text>
-                                     {/* ---: Country Dropdown --- */}
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-1">Country</label>
-                                        <select
-                                            value={config.country}
-                                            onChange={handleCountryChange} // New handler for country/currency logic
-                                            className="w-full border rounded px-3 py-2"
-                                        >
-                                            {countries.map((c) => (
-                                                <option key={c.code} value={c.code}>
-                                                    {c.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    {/* ---: Read-only Currency Input --- */}
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-1">Currency (Auto-selected)</label>
-                                        <input
-                                            type="text"
-                                            value={config.currency}
-                                            readOnly // Make it read-only as it's auto-selected
-                                            className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-1">Amount ($)</label>
-                                        <input
-                                            type="text"
-                                            value={config.initialAmount}
-                                            onChange={(e) => setConfig({ ...config, initialAmount: e.target.value })}
-                                            className="w-full border rounded px-3 py-2"
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-1">Customer Email</label>
-                                        <input
-                                            type="email"
-                                            value={config.initialEmail}
-                                            onChange={(e) => setConfig({ ...config, initialEmail: e.target.value })}
-                                            className="w-full border rounded px-3 py-2"
-                                        />
-                                    </div>
-                                    <div className="text-center">
-                                        <button onClick={SessionRequest} disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
-                                            {loading ? "Processing..." : "Create Session"}
+                                            Reset to Defaults
                                         </button>
-                                        <br />
-                                        {paymentSessionDetails && <p className="mt-2 text-sm text-gray-600">Session ID: {paymentSessionDetails.id}</p>}
                                     </div>
-                                </Card.Text>
-                            </Card.Body>
-                            <Card.Footer>
-                                <small className="text-muted">{timeAgoSession}</small>
-                            </Card.Footer>
-                        </Card>
+                                </Card.Body>
+                                <Card.Footer>
+                                    <small className="text-muted">{timeAgoConfig}</small>
+                                </Card.Footer>
+                            </Card>
+                        )} {/* End Conditional Rendering of Config Card */}
+
+                        {/* BOTTOM LEFT CARD: Session Request (Also hidden if session passed as prop) */}
+                        {passedPaymentSession === null && (
+                            <Card>
+                                <Card.Body>
+                                    <Card.Title className="text-center">Request a new payment session</Card.Title>
+                                    <Card.Text>
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-1">Amount ($)</label>
+                                            <input
+                                                type="text"
+                                                value={config.initialAmount}
+                                                onChange={(e) => setConfig({ ...config, initialAmount: e.target.value })}
+                                                className="w-full border rounded px-3 py-2"
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-1">Customer Email</label>
+                                            <input
+                                                type="email"
+                                                value={config.initialEmail}
+                                                onChange={(e) => setConfig({ ...config, initialEmail: e.target.value })}
+                                                className="w-full border rounded px-3 py-2"
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-1">Country</label>
+                                            <select
+                                                value={config.country}
+                                                onChange={handleCountryChange}
+                                                className="w-full border rounded px-3 py-2"
+                                            >
+                                                {countries.map((c) => (
+                                                    <option key={c.code} value={c.code}>
+                                                        {c.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-1">Currency (Auto-selected)</label>
+                                            <input
+                                                type="text"
+                                                value={config.currency}
+                                                readOnly
+                                                className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+                                            />
+                                        </div>
+                                        <div className="text-center">
+                                            <button onClick={SessionRequest} disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
+                                                {loading ? "Processing..." : "Create Session"}
+                                            </button>
+                                            <br />
+                                            {internalPaymentSessionDetails && <p className="mt-2 text-sm text-gray-600">Session ID: {internalPaymentSessionDetails.id}</p>}
+                                        </div>
+                                    </Card.Text>
+                                </Card.Body>
+                                <Card.Footer>
+                                    <small className="text-muted">{timeAgoSession}</small>
+                                </Card.Footer>
+                            </Card>
+                        )} {/* End Conditional Rendering of Session Request Card */}
                     </div>
 
                     {/* RIGHT COLUMN: Flow Component Display */}
                     <Card>
                         <Card.Body>
                             <Card.Title className="text-center">Flow Component Display</Card.Title>
-                            <div id="flow-container" className="mt-4"></div>
+                            {/* Render Flow component only if a session is available */}
+                            {internalPaymentSessionDetails?.id && (
+                                <>
+                                    <div id="flow-container" className="mt-4"></div>
+                                    <div id='klarna-container' className="mt-4"></div>
+                                </>
+                            )}
+                            {!internalPaymentSessionDetails?.id && (
+                                <p className="text-center text-gray-500 mt-4">
+                                    {passedPaymentSession ? "Loading payment component..." : "Click 'Create Session' to load the payment component."}
+                                </p>
+                            )}
                         </Card.Body>
                         <Card.Footer>
                             <small className="text-muted">{timeAgoFlow}</small>
