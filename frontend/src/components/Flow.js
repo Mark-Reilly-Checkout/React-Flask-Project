@@ -219,7 +219,7 @@ const Flow = () => {
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
                 }
             });
-            const flowComponent = checkout.create('flow');
+            const flowComponent = checkout.create('applepay');
             
             setLastUpdatedFlow(new Date());
 
