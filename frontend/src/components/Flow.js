@@ -220,15 +220,15 @@ const Flow = () => {
                 }
             });
             const flowComponent = checkout.create('applepay');
-            
+            flowComponent.mount('#flow-container');
             setLastUpdatedFlow(new Date());
 
             (async () => {
                 //const klarnaComponent = checkout.create("klarna");
                 //const klarnaElement = document.getElementById('klarna-container');
-                if (await flowComponent.isAvailable()) {
-                   flowComponent.mount('#flow-container');
-                }
+                // if (await flowComponent.isAvailable()) {
+                //    flowComponent.mount('#flow-container');
+                // }
             })();
 
             } catch (err) {
