@@ -96,9 +96,9 @@ def create_payment_session():
             "capture": True,
             "customer": {
                 "name": data.get("customer_name", "Anonymous Customer"), # Assuming you might add customer name later
-                "email": email,
-                "billing_address": billing_address_from_frontend # <--- CORRECT PLACE FOR BILLING ADDRESS
+                "email": email
             },
+            "billing_address": billing_address_from_frontend, # <--- CORRECT PLACE FOR BILLING ADDRESS
             "display_name": "Online shop", # This is for the payment session display
             "locale": "en-GB", # This could also be dynamic based on 'country' or browser settings
             "payment_method_configuration": {

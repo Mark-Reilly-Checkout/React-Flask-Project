@@ -184,6 +184,8 @@ const Flow = ({ passedPaymentSession = null }) => {
                 billing_address: config.billingAddress
             });
 
+            console.log("Billing Address:", config.billingAddress);
+
             setInternalPaymentSessionDetails(response.data);
             setLastUpdatedSession(new Date());
             toast.success("Payment session created successfully!");
