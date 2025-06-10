@@ -5,7 +5,7 @@ import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components
 import { toast } from 'react-toastify';
 import { useSearchParams } from "react-router-dom";
 
-// Country to Currency Mapping (needed for Flow.js if used standalone or for general config)
+// Country to Currency Mapping
 const countries = [
     { code: 'GB', name: 'United Kingdom', currency: 'GBP' },
     { code: 'US', name: 'United States', currency: 'USD' },
@@ -26,28 +26,26 @@ const countries = [
 const defaultConfig = {
     initialAmount: '50.00',
     initialEmail: 'testfry@example.com',
-    publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4', // Your Checkout.com Public Key
-    environment: 'sandbox', // 'sandbox' or 'production'
-    locale: 'en', // Component locale
+    publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4',
+    environment: 'sandbox',
+    locale: 'en',
     flowExpandFirstPaymentMethod: false,
     cardDisplayCardholderName: 'bottom',
     cardDataEmail: 'mark.reilly1234@checkot.com',
     forceTermsAcceptance: true,
-    country: 'GB', // Default country for session creation
-    currency: 'GBP', // Default currency for session creation
-    billingAddress: {
+    country: 'GB',
+    currency: 'GBP',
+    billingAddress: { // Ensure this is always an object by default
         address_line1: '123 Main St',
         address_line2: '',
         city: 'London',
         zip: 'SW1A 0AA',
-        country: 'GB' // This will be updated by the main country dropdown
+        country: 'GB'
     }
 };
 
-// Flow component can now optionally receive paymentSessionDetails as a prop
 const Flow = ({ passedPaymentSession = null }) => {
     const [loading, setLoading] = useState(false);
-    // Use an internal state for paymentSessionDetails that can be either from prop or internal request
     const [internalPaymentSessionDetails, setInternalPaymentSessionDetails] = useState(passedPaymentSession);
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
     const [searchParams] = useSearchParams();
@@ -56,7 +54,6 @@ const Flow = ({ passedPaymentSession = null }) => {
     const [config, setConfig] = useState(defaultConfig);
     const acceptedTermsRef = useRef(false);
 
-    // Initial screen logic is bypassed if paymentSession is passed as a prop
     const [showMainContent, setShowMainContent] = useState(passedPaymentSession !== null);
 
     const [lastUpdatedSession, setLastUpdatedSession] = useState(null);
@@ -95,14 +92,21 @@ const Flow = ({ passedPaymentSession = null }) => {
 
 
     useEffect(() => {
-        // Only load/save config from localStorage if not receiving a passedPaymentSession
-        // This ensures the component is self-contained when used standalone
         if (passedPaymentSession === null) {
             const savedConfig = localStorage.getItem('flowConfig');
             if (savedConfig) {
                 try {
                     const parsedConfig = JSON.parse(savedConfig);
-                    setConfig(parsedConfig);
+                    const loadedConfig = {
+                        ...defaultConfig, // Start with all defaults
+                        ...parsedConfig, // Overlay saved top-level properties
+                        // Ensure billingAddress is an object, even if parsedConfig.billingAddress was null/undefined
+                        billingAddress: {
+                            ...defaultConfig.billingAddress,
+                            ...(parsedConfig.billingAddress || {})
+                        }
+                    };
+                    setConfig(loadedConfig);
                     setLastUpdatedConfig(new Date());
                 } catch (e) {
                     console.error("Failed to parse flowConfig from localStorage", e);
@@ -110,26 +114,25 @@ const Flow = ({ passedPaymentSession = null }) => {
                 }
             }
         }
-    }, [passedPaymentSession]); // Dependency on passedPaymentSession
+    }, [passedPaymentSession]);
 
     useEffect(() => {
-        // Only save config to localStorage if not receiving a passedPaymentSession
         if (passedPaymentSession === null) {
             localStorage.setItem('flowConfig', JSON.stringify(config));
             setLastUpdatedConfig(new Date());
         }
-    }, [config, passedPaymentSession]); // Dependency on passedPaymentSession
+    }, [config, passedPaymentSession]);
 
 
     const handleReset = () => {
         setConfig(defaultConfig);
         localStorage.removeItem('flowConfig');
-        setInternalPaymentSessionDetails(null); // Reset internal session
+        setInternalPaymentSessionDetails(null);
         setLastUpdatedSession(null);
         setLastUpdatedFlow(null);
         setLastUpdatedConfig(null);
         acceptedTermsRef.current = false;
-        setShowMainContent(passedPaymentSession !== null); // Reset initial screen based on prop
+        setShowMainContent(passedPaymentSession !== null);
     };
 
     const handleTermsAcceptance = (e) => {
@@ -144,25 +147,34 @@ const Flow = ({ passedPaymentSession = null }) => {
         setConfig(prevConfig => ({
             ...prevConfig,
             country: selectedCountryCode,
-            currency: selectedCountry ? selectedCountry.currency : prevConfig.currency
+            currency: selectedCountry ? selectedCountry.currency : prevConfig.currency,
+            // --- FIX: Ensure billingAddress.country is updated from here too ---
+            billingAddress: {
+                ...(prevConfig.billingAddress || {}), // Ensure prevConfig.billingAddress is an object
+                country: selectedCountryCode
+            }
         }));
     };
 
+    // --- FIX: handleBillingAddressChange function to ensure prevConfig.billingAddress is object ---
     const handleBillingAddressChange = (e) => {
         const { name, value } = e.target;
-        setConfig(prevConfig => ({
-            ...prevConfig,
-            billingAddress: {
-                ...prevConfig.billingAddress,
-                [name]: value
-            }
-        }));
+        setConfig(prevConfig => {
+            const currentBillingAddress = prevConfig.billingAddress || {}; // Ensure it's an object
+            return {
+                ...prevConfig,
+                billingAddress: {
+                    ...currentBillingAddress, // Spread the current (or defaulted) billing address
+                    [name]: value
+                }
+            };
+        });
     };
 
 
     const SessionRequest = async () => {
         setLoading(true);
-        setInternalPaymentSessionDetails(null); // Clear previous internal session
+        setInternalPaymentSessionDetails(null);
         try {
             const response = await axios.post(`${API_BASE_URL}api/create-payment-session`, {
                 amount: Math.round(parseFloat(config.initialAmount) * 100),
@@ -172,7 +184,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                 billing_address: config.billingAddress
             });
 
-            setInternalPaymentSessionDetails(response.data); // Store the full session object internally
+            setInternalPaymentSessionDetails(response.data);
             setLastUpdatedSession(new Date());
             toast.success("Payment session created successfully!");
 
@@ -195,10 +207,8 @@ const Flow = ({ passedPaymentSession = null }) => {
       };
 
     useEffect(() => {
-        // Determine which session details to use: prop or internal state
         const sessionToUse = passedPaymentSession || internalPaymentSessionDetails;
 
-        // Only initialize if main content is visible AND we have session details
         if (!showMainContent || !sessionToUse?.id) {
             if (showMainContent && !sessionToUse?.id && passedPaymentSession === null) {
                  console.log("Waiting for payment session details to load Flow component.");
@@ -208,13 +218,13 @@ const Flow = ({ passedPaymentSession = null }) => {
 
         const flowContainer = document.getElementById('flow-container');
         if (flowContainer) {
-            flowContainer.innerHTML = ''; // Clear previous component if any
+            flowContainer.innerHTML = '';
         }
 
         const initializeFlowComponent = async (sessionObject) => {
             try {
                 const checkout = await loadCheckoutWebComponents({
-                    paymentSession: sessionObject, // Use the provided session object
+                    paymentSession: sessionObject,
                     publicKey: config.publicKey,
                     environment: config.environment,
                     locale: config.locale,
@@ -238,6 +248,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                                 email: config.cardDataEmail,
                                 country: config.country,
                                 currency: config.currency,
+                                billing_address: config.billingAddress
                             },
                         },
                     },
@@ -273,7 +284,6 @@ const Flow = ({ passedPaymentSession = null }) => {
             }
         };
 
-        // Initialize component with the determined session (prop or internal)
         initializeFlowComponent(sessionToUse);
 
     }, [internalPaymentSessionDetails, passedPaymentSession, config, showMainContent, API_BASE_URL]);
@@ -302,11 +312,9 @@ const Flow = ({ passedPaymentSession = null }) => {
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">
-            {/* The main title of the page */}
             <h1 className="text-3xl font-bold text-center mb-8">Checkout.com Flow Test Suite</h1>
 
-            {/* Conditional rendering for the initial selection screen vs. main content */}
-            {!showMainContent && passedPaymentSession === null ? ( // Show initial screen ONLY if no session is passed as prop
+            {!showMainContent && passedPaymentSession === null ? (
                 <div className="flex items-center justify-center min-h-[calc(100vh-100px)]">
                     <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
                         <h2 className="text-2xl font-bold mb-6 text-gray-800">Ready to test the Flow Component?</h2>
@@ -320,12 +328,11 @@ const Flow = ({ passedPaymentSession = null }) => {
                     </div>
                 </div>
             ) : (
-                // Main content: Grid layout with two columns
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* LEFT COLUMN: Contains two stacked cards */}
                     <div className="flex flex-col gap-6">
                         {/* TOP LEFT CARD: Flow Configuration Panel */}
-                        {passedPaymentSession === null && ( // Hide config panel if session passed as prop
+                        {passedPaymentSession === null && (
                             <Card>
                                 <Card.Body>
                                     <Card.Title className="text-center">Flow Component & Configuration</Card.Title>
@@ -426,9 +433,9 @@ const Flow = ({ passedPaymentSession = null }) => {
                                     <small className="text-muted">{timeAgoConfig}</small>
                                 </Card.Footer>
                             </Card>
-                        )} {/* End Conditional Rendering of Config Card */}
+                        )}
 
-                        {/* BOTTOM LEFT CARD: Session Request (Also hidden if session passed as prop) */}
+                        {/* BOTTOM LEFT CARD: Session Request - Now includes Country & Currency selection */}
                         {passedPaymentSession === null && (
                             <Card>
                                 <Card.Body>
@@ -475,6 +482,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                                                 className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
                                             />
                                         </div>
+                                        {/* --- NEW: Billing Address Fields --- */}
                                         <h3 className="text-lg font-semibold mb-3 mt-4">Billing Address</h3>
                                         <div className="space-y-4">
                                             <div>
@@ -482,7 +490,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                                                 <input
                                                     type="text"
                                                     name="address_line1"
-                                                    value={config.billingAddress.address_line1}
+                                                    value={config.billingAddress?.address_line1 || ''} 
                                                     onChange={handleBillingAddressChange}
                                                     className="w-full border rounded px-3 py-2"
                                                     placeholder="123 Main St"
@@ -493,7 +501,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                                                 <input
                                                     type="text"
                                                     name="address_line2"
-                                                    value={config.billingAddress.address_line2}
+                                                    value={config.billingAddress?.address_line2 || ''} 
                                                     onChange={handleBillingAddressChange}
                                                     className="w-full border rounded px-3 py-2"
                                                     placeholder="Apt 4B"
@@ -505,7 +513,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                                                     <input
                                                         type="text"
                                                         name="city"
-                                                        value={config.billingAddress.city}
+                                                        value={config.billingAddress?.city || ''}
                                                         onChange={handleBillingAddressChange}
                                                         className="w-full border rounded px-3 py-2"
                                                         placeholder="London"
@@ -516,7 +524,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                                                     <input
                                                         type="text"
                                                         name="zip"
-                                                        value={config.billingAddress.zip}
+                                                        value={config.billingAddress?.zip || ''} 
                                                         onChange={handleBillingAddressChange}
                                                         className="w-full border rounded px-3 py-2"
                                                         placeholder="SW1A 0AA"
@@ -524,7 +532,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="text-center">
+                                        <div className="text-center mt-4">
                                             <button onClick={SessionRequest} disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
                                                 {loading ? "Processing..." : "Create Session"}
                                             </button>
@@ -537,7 +545,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                                     <small className="text-muted">{timeAgoSession}</small>
                                 </Card.Footer>
                             </Card>
-                        )} {/* End Conditional Rendering of Session Request Card */}
+                        )}
                     </div>
 
                     {/* RIGHT COLUMN: Flow Component Display */}
@@ -561,7 +569,6 @@ const Flow = ({ passedPaymentSession = null }) => {
                             <small className="text-muted">{timeAgoFlow}</small>
                         </Card.Footer>
                     </Card>
-
                 </div>
             )}
             {paymentIdFromUrl && (
