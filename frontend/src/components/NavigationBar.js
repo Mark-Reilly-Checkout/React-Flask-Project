@@ -30,6 +30,7 @@ const NavigationBar = () => {
               <Dropdown.Item href="#card">Card</Dropdown.Item>
               <Dropdown.Item href="#bank">Bank</Dropdown.Item>
               <Dropdown.Item href="/test">Test Layout</Dropdown.Item>
+              <Dropdown.Item href="/checkout-demo">Checkout Demo</Dropdown.Item>
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>

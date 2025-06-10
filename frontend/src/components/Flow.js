@@ -35,6 +35,13 @@ const defaultConfig = {
     forceTermsAcceptance: true,
     country: 'GB', // Default country for session creation
     currency: 'GBP', // Default currency for session creation
+    billingAddress: {
+        address_line1: '123 Main St',
+        address_line2: '',
+        city: 'London',
+        zip: 'SW1A 0AA',
+        country: 'GB' // This will be updated by the main country dropdown
+    }
 };
 
 // Flow component can now optionally receive paymentSessionDetails as a prop
@@ -141,6 +148,17 @@ const Flow = ({ passedPaymentSession = null }) => {
         }));
     };
 
+    const handleBillingAddressChange = (e) => {
+        const { name, value } = e.target;
+        setConfig(prevConfig => ({
+            ...prevConfig,
+            billingAddress: {
+                ...prevConfig.billingAddress,
+                [name]: value
+            }
+        }));
+    };
+
 
     const SessionRequest = async () => {
         setLoading(true);
@@ -151,6 +169,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                 email: config.initialEmail,
                 country: config.country,
                 currency: config.currency,
+                billing_address: config.billingAddress
             });
 
             setInternalPaymentSessionDetails(response.data); // Store the full session object internally
@@ -455,6 +474,55 @@ const Flow = ({ passedPaymentSession = null }) => {
                                                 readOnly
                                                 className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
                                             />
+                                        </div>
+                                        <h3 className="text-lg font-semibold mb-3 mt-4">Billing Address</h3>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1">Address Line 1</label>
+                                                <input
+                                                    type="text"
+                                                    name="address_line1"
+                                                    value={config.billingAddress.address_line1}
+                                                    onChange={handleBillingAddressChange}
+                                                    className="w-full border rounded px-3 py-2"
+                                                    placeholder="123 Main St"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1">Address Line 2 (Optional)</label>
+                                                <input
+                                                    type="text"
+                                                    name="address_line2"
+                                                    value={config.billingAddress.address_line2}
+                                                    onChange={handleBillingAddressChange}
+                                                    className="w-full border rounded px-3 py-2"
+                                                    placeholder="Apt 4B"
+                                                />
+                                            </div>
+                                            <div className="flex gap-4">
+                                                <div className="flex-1">
+                                                    <label className="block text-sm font-medium mb-1">City</label>
+                                                    <input
+                                                        type="text"
+                                                        name="city"
+                                                        value={config.billingAddress.city}
+                                                        onChange={handleBillingAddressChange}
+                                                        className="w-full border rounded px-3 py-2"
+                                                        placeholder="London"
+                                                    />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <label className="block text-sm font-medium mb-1">Zip Code</label>
+                                                    <input
+                                                        type="text"
+                                                        name="zip"
+                                                        value={config.billingAddress.zip}
+                                                        onChange={handleBillingAddressChange}
+                                                        className="w-full border rounded px-3 py-2"
+                                                        placeholder="SW1A 0AA"
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
                                         <div className="text-center">
                                             <button onClick={SessionRequest} disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
