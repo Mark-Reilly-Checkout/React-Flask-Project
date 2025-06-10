@@ -99,9 +99,7 @@ def create_payment_session():
                 "email": email
             },
             "billing": {
-                "address":{
-                    billing_address_from_frontend
-                }
+                "address": billing_address_from_frontend
             },
             "display_name": "Online shop", # This is for the payment session display
             "locale": "en-GB", # This could also be dynamic based on 'country' or browser settings
