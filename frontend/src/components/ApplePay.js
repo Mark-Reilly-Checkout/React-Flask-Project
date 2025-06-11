@@ -51,10 +51,8 @@ const ApplePay = () => {
 
   // Effect to create/re-create the Apple Pay button when config changes
   useEffect(() => {
-    // This effect should only run once the main content is shown
     if (!showMainContent) return;
 
-    // Remove any existing button to avoid duplicates
     const existingButton = document.querySelector('apple-pay-button');
     if (existingButton) existingButton.remove();
 
@@ -71,7 +69,7 @@ const ApplePay = () => {
     return () => {
       applePayButton.removeEventListener('click', handleApplePay);
     };
-  }, [config, showMainContent]); // Add showMainContent to dependencies
+  }, [config, showMainContent]); 
 
 
   const toggleNetwork = (network) => {
@@ -97,9 +95,6 @@ const ApplePay = () => {
     localStorage.removeItem('applePayConfig');
     setPaymentToken(null);
     setPaymentSuccess(false);
-    // Optionally, reset to initial screen if you want to start over
-    // setShowMainContent(false);
-    // setInitialPaymentMode(defaultConfig.paymentMode);
   };
 
 
@@ -172,7 +167,8 @@ const ApplePay = () => {
             toast.error('Apple Pay payment failed due to an error.');
             session.completePayment(window.ApplePaySession.STATUS_FAILURE);
           }
-      } else { // config.paymentMode === 'generateTokenOnly'
+      } else { 
+          // For 'generateTokenOnly' mode, just set the token and complete the session
           setPaymentToken(JSON.stringify(token.paymentData));
           setPaymentSuccess(true);
           session.completePayment(window.ApplePaySession.STATUS_SUCCESS);

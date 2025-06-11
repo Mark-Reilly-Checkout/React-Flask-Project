@@ -17,6 +17,7 @@ const NavigationBar = () => {
             <Nav.Link href="/googlePay">Google Pay</Nav.Link>
           </Nav>
           <Nav>
+            <Nav.Link href="/checkout-demo">Checkout Demo</Nav.Link>
             <NavDropdown title="More APMs" id="collapsible-nav-dropdown" data-bs-theme="light">
               <Dropdown.Item href="#klarna">Klarna</Dropdown.Item>
               <Dropdown.Item href="#paypal">PayPal</Dropdown.Item>
@@ -30,7 +31,6 @@ const NavigationBar = () => {
               <Dropdown.Item href="#card">Card</Dropdown.Item>
               <Dropdown.Item href="#bank">Bank</Dropdown.Item>
               <Dropdown.Item href="/test">Test Layout</Dropdown.Item>
-              <Dropdown.Item href="/checkout-demo">Checkout Demo</Dropdown.Item>
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>

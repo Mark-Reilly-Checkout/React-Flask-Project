@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Flow from '../Flow'; // Import the updated Flow component
+import Flow from '../Flow'; 
+import { toast } from 'react-toastify'; 
+
 
 const DeliveryPage = () => {
     const navigate = useNavigate();
@@ -39,7 +41,7 @@ const DeliveryPage = () => {
             setSubtotal(parseFloat(savedSubtotal));
         } else {
             // Redirect back to basket if data is missing
-            alert("Basket information missing. Please start from the basket page.");
+            toast.error("Basket information missing. Please start from the basket page.");
             navigate('/checkout-demo');
         }
     }, [navigate]);
@@ -61,11 +63,13 @@ const DeliveryPage = () => {
 
     const handleConfirmAndPay = async () => {
         if (!selectedDeliveryOption) {
-            alert("Please select a delivery option.");
+            toast.warning("Please select a delivery option.",{
+                position: "bottom-left",
+            });
             return;
         }
         if (!totalAmount || !billingAddress || !customerEmail || !basket) {
-            alert("Missing essential order details. Please go back to basket.");
+            toast.error("Missing essential order details. Please go back to basket.");
             return;
         }
 
@@ -82,11 +86,13 @@ const DeliveryPage = () => {
             });
 
             setPaymentSessionForFlow(response.data); // Store the full session object to pass to Flow
-            alert("Payment session created! Flow component will now load.");
+            toast.success("Payment session created! Flow component will now load.", {
+                position: "bottom-left",
+            });
 
         } catch (error) {
             console.error("Error creating payment session:", error.response ? error.response.data : error.message);
-            alert("Failed to create payment session. Please try again.");
+            toast.error("Failed to create payment session. Please try again.");
             setPaymentSessionForFlow(null);
         } finally {
             setLoadingPaymentSession(false);
