@@ -552,8 +552,8 @@ const Flow = ({ passedPaymentSession = null }) => {
 
                     {/* RIGHT COLUMN: Flow Component Display */}
                     <Card>
-                        <Card.Body className="flex flex-col h-full p-0">
-                            <Card.Title className="text-center p-4">Flow Component Display</Card.Title>
+                        <Card.Body className="flex flex-col h-full">
+                            <Card.Title className="text-center">Flow Component Display</Card.Title>
                             {/* Render Flow component only if a session is available */}
                             {internalPaymentSessionDetails?.id && (
                                 <>
