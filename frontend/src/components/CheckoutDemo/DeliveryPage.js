@@ -158,7 +158,7 @@ const DeliveryPage = () => {
                 </div>
 
                 {/* Right Panel: Flow Component */}
-                <Card className="p-6 rounded-xl shadow-md bg-white flex flex-col items-center justify-center">
+                <Card className="p-6 rounded-xl shadow-md bg-white flex flex-col items-center justify-center min-h-[500px]">
                     <Card.Title className="text-xl font-semibold mb-4">Payment Details</Card.Title>
                     {paymentSessionForFlow ? (
                         // Render Flow component if payment session is available

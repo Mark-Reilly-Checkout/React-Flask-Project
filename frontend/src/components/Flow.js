@@ -267,14 +267,14 @@ const Flow = ({ passedPaymentSession = null }) => {
                 }
             });
             const flowComponent = checkout.create('flow');
-            flowComponent.mount('#flow-container');
+            
             setLastUpdatedFlow(new Date());
 
             (async () => {
-                const klarnaComponent = checkout.create("klarna");
-                const klarnaElement = document.getElementById('klarna-container');
-                if (await klarnaComponent.isAvailable()) {
-                    klarnaComponent.mount(klarnaElement);
+                // const klarnaComponent = checkout.create("klarna");
+                // const klarnaElement = document.getElementById('klarna-container');
+                if (await flowComponent.isAvailable()) {
+                    flowComponent.mount('#flow-container');
                 }
             })();
 
@@ -552,13 +552,12 @@ const Flow = ({ passedPaymentSession = null }) => {
 
                     {/* RIGHT COLUMN: Flow Component Display */}
                     <Card>
-                        <Card.Body>
+                        <Card.Body className="flex flex-col h-full">
                             <Card.Title className="text-center">Flow Component Display</Card.Title>
                             {/* Render Flow component only if a session is available */}
                             {internalPaymentSessionDetails?.id && (
                                 <>
-                                    <div id="flow-container" className="mt-4"></div>
-                                    <div id='klarna-container' className="mt-4"></div>
+                                    <div id="flow-container" className="mt-4" flex-grow w-full></div>
                                 </>
                             )}
                             {!internalPaymentSessionDetails?.id && (
