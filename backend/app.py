@@ -74,7 +74,6 @@ def get_payment_details(payment_id):
         return jsonify({"error": "Failed to fetch payment details", "details": str(e)}), 500
     
 # POST - Flow - Create payment session
-# POST - Flow - Create payment session
 @app.route('/api/create-payment-session', methods=['POST'])
 def create_payment_session():
     response = None # Initialize response to None for error handling

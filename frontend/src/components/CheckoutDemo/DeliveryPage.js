@@ -183,15 +183,14 @@ const DeliveryPage = () => {
                 }
             });
             const flowComponent = checkout.create('flow');
-            flowComponent.mount('#flow-container'); // Mount to the div in DeliveryPage
-            toast.success("Flow component loaded!");
+            
+            setLastUpdatedFlow(new Date());
 
-            // Klarna component (if needed)
             (async () => {
-                const klarnaComponent = checkout.create("klarna");
-                const klarnaElement = document.getElementById('klarna-container');
-                if (await klarnaComponent.isAvailable()) {
-                    klarnaComponent.mount(klarnaElement);
+                // const klarnaComponent = checkout.create("klarna");
+                // const klarnaElement = document.getElementById('klarna-container');
+                if (await flowComponent.isAvailable()) {
+                    flowComponent.mount('#flow-container');
                 }
             })();
 
