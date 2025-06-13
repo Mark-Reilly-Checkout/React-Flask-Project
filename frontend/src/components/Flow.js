@@ -45,6 +45,7 @@ const defaultConfig = {
 };
 
 const Flow = ({ passedPaymentSession = null }) => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [internalPaymentSessionDetails, setInternalPaymentSessionDetails] = useState(passedPaymentSession);
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
