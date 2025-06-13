@@ -266,7 +266,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
                 }
             });
-            const flowComponent = checkout.create('klarna');
+            const flowComponent = checkout.create('flow');
             
             setLastUpdatedFlow(new Date());
 
