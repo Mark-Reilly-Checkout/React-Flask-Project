@@ -267,17 +267,16 @@ const Flow = ({ passedPaymentSession = null }) => {
                 }
             });
             const flowComponent = checkout.create('klarna');
-            flowComponent.mount('#flow-container');
             
             setLastUpdatedFlow(new Date());
 
-            /* (async () => {
+            (async () => {
                 // const klarnaComponent = checkout.create("klarna");
                 // const klarnaElement = document.getElementById('klarna-container');
-                // if (await flowComponent.isAvailable()) {
-                    
-                // }
-            })(); */
+                if (await flowComponent.isAvailable()) {
+                    flowComponent.mount('#flow-container');
+                }
+            })();
 
             } catch (err) {
                 console.error("Checkout Web Components Error:", err);
