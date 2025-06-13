@@ -184,8 +184,6 @@ const DeliveryPage = () => {
             });
             const flowComponent = checkout.create('flow');
             
-            setLastUpdatedFlow(new Date());
-
             (async () => {
                 // const klarnaComponent = checkout.create("klarna");
                 // const klarnaElement = document.getElementById('klarna-container');
