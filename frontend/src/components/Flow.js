@@ -3,7 +3,7 @@ import { Card } from 'react-bootstrap';
 import axios from 'axios';
 import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components';
 import { toast } from 'react-toastify';
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate} from "react-router-dom";
 
 // Country to Currency Mapping
 const countries = [
@@ -259,11 +259,14 @@ const Flow = ({ passedPaymentSession = null }) => {
                     toast.success('Payment completed successfully!');
                     toast.info('Payment ID: ' + paymentResponse.id);
                     console.log("Payment ID:", paymentResponse.id);
+                    navigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);
+                    
                 },
                 onError: (component, error) => {
                     toast.error('Payment failed. Please try again.');
                     console.error("Payment Error:", error);
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
+                    navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                 }
             });
             const flowComponent = checkout.create('flow');

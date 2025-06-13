@@ -175,11 +175,13 @@ const DeliveryPage = () => {
                     toast.success('Payment completed successfully!');
                     toast.info('Payment ID: ' + paymentResponse.id);
                     console.log("Payment ID:", paymentResponse.id);
+                     navigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);
                 },
                 onError: (component, error) => {
                     toast.error('Payment failed. Please try again.');
                     console.error("Payment Error:", error);
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
+                    navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                 }
             });
             const flowComponent = checkout.create('flow');
