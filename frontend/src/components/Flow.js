@@ -498,9 +498,9 @@ const Flow = ({ passedPaymentSession = null }) => {
                                                 onChange={(e) => setConfig({ ...config, paymentType: e.target.value })}
                                                 className="w-full border rounded px-3 py-2"
                                             >
-                                                {paymentTypes.map((c) => (
-                                                    <option key={c.code} value={c.code}>
-                                                        {c.value}
+                                                {paymentTypes.map((type) => (
+                                                    <option key={type.value} value={type.value}>
+                                                        {type.label}
                                                     </option>
                                                 ))}
                                             </select>
