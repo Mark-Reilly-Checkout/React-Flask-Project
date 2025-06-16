@@ -22,6 +22,15 @@ const countries = [
     { code: 'ES', name: 'Spain', currency: 'EUR' },
 ];
 
+const paymentTypes = [
+    { value: 'Regular', label: 'Regular Payment' },
+    { value: 'Recurring', label: 'Subscription Payment' },
+    { value: 'Installment', label: 'Installment Payment' },
+    { value: 'PayLater', label: 'Pay Later' },
+    { value: 'MOTO', label: 'MOTO Payment' },
+    { value:'Unscheduled', label: 'Unscheduled Payment' },
+];
+
 // Default configuration for Flow.js (used when standalone)
 const defaultConfig = {
     initialAmount: '50.00',
@@ -41,7 +50,8 @@ const defaultConfig = {
         city: 'London',
         zip: 'SW1A 0AA',
         country: 'GB'
-    }
+    },
+    paymentType:'Regular'
 };
 
 const Flow = ({ passedPaymentSession = null }) => {
@@ -156,6 +166,7 @@ const Flow = ({ passedPaymentSession = null }) => {
             }
         }));
     };
+    
 
     // --- FIX: handleBillingAddressChange function to ensure prevConfig.billingAddress is object ---
     const handleBillingAddressChange = (e) => {
@@ -182,7 +193,8 @@ const Flow = ({ passedPaymentSession = null }) => {
                 email: config.initialEmail,
                 country: config.country,
                 currency: config.currency,
-                billing_address: config.billingAddress
+                billing_address: config.billingAddress,
+                paymentType: config.paymentType
             });
 
             console.log("Billing Address:", config.billingAddress);
@@ -251,7 +263,8 @@ const Flow = ({ passedPaymentSession = null }) => {
                                 email: config.cardDataEmail,
                                 country: config.country,
                                 currency: config.currency,
-                                billing_address: config.billingAddress
+                                billing_address: config.billingAddress,
+                                paymentType: config.paymentType
                             },
                         },
                     },
@@ -259,7 +272,6 @@ const Flow = ({ passedPaymentSession = null }) => {
                 onPaymentCompleted: (_component, paymentResponse) => {
                     toast.success('Payment completed successfully!');
                     toast.info('Payment ID: ' + paymentResponse.id);
-                    console.log("Payment ID:", paymentResponse.id);
                     navigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);
                     
                 },
@@ -468,13 +480,27 @@ const Flow = ({ passedPaymentSession = null }) => {
                                         <div className="mb-4">
                                             <label className="block text-sm font-medium mb-1">Country</label>
                                             <select
-                                                value={config.country}
+                                                value={config.paymentType}
                                                 onChange={handleCountryChange}
+                                                className="w-full border rounded px-3 py-2"
+                                            >
+                                                {paymentTypes.map((c) => (
+                                                    <option key={c.code} value={c.code}>
+                                                        {c.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-1">Payment Type</label>
+                                            <select
+                                                value={config.paymentType}
+                                                onChange={(e) => setConfig({ ...config, paymentType: e.target.value })}
                                                 className="w-full border rounded px-3 py-2"
                                             >
                                                 {countries.map((c) => (
                                                     <option key={c.code} value={c.code}>
-                                                        {c.name}
+                                                        {c.value}
                                                     </option>
                                                 ))}
                                             </select>
