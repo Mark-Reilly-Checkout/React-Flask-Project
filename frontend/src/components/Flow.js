@@ -480,7 +480,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                                         <div className="mb-4">
                                             <label className="block text-sm font-medium mb-1">Country</label>
                                             <select
-                                                value={config.paymentType}
+                                                value={config.country}
                                                 onChange={handleCountryChange}
                                                 className="w-full border rounded px-3 py-2"
                                             >
