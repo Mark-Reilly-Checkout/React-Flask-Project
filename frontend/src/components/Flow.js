@@ -484,7 +484,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                                                 onChange={handleCountryChange}
                                                 className="w-full border rounded px-3 py-2"
                                             >
-                                                {paymentTypes.map((c) => (
+                                                {countries.map((c) => (
                                                     <option key={c.code} value={c.code}>
                                                         {c.name}
                                                     </option>
