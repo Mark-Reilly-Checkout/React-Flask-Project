@@ -292,15 +292,12 @@ def paymentContext():
         payment_contexts_client = checkout_api.contexts
         response = payment_contexts_client.create_payment_contexts(requestPaymentContext)
         
-        print(f"Payment Context created successfully with ID: {response.id}, Order ID: {response.partner_metadata.order_id('order_id')}")
+        print(f"Payment Context created successfully with ID: {response.id}, Order ID: {response.partner_metadata.order_id}")
 
         # Return relevant response data to the frontend
         return jsonify({
             "id": response.id, # Checkout.com context ID
-            "partner_metadata": response.partner_metadata, # Contains PayPal's order_id
-            "status": response.status,
-            "reference": response.reference,
-            "_links": response._links.to_dict() # Convert _links object to dictionary
+            "order_id": response.partner_metadata.order_id # Contains PayPal's order_i
         }), 201 # Return 201 Created for successful creation
 
     except Exception as e:
