@@ -6,19 +6,18 @@ import { toast } from 'react-toastify';
 // Default configuration for PayPal JS SDK
 const defaultConfig = {
     amount: '10.00', // Default transaction amount
-    currency: 'EUR', // Default transaction currency
-    buyerCountry: 'IE', // Customer country for funding eligibility
-    commit: false, // true for "Pay Now", false for "Continue"
+    currency: 'USD', // Default transaction currency
+    buyerCountry: 'US', // Customer country for funding eligibility
+    commit: true, // true for "Pay Now", false for "Continue" (SDK parameter)
+    capture: true, // true for auto-capture, false for manual authorize (in Payment Context Request)
+    userAction: 'pay_now', // 'pay_now' for "Pay Now" experience, 'continue' for "Continue" (Context API parameter)
     ckoClientId: 'ASLqLf4pnWuBshW8Qh8z_DRUbIv2Cgs3Ft8aauLm9Z-MO9FZx1INSo38nW109o_Xvu88P3tly88XbJMR', // Checkout.com Test Client ID for PayPal
     paypalMerchantId: '56PFWHCCGEKWW', // *** REPLACE THIS WITH YOUR PAYPAL MERCHANT ID ***
-    // disableFunding: 'credit,card,sepa,bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort', // Default: disable many (as per CKO docs)
-    disableFunding: 'credit,card,sepa,bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort', // Start with no disabled funds, enable explicitly below if needed for testing
-    enableFunding: '', // 'paylater' to enable PayPal Pay Later
+    processingChannelId: 'pc_pxk25jk2hvuenon5nyv3p6nf2i', // *** REPLACE with your PayPal processing channel ID ***
     successUrl: 'https://react-flask-project-kpyi.onrender.com/success', // Your success redirect URL (adjust for deployment)
-    failureUrl: 'https://react-flask-project-kpyi.onrender.com/failure',
-    processingChannelId: 'pc_pxk25jk2hvuenon5nyv3p6nf2i',
-    capture: true, // true for auto-capture, false for manual authorize (in Payment Context Request)
-    userAction: 'pay_now'
+    failureUrl: 'https://react-flask-project-kpyi.onrender.com/failure', // Your failure redirect URL (adjust for deployment)
+    disableFunding: 'credit,card,sepa,bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort',
+    enableFunding: '', // 'paylater' to enable PayPal Pay Later
 };
 
 // All possible commit types for dropdown
@@ -33,9 +32,13 @@ const PayPal = () => {
     const [paymentStatus, setPaymentStatus] = useState(null); // 'success', 'failure', 'cancelled'
     const [paymentDetails, setPaymentDetails] = useState(null); // To store PayPal order/capture details
     const [viewRaw, setViewRaw] = useState(false); // For raw/pretty view of paymentDetails
-    const [checkoutContextId, setCheckoutContextId] = useState(null); // Stores the payment_context_id from CKO
 
-    const buttonsRenderedRef = useRef(false);
+    // --- NEW STATES FOR CONTEXT CREATION ---
+    const [ckoPaymentContextId, setCkoPaymentContextId] = useState(null); // Stores the context ID from CKO
+    const [paypalOrderId, setPaypalOrderId] = useState(null); // Stores PayPal's order_id (from partner_metadata)
+    const [contextCreationLoading, setContextCreationLoading] = useState(false); // Loading state for context creation
+
+    const buttonsRenderedRef = useRef(false); // Ref to track if PayPal buttons are already rendered
 
     // Load config from localStorage on mount
     useEffect(() => {
@@ -50,39 +53,93 @@ const PayPal = () => {
         localStorage.setItem('paypalConfig', JSON.stringify(config));
     }, [config]);
 
+    // --- NEW: Function to create Payment Context ---
+    const handleCreatePaymentContext = async () => {
+        setContextCreationLoading(true); // Start loading
+        setPaymentStatus(null); // Clear previous payment status
+        setPaymentDetails(null); // Clear previous payment details
+        setCkoPaymentContextId(null); // Clear previous context ID
+        setPaypalOrderId(null); // Clear previous PayPal Order ID
+
+        // Ensure buttons are cleaned up before new context creation if they were rendered
+        const buttonContainer = document.getElementById('paypal-button-container');
+        if (buttonContainer) {
+            buttonContainer.innerHTML = ''; // Clear existing buttons
+        }
+        buttonsRenderedRef.current = false; // Reset flag for re-rendering
+
+        try {
+            // 1. Call backend to request Checkout.com payment context
+            const response = await axios.post(`${API_BASE_URL}api/paypal/create-payment-context`, {
+                source: { type: "paypal" },
+                currency: config.currency,
+                amount: Math.round(parseFloat(config.amount) * 100),
+                capture: config.capture,
+                items: [{
+                    "name": "Wireless Headphones", // Example item, adjust as needed or make configurable
+                    "unit_price": Math.round(parseFloat(config.amount) * 100),
+                    "quantity": 1
+                }],
+                processing: {
+                    "invoice_id": `inv-${Date.now()}`,
+                    "user_action": config.userAction
+                },
+                processing_channel_id: config.processingChannelId,
+                success_url: config.successUrl,
+                failure_url: config.failureUrl,
+                reference: `cko-paypal-ref-${Date.now()}`
+            });
+
+            toast.success("Checkout.com payment context created successfully!");
+            setCkoPaymentContextId(response.data.id); // Store Checkout.com context ID
+            setPaypalOrderId(response.data.order_id); // Store PayPal's order_id
+
+        } catch (error) {
+            toast.error("Failed to create Checkout.com payment context. Check console for details.");
+            console.error("Create Payment Context Error:", error.response ? error.response.data : error.message);
+        } finally {
+            setContextCreationLoading(false); // Stop loading
+        }
+    };
+
+
     // Dynamic PayPal SDK Loader and Button Renderer
     useEffect(() => {
-        const cleanup = () => {
-            const existingScript = document.querySelector(`script[data-partner-attribution-id="CheckoutLtd_PSP"]`);
-            if (existingScript) {
-                existingScript.remove();
-            }
+        // Only attempt to load and render PayPal buttons if we have a pre-fetched paypalOrderId
+        if (!paypalOrderId) {
+            // Ensure buttons are cleared and a placeholder message is shown if no orderId
             const buttonContainer = document.getElementById('paypal-button-container');
-            if (buttonContainer) {
-                buttonContainer.innerHTML = '';
-            }
-            buttonsRenderedRef.current = false;
-        };
-        cleanup(); // Perform cleanup on every config change or component re-mount
-
-        if (buttonsRenderedRef.current) {
+            if (buttonContainer) { buttonContainer.innerHTML = '<p class="text-gray-500">Create Payment Context to render PayPal buttons.</p>'; }
+            buttonsRenderedRef.current = false; // Reset flag
             return;
         }
 
-        // Construct PayPal SDK script URL
+        // Cleanup function for previous script and buttons before re-rendering
+        const cleanup = () => {
+            const existingScript = document.querySelector(`script[data-partner-attribution-id="CheckoutLtd_PSP"]`);
+            if (existingScript) { existingScript.remove(); }
+            const buttonContainer = document.getElementById('paypal-button-container');
+            if (buttonContainer) { buttonContainer.innerHTML = ''; }
+            buttonsRenderedRef.current = false; // Reset flag
+        };
+        cleanup(); // Perform cleanup on every config change or component re-mount
+
+        if (buttonsRenderedRef.current) { // Check ref to prevent double-rendering if effect runs too quickly
+            return;
+        }
+
+        // Construct PayPal SDK script URL dynamically based on config
         const scriptUrl = new URL("https://www.paypal.com/sdk/js");
-        scriptUrl.searchParams.append('client-id', 'ASLqLf4pnWuBshW8Qh8z_DRUbIv2Cgs3Ft8aauLm9Z-MO9FZx1INSo38nW109o_Xvu88P3tly88XbJMR');
-        scriptUrl.searchParams.append('merchant-id', "56PFWHCCGEKWW");
+        scriptUrl.searchParams.append('client-id', config.ckoClientId); // Use config.ckoClientId
+        scriptUrl.searchParams.append('merchant-id', config.paypalMerchantId); // Use config.paypalMerchantId
         scriptUrl.searchParams.append('disable-funding', config.disableFunding);
-        scriptUrl.searchParams.append('commit', String(config.commit)); // Must be 'true' or 'false' string
+        scriptUrl.searchParams.append('commit', String(config.commit));
         scriptUrl.searchParams.append('currency', config.currency);
         scriptUrl.searchParams.append('buyer-country', config.buyerCountry);
 
-        // Add intent=authorize if commit=false (manual capture)
         if (!config.commit) {
-            scriptUrl.searchParams.append('intent', 'authorize');
+            scriptUrl.searchParams.append('intent', 'authorize'); // Add intent=authorize if commit=false
         }
-
         if (config.enableFunding) {
             scriptUrl.searchParams.append('enable-funding', config.enableFunding);
         }
@@ -97,52 +154,16 @@ const PayPal = () => {
                 try {
                     window.paypal.Buttons({
                         createOrder: async (data, actions) => {
-                            setPaymentStatus(null);
-                            setPaymentDetails(null);
-                            setCheckoutContextId(null); // Clear previous context ID
-                            toast.info("Requesting Checkout.com payment context...");
-                            try {
-                                // 1. Call backend to request Checkout.com payment context
-                                const response = await axios.post(`${API_BASE_URL}api/payment-contexts`, {
-                                    source: { type: "paypal" },
-                                    currency: config.currency,
-                                    amount: Math.round(parseFloat(config.amount) * 100),
-                                    capture: config.capture, // Auto-capture or manual auth
-                                    items: [ // Example item, adjust as needed or make configurable
-                                        {
-                                            "name": "Wireless Headphones",
-                                            "unit_price": Math.round(parseFloat(config.amount) * 100),
-                                            "quantity": 1
-                                        }
-                                    ],
-                                    processing: {
-                                        "invoice_id": `inv-${Date.now()}`,
-                                        "user_action": config.userAction // 'pay_now' or 'continue'
-                                    },
-                                    processing_channel_id: config.processingChannelId,
-                                    success_url: config.successUrl,
-                                    failure_url: config.failureUrl,
-                                    reference: `cko-paypal-ref-${Date.now()}` // Dynamic reference
-                                });
-                                toast.success("Checkout.com payment context created!");
-                                setCheckoutContextId(response.data.id); // Store Checkout.com context ID
-                                console.error("Payment context ID:" ,response.data.id )
-                                console.error("Payment Order ID:" ,response.data.order_id )
-
-                                // Return PayPal's order_id to the PayPal SDK
-                                return response.data.order_id;
-                            } catch (error) {
-                                toast.error("Failed to create Checkout.com payment context. Check console for details.");
-                                console.error("Create Payment Context Error:", error.response ? error.response.data : error.message);
-                                throw new Error(error.response?.data?.error || "Failed to create payment context");
-                            }
+                            toast.info("PayPal button clicked. Using pre-fetched Order ID.");
+                            // --- FIX: Directly return the pre-fetched paypalOrderId ---
+                            return paypalOrderId; // This is the key change!
                         },
                         onApprove: async (data, actions) => {
                             toast.info("PayPal payment approved by user. Requesting payment capture/authorization...");
                             try {
-                                // 2. Call backend to request payment (capture or authorize) using the context ID
+                                // Call backend to request payment (capture or authorize) using the Checkout.com context ID
                                 const response = await axios.post(`${API_BASE_URL}api/paypal/request-payment`, {
-                                    payment_context_id: checkoutContextId, // Use the stored Checkout.com context ID
+                                    payment_context_id: ckoPaymentContextId, // Use the stored Checkout.com context ID
                                     processing_channel_id: config.processingChannelId,
                                     // Optionally update amount/shipping here if user changed on PayPal side (for 'continue' flow)
                                 });
@@ -180,19 +201,20 @@ const PayPal = () => {
                         console.error("PayPal Buttons failed to render:", renderErr);
                         toast.error("Failed to render PayPal buttons. Check your PayPal Merchant ID and client-id.");
                     });
-                    buttonsRenderedRef.current = true;
-                } catch {
-                    console.warn("PayPal SDK not fully loaded or buttons already rendered.");
+                    buttonsRenderedRef.current = true; // Mark as rendered
+                } catch (renderErr) { // Catch errors from rendering PayPal buttons
+                    console.error("Error rendering PayPal buttons:", renderErr);
+                    toast.error("An error occurred while rendering PayPal buttons.");
                 }
             } else {
-                console.warn("PayPal SDK script did not load correctly.");
+                console.warn("PayPal SDK script did not load correctly or buttons were already rendered.");
             }
         };
 
         document.body.appendChild(script);
 
-        return cleanup;
-    }, [config, API_BASE_URL, checkoutContextId]); // Add checkoutContextId to dependencies
+        return cleanup; // Cleanup on component unmount or re-render
+    }, [config, API_BASE_URL, paypalOrderId, ckoPaymentContextId]); // Dependencies: now include IDs to re-render buttons
 
 
     const handleReset = () => {
@@ -200,8 +222,10 @@ const PayPal = () => {
         localStorage.removeItem('paypalConfig');
         setPaymentStatus(null);
         setPaymentDetails(null);
-        setCheckoutContextId(null);
-        buttonsRenderedRef.current = false;
+        setCkoPaymentContextId(null); // Clear context ID
+        setPaypalOrderId(null); // Clear PayPal Order ID
+        setContextCreationLoading(false); // Reset loading state
+        buttonsRenderedRef.current = false; // Reset flag
     };
 
     const handleDownload = () => {
@@ -215,7 +239,6 @@ const PayPal = () => {
         URL.revokeObjectURL(url);
     };
 
-    // --- Toggle for disable/enable funding sources (simplified) ---
     const toggleDisableFunding = (source) => {
         setConfig(prevConfig => {
             const currentDisabled = prevConfig.disableFunding.split(',').map(s => s.trim()).filter(s => s);
@@ -398,11 +421,35 @@ const PayPal = () => {
 
                 {/* Right Panel: PayPal Buttons & Payment Details */}
                 <div className="flex flex-col h-full">
-                    <div className="flex justify-center items-center mb-6 min-h-[50px]">
-                        <div id="paypal-button-container" className="w-full flex justify-center" key={JSON.stringify(config)}>
-                            {paymentStatus === null && <p className="text-gray-500">Loading PayPal buttons...</p>}
-                        </div>
+                    {/* --- NEW: Context Creation Button & Status --- */}
+                    <div className="bg-white p-6 rounded-xl shadow-md mb-6 text-center">
+                        <h2 className="text-xl font-semibold mb-4">Payment Context</h2>
+                        <button
+                            onClick={handleCreatePaymentContext}
+                            disabled={contextCreationLoading}
+                            className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out disabled:opacity-50"
+                        >
+                            {contextCreationLoading ? 'Creating Context...' : 'Create Payment Context'}
+                        </button>
+                        {ckoPaymentContextId && paypalOrderId && (
+                            <div className="mt-4 text-left text-sm text-gray-700 break-all">
+                                <p><strong>Context ID:</strong> <code className="break-all">{ckoPaymentContextId}</code></p>
+                                <p><strong>PayPal Order ID:</strong> <code className="break-all">{paypalOrderId}</code></p>
+                            </div>
+                        )}
+                        {(contextCreationLoading || (!ckoPaymentContextId && !contextCreationLoading && paymentStatus === null)) && (
+                             <p className="text-gray-500 mt-2 text-sm">Create context to load PayPal buttons.</p>
+                        )}
                     </div>
+
+                    {/* PayPal Buttons (Conditional Rendering) */}
+                    {paypalOrderId && ( // Only render buttons if paypalOrderId is available
+                        <div className="flex justify-center items-center mb-6 min-h-[50px]">
+                            <div id="paypal-button-container" className="w-full flex justify-center" key={paypalOrderId}> {/* Key now depends on paypalOrderId */}
+                                {/* PayPal buttons will render here */}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Payment Status Display */}
                     {paymentStatus && (
