@@ -250,9 +250,7 @@ def paymentContext():
             },
             "processing": { # As per documentation example
                 "invoice_id": data.get("invoice_id", f"inv-{uuid.uuid4().hex[:10]}"), # Use provided invoice_id or generate
-                "user_action": user_action
-            },
-            "processing":{
+                "user_action": user_action,
                 "plan":{
                     "type":"merchant_initiated_billing_single_agreement"
                 }
