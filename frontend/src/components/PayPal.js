@@ -126,6 +126,8 @@ const PayPal = () => {
                                 });
                                 toast.success("Checkout.com payment context created!");
                                 setCheckoutContextId(response.data.id); // Store Checkout.com context ID
+                                console.error("Payment context ID:" ,response.data.id )
+                                console.error("Payment Order ID:" ,response.data.partner_metadata.order_id )
                                 
                                 // Return PayPal's order_id to the PayPal SDK
                                 return response.data.partner_metadata.order_id;
