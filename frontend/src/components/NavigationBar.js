@@ -20,7 +20,7 @@ const NavigationBar = () => {
             <Nav.Link href="/checkout-demo">Checkout Demo</Nav.Link>
             <NavDropdown title="More APMs" id="collapsible-nav-dropdown" data-bs-theme="light">
               <Dropdown.Item href="#klarna">Klarna</Dropdown.Item>
-              <Dropdown.Item href="#paypal">PayPal</Dropdown.Item>
+              <Dropdown.Item href="/paypal">PayPal</Dropdown.Item>
               <Dropdown.Item href="#stc">STC Pay</Dropdown.Item>
               <Dropdown.Item href="#tabby">Tabby</Dropdown.Item>
 
