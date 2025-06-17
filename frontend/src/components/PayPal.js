@@ -103,7 +103,7 @@ const PayPal = () => {
                             toast.info("Requesting Checkout.com payment context...");
                             try {
                                 // 1. Call backend to request Checkout.com payment context
-                                const response = await axios.post(`${API_BASE_URL}api/paypal/payment-contexts`, {
+                                const response = await axios.post(`${API_BASE_URL}api/payment-contexts`, {
                                     source: { type: "paypal" },
                                     currency: config.currency,
                                     amount: Math.round(parseFloat(config.amount) * 100),
