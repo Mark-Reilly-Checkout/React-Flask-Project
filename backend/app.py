@@ -82,7 +82,7 @@ def create_payment_session():
         email = data.get("email") # Get email from frontend, no default here as frontend should send it
         country = data.get("country") # Get country from frontend
         currency = data.get("currency") # Get currency from frontend
-        paymentType = data.get("payment_type", "Regular") # Get payment type from frontend, default to "Regular"
+        paymentType = data.get("paymentType", "Regular") # Get payment type from frontend, default to "Regular"
         # Get billing_address from frontend. It will be a dict.
         billing_address_from_frontend = data.get("billing_address")
 
