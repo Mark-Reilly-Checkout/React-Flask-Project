@@ -71,8 +71,8 @@ const PayPal = () => {
 
         // Construct PayPal SDK script URL
         const scriptUrl = new URL("https://www.paypal.com/sdk/js");
-        scriptUrl.searchParams.append('client-id', config.ckoClientId);
-        scriptUrl.searchParams.append('merchant-id', config.paypalMerchantId);
+        scriptUrl.searchParams.append('client-id', 'ASLqLf4pnWuBshW8Qh8z_DRUbIv2Cgs3Ft8aauLm9Z-MO9FZx1INSo38nW109o_Xvu88P3tly88XbJMR');
+        scriptUrl.searchParams.append('merchant-id', "56PFWHCCGEKWW");
         scriptUrl.searchParams.append('disable-funding', config.disableFunding);
         scriptUrl.searchParams.append('commit', String(config.commit)); // Must be 'true' or 'false' string
         scriptUrl.searchParams.append('currency', config.currency);
