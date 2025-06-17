@@ -162,7 +162,7 @@ const PayPal = () => {
                             toast.info("PayPal payment approved by user. Requesting payment capture/authorization...");
                             try {
                                 // Call backend to request payment (capture or authorize) using the Checkout.com context ID
-                                const response = await axios.post(`${API_BASE_URL}api/paypal/request-payment`, {
+                                const response = await axios.post(`${API_BASE_URL}api/payments`, {
                                     payment_context_id: ckoPaymentContextId, // Use the stored Checkout.com context ID
                                     processing_channel_id: config.processingChannelId,
                                     // Optionally update amount/shipping here if user changed on PayPal side (for 'continue' flow)

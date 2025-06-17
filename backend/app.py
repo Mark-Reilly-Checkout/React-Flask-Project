@@ -154,39 +154,21 @@ def create_payment_session():
         return jsonify(error_message), 500
 
 # POST - Regular - Payment
-@app.route('/api/requestPayment', methods=['POST'])
+@app.route('/api/payments', methods=['POST'])
+
 def regularPayment():
     try:
         data = request.json
+        processing_channel_id = data.get("processing_channel_id")
+        payment_context_id = data.get("payment_context_id")
+
         payment_request = {
-            "source": {
-                "type": "card",
-                "number": data["card_number"],  # Card number from frontend
-                "expiry_month": data["expiry_month"],  # Expiry month from frontend
-                "expiry_year": data["expiry_year"],  # Expiry year from frontend
-                "cvv": data["cvv"]  # CVV from frontend
-            },
-            "amount": data["amount"],  # Amount in cents
-            "currency": "USD",
-            "reference": "order-1234",
-            "capture": True,  # Auto-capture payment
-            "payment_type": "Regular",
-            "customer": {
-                "name":"Mark Reilly",
-                "email": data["email"]
-            },
-            "billing":{
-                "address":{
-                    "country":"GB"
-                }
-            },
-            "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
-            "success_url": "https://react-frontend-elpl.onrender.com/success",
-            "failure_url": "https://react-frontend-elpl.onrender.com/failure"
+            "payment_context_id": payment_context_id,  # Use the payment context ID from the frontend
+            "processing_channel_id": processing_channel_id,  # Use the processing channel ID from the frontend
         }
         response = checkout_api.payments.request_payment(payment_request)
         #Display the API response response.id will find the field with id from the response
-        return jsonify({"payment_id": response.id, "amount": response.amount, "status":response.status, "Response code": response.response_code, "Response Summary":response.response_summary})
+        return jsonify({"payment_id": response.amount, "status":response.status})
     except Exception as e:
         #When there is an error display responses error codes and type
         return jsonify({"error": str(e), "error Code": response.error_codes, "Error Type": response.error_type}), 500
