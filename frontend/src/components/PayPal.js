@@ -18,6 +18,7 @@ const defaultConfig = {
     failureUrl: 'https://react-flask-project-kpyi.onrender.com/failure', // Your failure redirect URL (adjust for deployment)
     disableFunding: 'credit,card,sepa,bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort',
     enableFunding: '', // 'paylater' to enable PayPal Pay Later
+    payment_type: 'Recurring'
 };
 
 // All possible commit types for dropdown
@@ -75,6 +76,7 @@ const PayPal = () => {
                 currency: config.currency,
                 amount: Math.round(parseFloat(config.amount) * 100),
                 capture: config.capture,
+                payment_type: config.payment_type,
                 items: [{
                     "name": "Wireless Headphones", // Example item, adjust as needed or make configurable
                     "unit_price": Math.round(parseFloat(config.amount) * 100),

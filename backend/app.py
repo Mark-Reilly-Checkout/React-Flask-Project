@@ -168,7 +168,7 @@ def regularPayment():
         }
         response = checkout_api.payments.request_payment(payment_request)
         #Display the API response response.id will find the field with id from the response
-        return jsonify({"payment_id": response.amount, "status":response.status})
+        return jsonify({"payment_id": response.id, "status":response.status})
     except Exception as e:
         #When there is an error display responses error codes and type
         return jsonify({"error": str(e), "error Code": response.error_codes, "Error Type": response.error_type}), 500
