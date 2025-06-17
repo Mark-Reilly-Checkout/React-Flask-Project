@@ -20,6 +20,7 @@ const countries = [
     { code: 'PT', name: 'Portugal', currency: 'EUR' },
     { code: 'SA', name: 'Saudi Arabia', currency: 'SAR' },
     { code: 'ES', name: 'Spain', currency: 'EUR' },
+    { code: 'IE', name: 'Ireland', currency: 'EUR' },
 ];
 
 const paymentTypes = [
