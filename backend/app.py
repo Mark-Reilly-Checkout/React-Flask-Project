@@ -223,36 +223,101 @@ def paymentLink():
             error_message["type"] = response.error_type  # Avoids accessing response if it's None
         return jsonify(error_message), 500
     
-# POST - Regular - Payment Link
+# POST - Regular - Payment context
 @app.route('/api/payment-contexts', methods=['POST'])
 def paymentContext():
+    response = None # Initialize response to None for error handling
     try:
         data = request.json
+        
+        # Extract dynamic values from the frontend request data
+        amount = data["amount"]
+        currency = data["currency"]
+        reference = data.get("reference", f"cko-context-{uuid.uuid4().hex[:10]}") # Use provided reference or generate a unique one
+        capture = data.get("capture", True) # Default to True if not provided by frontend
+        payment_type = data.get("payment_type", "Regular") # Default to Regular if not provided by frontend
+        
+        # Customer details (assuming frontend sends email and potentially name)
+        customer_email = data.get("email")
+        customer_name = data.get("customer_name", "Anonymous Customer")
+
+        # Billing address details (assuming frontend sends the full dict)
+        billing_address = data.get("billing_address")
+        
+        processing_channel_id = data.get("processing_channel_id")
+        success_url = data.get("success_url")
+        failure_url = data.get("failure_url")
+        user_action = data.get("user_action", "continue") # Default to 'continue' as per CKO docs
+
+        # Basic validation for mandatory fields from frontend
+        if not all([amount, currency, customer_email, billing_address, processing_channel_id, success_url, failure_url]):
+            return jsonify({"error": "Missing essential fields for payment context (amount, currency, email, billing_address, processing_channel_id, success_url, failure_url)"}), 400
+
         requestPaymentContext = {
-            "amount": data["amount"],  # Amount in cents
-            "currency": "USD",
-            "reference": "UCHA.SE LTD",
-            "capture": True,  # Auto-capture payment
-            "payment_type": "Regular",
+            "source": { # As per documentation example for PayPal payment contexts
+                "type": "paypal"
+            },
+            "amount": amount,
+            "currency": currency,
+            "reference": reference,
+            "capture": capture,
+            "payment_type": payment_type, # Use dynamic payment_type
             "customer": {
-                "name":"Mark Reilly",
-                "email": "test@checkout.com"
+                "name": customer_name,
+                "email": customer_email
             },
             "billing":{
-                "address":{
-                    "country":"GB"
-                }
+                "address": billing_address # Use dynamic billing address from frontend
             },
-            "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
-            "return_url":"https://react-frontend-elpl.onrender.com/paymentLink"
+            "processing": { # As per documentation example
+                "invoice_id": data.get("invoice_id", f"inv-{uuid.uuid4().hex[:10]}"), # Use provided invoice_id or generate
+                "user_action": user_action
+            },
+            "processing_channel_id": processing_channel_id, # Use dynamic processing_channel_id
+            "success_url": success_url, # Use dynamic success_url
+            "failure_url": failure_url, # Use dynamic failure_url
+            "items": data.get("items", [ # Items from frontend, or default dummy item
+                {
+                    "name": "Default Item",
+                    "unit_price": amount,
+                    "quantity": 1,
+                    "total_amount": amount
+                }
+            ])
         }
-        response = checkout_api.contexts.create_payment_contexts(requestPaymentContext)
-        #Display the API response response.id will find the field with id from the response
-        return jsonify({"id": response.id, "redirect_href": response._links.redirect.href, "status":response.status, "reference": response.reference})
+        
+        # Ensure 'contexts' exists in 'checkout_api' client
+        if not hasattr(checkout_api, "contexts") or not hasattr(checkout_api.contexts, "create_payment_contexts"):
+            print("Error: Checkout.com SDK 'contexts' client or 'create_payment_contexts' method not found.")
+            return jsonify({"error": "Payment Contexts SDK client not initialized correctly"}), 500
+
+        # Create the payment context
+        payment_contexts_client = checkout_api.contexts
+        response = payment_contexts_client.create_payment_contexts(requestPaymentContext)
+        
+        print(f"Payment Context created successfully with ID: {response.id}, Order ID: {response.partner_metadata.get('order_id')}")
+
+        # Return relevant response data to the frontend
+        return jsonify({
+            "id": response.id, # Checkout.com context ID
+            "partner_metadata": response.partner_metadata, # Contains PayPal's order_id
+            "status": response.status,
+            "reference": response.reference,
+            "_links": response._links.to_dict() # Convert _links object to dictionary
+        }), 201 # Return 201 Created for successful creation
+
     except Exception as e:
-        error_message = {"error": str(e)}
-        if response and hasattr(response, 'error_type'):
-            error_message["type"] = response.error_type  # Avoids accessing response if it's None
+        import traceback
+        traceback.print_exc()
+        error_message = {"error": "Internal Server Error during payment context creation", "details": str(e)}
+
+        if hasattr(e, 'http_metadata') and e.http_metadata and hasattr(e.http_metadata, 'status_code'):
+             error_message["http_status_code"] = e.http_metadata.status_code
+             if hasattr(e, 'error_details') and e.error_details:
+                 error_message["api_errors"] = e.error_details
+             print(f"Checkout API Error: Status {e.http_metadata.status_code}, Details: {e.error_details}")
+        elif response and hasattr(response, 'error_type'):
+            error_message["type"] = response.error_type
         return jsonify(error_message), 500
 
 

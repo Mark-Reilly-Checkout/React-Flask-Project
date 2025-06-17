@@ -12,7 +12,7 @@ const defaultConfig = {
     ckoClientId: 'ASLqLf4pnWuBshW8Qh8z_DRUbIv2Cgs3Ft8aauLm9Z-MO9FZx1INSo38nW109o_Xvu88P3tly88XbJMR', // Checkout.com Test Client ID for PayPal
     paypalMerchantId: '56PFWHCCGEKWW', // *** REPLACE THIS WITH YOUR PAYPAL MERCHANT ID ***
     // disableFunding: 'credit,card,sepa,bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort', // Default: disable many (as per CKO docs)
-    disableFunding: '&disable-funding=credit,card,sepa, bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort', // Start with no disabled funds, enable explicitly below if needed for testing
+    disableFunding: 'credit,card,sepa,bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort', // Start with no disabled funds, enable explicitly below if needed for testing
     enableFunding: '', // 'paylater' to enable PayPal Pay Later
     successUrl: 'https://react-flask-project-kpyi.onrender.com/success', // Your success redirect URL (adjust for deployment)
     failureUrl: 'https://react-flask-project-kpyi.onrender.com/failure',
@@ -103,7 +103,7 @@ const PayPal = () => {
                             toast.info("Requesting Checkout.com payment context...");
                             try {
                                 // 1. Call backend to request Checkout.com payment context
-                                const response = await axios.post(`${API_BASE_URL}api/paypal/create-payment-context`, {
+                                const response = await axios.post(`${API_BASE_URL}api/paypal/payment-contexts`, {
                                     source: { type: "paypal" },
                                     currency: config.currency,
                                     amount: Math.round(parseFloat(config.amount) * 100),
