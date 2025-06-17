@@ -126,6 +126,7 @@ const PayPal = () => {
                                 });
                                 toast.success("Checkout.com payment context created!");
                                 setCheckoutContextId(response.data.id); // Store Checkout.com context ID
+                                
                                 // Return PayPal's order_id to the PayPal SDK
                                 return response.data.partner_metadata.order_id;
                             } catch (error) {
@@ -396,7 +397,7 @@ const PayPal = () => {
                 {/* Right Panel: PayPal Buttons & Payment Details */}
                 <div className="flex flex-col h-full">
                     <div className="flex justify-center items-center mb-6 min-h-[50px]">
-                        <div id="paypal-button-container" className="w-full flex justify-center">
+                        <div id="paypal-button-container" className="w-full flex justify-center" key={JSON.stringify(config)}>
                             {paymentStatus === null && <p className="text-gray-500">Loading PayPal buttons...</p>}
                         </div>
                     </div>

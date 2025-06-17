@@ -292,7 +292,7 @@ def paymentContext():
         payment_contexts_client = checkout_api.contexts
         response = payment_contexts_client.create_payment_contexts(requestPaymentContext)
         
-        print(f"Payment Context created successfully with ID: {response.id}, Order ID: {response.partner_metadata.get('order_id')}")
+        print(f"Payment Context created successfully with ID: {response.id}, Order ID: {response.partner_metadata.order_id('order_id')}")
 
         # Return relevant response data to the frontend
         return jsonify({
