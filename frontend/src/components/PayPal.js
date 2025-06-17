@@ -18,7 +18,17 @@ const defaultConfig = {
     failureUrl: 'https://react-flask-project-kpyi.onrender.com/failure', // Your failure redirect URL (adjust for deployment)
     disableFunding: 'credit,card,sepa,bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort',
     enableFunding: '', // 'paylater' to enable PayPal Pay Later
+    payment_type: 'Regular' // Default payment type for context creation
 };
+
+const paymentTypes = [
+    { value: 'Regular', label: 'Regular Payment' },
+    { value: 'Recurring', label: 'Subscription Payment' },
+    { value: 'Installment', label: 'Installment Payment' },
+    { value: 'PayLater', label: 'Pay Later' },
+    { value: 'MOTO', label: 'MOTO Payment' },
+    { value:'Unscheduled', label: 'Unscheduled Payment' },
+];
 
 // All possible commit types for dropdown
 const commitOptions = [{ value: true, label: 'Pay Now (true)' }, { value: false, label: 'Continue (false)' }];
@@ -75,7 +85,7 @@ const PayPal = () => {
                 currency: config.currency,
                 amount: Math.round(parseFloat(config.amount) * 100),
                 capture: config.capture,
-                payment_type: "Recurring",
+                payment_type: config.paymentType,
                 items: [{
                     "name": "Wireless Headphones", // Example item, adjust as needed or make configurable
                     "unit_price": Math.round(parseFloat(config.amount) * 100),
@@ -359,6 +369,20 @@ const PayPal = () => {
                         </select>
                          <p className="text-xs text-gray-500 mt-1">Controls "Pay Now" vs "Continue" experience in PayPal pop-up.</p>
                     </div>
+                    <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-1">Payment Type</label>
+                                            <select
+                                                value={config.paymentType}
+                                                onChange={(e) => setConfig({ ...config, paymentType: e.target.value })}
+                                                className="w-full border rounded px-3 py-2"
+                                            >
+                                                {paymentTypes.map((type) => (
+                                                    <option key={type.value} value={type.value}>
+                                                        {type.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
 
                     {/* Capture Type */}
                     <div className="mb-4">
