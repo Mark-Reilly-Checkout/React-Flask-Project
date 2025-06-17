@@ -238,11 +238,11 @@ def paymentContext():
         payment_type = data.get("payment_type", "Regular") # Default to Regular if not provided by frontend
         
         # Customer details (assuming frontend sends email and potentially name)
-        customer_email = data.get("email")
-        customer_name = data.get("customer_name", "Anonymous Customer")
+        customer_email = data.get("email", "mark@hotmail.com")
+        customer_name = data.get("customer_name", "Mark Reilly")
 
         # Billing address details (assuming frontend sends the full dict)
-        billing_address = data.get("billing_address")
+        #billing_address = data.get("billing_address")
         
         processing_channel_id = data.get("processing_channel_id")
         success_url = data.get("success_url")
@@ -250,7 +250,7 @@ def paymentContext():
         user_action = data.get("user_action", "continue") # Default to 'continue' as per CKO docs
 
         # Basic validation for mandatory fields from frontend
-        if not all([amount, currency, customer_email, billing_address, processing_channel_id, success_url, failure_url]):
+        if not all([amount, currency, customer_email, processing_channel_id, success_url, failure_url]):
             return jsonify({"error": "Missing essential fields for payment context (amount, currency, email, billing_address, processing_channel_id, success_url, failure_url)"}), 400
 
         requestPaymentContext = {
