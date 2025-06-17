@@ -370,26 +370,6 @@ const PayPal = () => {
                         </div>
                     </div>
 
-                    {/* Disable Funding Options */}
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium mb-2">Disable Funding Sources</label>
-                        <div className="flex flex-wrap gap-2">
-                            {commonDisableFundingSources.map(source => (
-                                <button
-                                    key={source.value}
-                                    onClick={() => toggleDisableFunding(source.value)}
-                                    className={`px-3 py-1 rounded border text-sm ${config.disableFunding.split(',').includes(source.value)
-                                        ? 'bg-blue-600 text-white border-blue-600'
-                                        : 'bg-white text-gray-800 border-gray-300'
-                                        }`}
-                                >
-                                    {source.label}
-                                </button>
-                            ))}
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">Select sources to disable in the PayPal pop-up.</p>
-                    </div>
-
                     {/* Enable Funding Option */}
                     <div className="mb-6">
                         <label className="block text-sm font-medium mb-1">Enable Funding Sources (e.g., paylater)</label>

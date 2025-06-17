@@ -222,6 +222,39 @@ def paymentLink():
         if response and hasattr(response, 'error_type'):
             error_message["type"] = response.error_type  # Avoids accessing response if it's None
         return jsonify(error_message), 500
+    
+# POST - Regular - Payment Link
+@app.route('/api/payment-contexts', methods=['POST'])
+def paymentContext():
+    try:
+        data = request.json
+        requestPaymentContext = {
+            "amount": data["amount"],  # Amount in cents
+            "currency": "USD",
+            "reference": "UCHA.SE LTD",
+            "capture": True,  # Auto-capture payment
+            "payment_type": "Regular",
+            "customer": {
+                "name":"Mark Reilly",
+                "email": "test@checkout.com"
+            },
+            "billing":{
+                "address":{
+                    "country":"GB"
+                }
+            },
+            "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
+            "return_url":"https://react-frontend-elpl.onrender.com/paymentLink"
+        }
+        response = checkout_api.contexts.create_payment_contexts(requestPaymentContext)
+        #Display the API response response.id will find the field with id from the response
+        return jsonify({"id": response.id, "redirect_href": response._links.redirect.href, "status":response.status, "reference": response.reference})
+    except Exception as e:
+        error_message = {"error": str(e)}
+        if response and hasattr(response, 'error_type'):
+            error_message["type"] = response.error_type  # Avoids accessing response if it's None
+        return jsonify(error_message), 500
+
 
 # POST - Apple Pay session
 # This endpoint is called by the frontend to initiate the Apple Pay session
