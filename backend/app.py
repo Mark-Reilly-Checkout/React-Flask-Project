@@ -252,6 +252,11 @@ def paymentContext():
                 "invoice_id": data.get("invoice_id", f"inv-{uuid.uuid4().hex[:10]}"), # Use provided invoice_id or generate
                 "user_action": user_action
             },
+            "processing":{
+                "plan":{
+                    "type":"merchant_initiated_billing_single_agreement"
+                }
+            },
             "processing_channel_id": processing_channel_id, # Use dynamic processing_channel_id
             "success_url": success_url, # Use dynamic success_url
             "failure_url": failure_url, # Use dynamic failure_url
