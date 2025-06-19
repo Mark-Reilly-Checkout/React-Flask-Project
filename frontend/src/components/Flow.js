@@ -281,7 +281,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                     toast.error('Payment failed. Please try again.');
                     console.error("Payment Error:", error);
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
-                    navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
+                    //navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                 }
             });
             const flowComponent = checkout.create('flow');
