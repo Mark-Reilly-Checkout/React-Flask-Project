@@ -21,6 +21,7 @@ const countries = [
     { code: 'SA', name: 'Saudi Arabia', currency: 'SAR' },
     { code: 'ES', name: 'Spain', currency: 'EUR' },
     { code: 'IE', name: 'Ireland', currency: 'EUR' },
+    { code: 'NOR', name: 'Norway', currency: 'NOK' },
 ];
 
 const paymentTypes = [
