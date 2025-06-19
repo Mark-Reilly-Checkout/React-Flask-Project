@@ -274,7 +274,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                 onPaymentCompleted: (_component, paymentResponse) => {
                     toast.success('Payment completed successfully!');
                     toast.info('Payment ID: ' + paymentResponse.id);
-                    navigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);
+                    //avigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);
                     
                 },
                 onError: (component, error) => {
