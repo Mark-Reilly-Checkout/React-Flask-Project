@@ -235,15 +235,8 @@ const FlowHandleSubmit = () => {
                     setLastUpdatedFlow(new Date());
                 } else {
                     toast.error("Flow component is not available for mounting.");
-                }
-
-                // Klarna component (if needed)
-                const klarnaComponent = checkout.create("klarna");
-                const klarnaElement = document.getElementById('klarna-container');
-                if (klarnaElement && await klarnaComponent.isAvailable()) {
-                    klarnaComponent.mount(klarnaElement);
-                }
-
+                }            
+    
             } catch (err) {
                 console.error("Checkout Web Components Error:", err);
                 toast.error("Error loading Flow component: " + err.message);
@@ -421,11 +414,6 @@ const FlowHandleSubmit = () => {
                                     id="flow-container"
                                     className="mt-4 flex-grow w-full"
                                     style={{ minHeight: '500px', height: 'auto', minWidth: '350px', width: 'auto' }}
-                                ></div>
-                                <div
-                                    id='klarna-container'
-                                    className="mt-4 flex-grow w-full"
-                                    style={{ minHeight: '100px', height: 'auto', minWidth: '350px', width: 'auto' }}
                                 ></div>
                                 {/* --- Custom Submit Button for handleSubmit --- */}
                                 <div className="text-center mt-4 p-4">
