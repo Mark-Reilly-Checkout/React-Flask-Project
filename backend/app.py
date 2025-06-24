@@ -8,7 +8,7 @@ from checkout_sdk.checkout_configuration import CheckoutConfiguration
 from checkout_sdk.oauth_scopes import OAuthScopes
 from checkout_sdk.payments.sessions.sessions_client import PaymentSessionsClient
 from checkout_sdk.payments.sessions.sessions import PaymentSessionsRequest
-import json, datetime, traceback, os, requests, uuid
+import json, datetime, traceback, os, requests, uuid, traceback
 
 
 app = Flask(__name__)
@@ -384,6 +384,100 @@ def validate_merchant():
         print("❌ Error validating merchant:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/submit-flow-session-payment', methods=['POST'])
+def submit_flow_session_payment():
+    try:
+        data = request.json
+
+        # --- Data received from Frontend ---
+        session_data_token = data.get("session_data")
+        payment_session_id = data.get("payment_session_id") # The ID from the initial payment session creation
+        amount = data.get("amount") # Amount in minor units from frontend
+        currency = data.get("currency")
+        country = data.get("country") # From frontend demo config
+        email = data.get("email") # From frontend demo config
+        billing_address = data.get("billing_address") # From frontend demo config
+
+        # --- Basic Validation ---
+        if not all([session_data_token, payment_session_id, amount, currency, country, email, billing_address]):
+            return jsonify({"error": "Missing essential submission data"}), 400
+
+        # --- Construct the Request Body for Checkout.com API (based on cURL example) ---
+        # Note: Some fields like 'items', '3ds', 'ip_address' are optional or might come from your
+        # application's core logic. For this demo, we'll use a simple item.
+        request_body = {
+            "session_data": session_data_token,
+            "amount": amount, # Amount in minor units
+            "currency": currency, # Currency from frontend
+            "reference": f"SUBMIT-ORD-{payment_session_id}-{uuid.uuid4().hex[:6]}", # Generate a unique reference
+            "items": [ # Using a simple item from the demo
+                {
+                    "name": "Wireless Headphones",
+                    "quantity": 1,
+                    "unit_price": amount, # Amount is total, for 1 item, unit_price = total_amount
+                    "total_amount": amount,
+                    "reference": "ITEM-HEADPHONES"
+                }
+            ],
+            "customer": {
+                "email": email,
+                # "name": "Customer Name from Frontend", # If you collect customer name on frontend
+                "billing_address": billing_address
+            },
+            # Optional: Add 3DS settings if applicable
+            "3ds": {
+                "enabled": True, # Usually enabled
+                "challenge_indicator": "no_preference",
+            },
+            # Optional: IP Address (for fraud screening), you might get this from request.remote_addr
+            # "ip_address": request.remote_addr # Requires Flask's request object
+        }
+
+        # --- Make the API Call to Checkout.com ---
+        headers = {
+            'Authorization': f'Bearer sk_sbox_vyafhd3nyddbhrs6ks53gpx2mi5', # Use your Checkout.com Secret Key
+            'Content-Type': 'application/json'
+        }
+
+        # The URL for submitting payment sessions
+        submit_url = f'https://api.sandbox.checkout.com/payment-sessions/{payment_session_id}/submit'
+
+        print(f"Submitting payment session to CKO: {submit_url}")
+        print(f"Request body: {request_body}")
+
+        response = requests.post(submit_url, headers=headers, json=request_body)
+        response.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
+
+        # --- IMPORTANT: Return the UNMODIFIED response body from CKO to the frontend ---
+        # The frontend's flowComponent.completePayment() expects this specific format.
+        print(f"Checkout.com submission response status: {response.status_code}")
+        print(f"Checkout.com submission response body: {response.json()}")
+        return jsonify(response.json()), response.status_code
+
+    except requests.exceptions.HTTPError as http_err:
+        # Handle HTTP errors from Checkout.com API call
+        print(f"HTTP error occurred: {http_err}")
+        print(f"Response content: {http_err.response.text}")
+        try:
+            error_details = http_err.response.json()
+        except ValueError:
+            error_details = {"message": http_err.response.text}
+        return jsonify({"error": "CKO API HTTP Error", "details": error_details}), http_err.response.status_code
+    except requests.exceptions.ConnectionError as conn_err:
+        # Handle network connectivity errors
+        print(f"Connection error occurred: {conn_err}")
+        return jsonify({"error": "Network Connection Error to CKO", "details": str(conn_err)}), 503 # Service Unavailable
+    except requests.exceptions.Timeout as timeout_err:
+        # Handle request timeout errors
+        print(f"Timeout error occurred: {timeout_err}")
+        return jsonify({"error": "CKO API Request Timeout", "details": str(timeout_err)}), 504 # Gateway Timeout
+    except Exception as e:
+        # Catch any other unexpected errors
+        traceback.print_exc()
+        print(f"An unexpected error occurred during payment session submission: {e}")
+        return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run()

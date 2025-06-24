@@ -345,6 +345,12 @@ const Flow = ({ passedPaymentSession = null }) => {
                         >
                             Start New Session
                         </button>
+                        <button
+                            onClick={() => navigate('/flowHandleSubmit')}
+                            className="w-full bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out mt-4"
+                        >
+                            Go to handleSubmit Demo
+                        </button>
                     </div>
                 </div>
             ) : (
