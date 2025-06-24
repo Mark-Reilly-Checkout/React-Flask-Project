@@ -142,10 +142,12 @@ const FlowHandleSubmit = () => {
     const handleCustomSubmit = useCallback(() => {
         if (triggerValidationRef.current) {
             toast.info("Custom submit button clicked! Triggering Flow validation...");
+            console.log("Calling triggerValidationRef.current()");
             triggerValidationRef.current(); // Call the stored triggerValidation function
         } else {
             toast.error("Flow component not initialized or triggerValidation not available.");
         }
+        console.log("Custom Submit button clicked!");
     }, []); // No dependencies needed as triggerValidationRef is stable
 
     // --- useEffect for Initializing and Mounting Flow Component ---
@@ -201,7 +203,7 @@ const FlowHandleSubmit = () => {
                         navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                     }
                 });
-                const flowComponent = checkout.create('flow');
+                const flowComponent = checkout.create('googlepay');
                 
                 if (await flowComponent.isAvailable()) {
                     flowComponent.mount('#flow-container');
