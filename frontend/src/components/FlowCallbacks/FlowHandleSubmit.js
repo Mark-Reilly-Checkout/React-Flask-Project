@@ -203,7 +203,7 @@ const FlowHandleSubmit = () => {
                         navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                     }
                 });
-                const flowComponent = checkout.create('googlepay');
+                const flowComponent = checkout.create('flow');
                 
                 if (await flowComponent.isAvailable()) {
                     flowComponent.mount('#flow-container');
