@@ -173,11 +173,6 @@ const FlowHandleSubmit = () => {
                     componentOptions: {
                         flow: {
                           expandFirstPaymentMethod: false, // Hardcoded
-                          handleSubmit: (triggerValidation) => {
-                            // Store the triggerValidation function for our custom button to call later
-                            triggerValidationRef.current = triggerValidation;
-                            toast.info("Flow component ready. Click 'Submit Payment' to proceed.");
-                          },
                         },
                         card: { // Hardcoded card options for this demo
                           displayCardholderName: 'bottom',
@@ -189,6 +184,11 @@ const FlowHandleSubmit = () => {
                           },
                         },
                     },
+                    handleSubmit: (triggerValidation) => {
+                            // Store the triggerValidation function for our custom button to call later
+                            triggerValidationRef.current = triggerValidation;
+                            toast.info("Flow component ready. Click 'Submit Payment' to proceed.");
+                          },
                     // Handle Flow payment events
                     onPaymentCompleted: (_component, paymentResponse) => {
                         toast.success('Payment completed successfully!');
