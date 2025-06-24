@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react'; // Added useCallback
 import { Card } from 'react-bootstrap';
 import axios from 'axios';
 import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components';
@@ -39,20 +39,20 @@ const demoDefaultConfig = {
 
 const FlowHandleSubmit = () => {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false); // For session creation button
+    const [loading, setLoading] = useState(false);
+    // This state will hold the full session object received from the backend
     const [flowPaymentSession, setFlowPaymentSession] = useState(null);
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
     const [searchParams] = useSearchParams();
     const paymentIdFromUrl = searchParams.get("cko-payment-id");
 
+    // --- State for our simplified demo config (Amount, Email, Country, Billing) ---
     const [demoConfig, setDemoConfig] = useState(demoDefaultConfig);
 
     // Ref to hold the `triggerValidation` function passed by the Flow component
     const triggerValidationRef = useRef(null);
-    // New state for loading during the handleSubmit API call
-    const [submissionLoading, setSubmissionLoading] = useState(false);
 
-
+    // --- Initial setup for timestamps (kept for consistency with other demos) ---
     const [lastUpdatedSession, setLastUpdatedSession] = useState(null);
     const [lastUpdatedFlow, setLastUpdatedFlow] = useState(null);
     const [timeAgoSession, setTimeAgoSession] = useState('');
@@ -81,6 +81,7 @@ const FlowHandleSubmit = () => {
     }, [lastUpdatedSession, lastUpdatedFlow]);
 
 
+    // --- Handlers for demo config inputs ---
     const handleDemoAmountChange = (e) => setDemoConfig(prev => ({ ...prev, demoAmount: e.target.value }));
     const handleDemoEmailChange = (e) => setDemoConfig(prev => ({ ...prev, demoEmail: e.target.value }));
 
@@ -90,7 +91,7 @@ const FlowHandleSubmit = () => {
         setDemoConfig(prev => ({
             ...prev,
             demoCountry: selectedCountryCode,
-            demoCurrency: selectedCountry ? prev.demoCurrency : prev.demoCurrency, // Only set currency if country found
+            demoCurrency: selectedCountry ? selectedCountry.currency : prev.demoCurrency,
             demoBillingAddress: {
                 ...(prev.demoBillingAddress || {}),
                 country: selectedCountryCode
@@ -110,9 +111,10 @@ const FlowHandleSubmit = () => {
     };
 
 
+    // --- Function to create Payment Session (similar to Flow.js) ---
     const createPaymentSession = async () => {
         setLoading(true);
-        setFlowPaymentSession(null);
+        setFlowPaymentSession(null); // Clear previous session
         try {
             const response = await axios.post(`${API_BASE_URL}api/create-payment-session`, {
                 amount: Math.round(parseFloat(demoConfig.demoAmount) * 100),
@@ -120,9 +122,10 @@ const FlowHandleSubmit = () => {
                 country: demoConfig.demoCountry,
                 currency: demoConfig.demoCurrency,
                 billing_address: demoConfig.demoBillingAddress,
+                // paymentType (not configured in this simplified demo, could add if needed)
             });
 
-            setFlowPaymentSession(response.data);
+            setFlowPaymentSession(response.data); // Store the full session object
             setLastUpdatedSession(new Date());
             toast.success("Payment session created successfully! Flow component loading...");
 
@@ -135,27 +138,25 @@ const FlowHandleSubmit = () => {
         }
     };
 
-    // --- NEW: Custom Submit Button Handler (triggers Flow's internal validation) ---
+    // --- Callback for Custom Submit Button ---
     const handleCustomSubmit = useCallback(() => {
         if (triggerValidationRef.current) {
             toast.info("Custom submit button clicked! Triggering Flow validation...");
-            triggerValidationRef.current(); // Calls the stored triggerValidation function
+            triggerValidationRef.current(); // Call the stored triggerValidation function
         } else {
             toast.error("Flow component not initialized or triggerValidation not available.");
         }
     }, []); // No dependencies needed as triggerValidationRef is stable
 
-
-    // --- Core useEffect for Initializing and Mounting Flow Component ---
+    // --- useEffect for Initializing and Mounting Flow Component ---
     useEffect(() => {
         if (!flowPaymentSession?.id) {
+            // Only try to initialize if we have a valid session
             // Clear any old component if session disappears
             const flowContainer = document.getElementById('flow-container');
             if (flowContainer) {
                 flowContainer.innerHTML = '';
             }
-            // Clear triggerValidationRef if no session is active
-            triggerValidationRef.current = null;
             return;
         }
 
@@ -166,45 +167,14 @@ const FlowHandleSubmit = () => {
                     publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4', // Hardcoded public key for this demo
                     environment: 'sandbox', // Hardcoded environment
                     locale: 'en', // Hardcoded locale
+                    // --- IMPORTANT: Implement handleSubmit callback ---
                     componentOptions: {
                         flow: {
                           expandFirstPaymentMethod: false, // Hardcoded
-                          // --- IMPORTANT: Modified handleSubmit callback ---
-                          handleSubmit: async (flowComponent, submitData) => {
-                              setSubmissionLoading(true); // Start loading for submission API call
-                              toast.info("`handleSubmit` invoked! Submitting customized payment...");
-                              try {
-                                  // --- Call your backend to submit customized payment ---
-                                  // This backend endpoint should then call Checkout.com's
-                                  // "Submit a Payment Session Payment" endpoint.
-                                  const response = await axios.post(`${API_BASE_URL}api/submit-flow-session-payment`, {
-                                      session_data: submitData.session_data, // The token from Flow
-                                      payment_session_id: flowPaymentSession.id, // The ID of the session we created earlier
-                                      amount: Math.round(parseFloat(demoConfig.demoAmount) * 100), // Current amount
-                                      currency: demoConfig.demoCurrency, // Current currency
-                                      country: demoConfig.demoCountry, // Current country
-                                      email: demoConfig.demoEmail, // Current email
-                                      billing_address: demoConfig.demoBillingAddress, // Current billing address
-                                      // ... any other custom data you need to pass for payment submission
-                                  });
-
-                                  // --- Based on backend's response, complete the Flow component ---
-                                  if (response.data.status === 'Succeeded' || response.data.status === 'Authorized' || response.data.status === 'Captured') {
-                                      flowComponent.completePayment(window.Checkout.ApplePaySession.STATUS_SUCCESS); // Assuming STATUS_SUCCESS from CKO Web Components SDK
-                                      toast.success("Payment submitted successfully!");
-                                      navigate(`/success?cko-payment-id=${response.data.payment_id}&status=succeeded`);
-                                  } else {
-                                      flowComponent.completePayment(window.Checkout.ApplePaySession.STATUS_FAILURE);
-                                      toast.error(`Payment failed: ${response.data.status}`);
-                                      navigate(`/failure?cko-payment-id=${response.data.payment_id || 'N/A'}&status=failed`);
-                                  }
-                              } catch (error) {
-                                  flowComponent.completePayment(window.Checkout.ApplePaySession.STATUS_FAILURE);
-                                  toast.error("Error submitting payment via backend. See console.");
-                                  console.error("Custom Submit Error:", error.response ? error.response.data : error.message);
-                              } finally {
-                                  setSubmissionLoading(false); // Stop loading regardless of outcome
-                              }
+                          handleSubmit: (triggerValidation) => {
+                            // Store the triggerValidation function for our custom button to call later
+                            triggerValidationRef.current = triggerValidation;
+                            toast.info("Flow component ready. Click 'Submit Payment' to proceed.");
                           },
                         },
                         card: { // Hardcoded card options for this demo
@@ -217,15 +187,18 @@ const FlowHandleSubmit = () => {
                           },
                         },
                     },
-                    // onPaymentCompleted and onError callbacks will NOT be called if handleSubmit takes control.
-                    // However, it's good practice to keep them for fallback or other non-handleSubmit paths.
+                    // Handle Flow payment events
                     onPaymentCompleted: (_component, paymentResponse) => {
-                        toast.success('Payment completed (standard)!');
-                        console.log("Standard Payment Completed:", paymentResponse);
+                        toast.success('Payment completed successfully!');
+                        toast.info('Payment ID: ' + paymentResponse.id);
+                        console.log("Payment ID:", paymentResponse.id);
+                        navigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);
                     },
                     onError: (component, error) => {
-                        toast.error('Payment failed (standard)!');
-                        console.error("Standard Payment Error:", error);
+                        toast.error('Payment failed. Please try again.');
+                        console.error("Payment Error:", error);
+                        toast.info('Request ID: ' + (error?.request_id || 'N/A'));
+                        navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                     }
                 });
                 const flowComponent = checkout.create('flow');
@@ -235,8 +208,8 @@ const FlowHandleSubmit = () => {
                     setLastUpdatedFlow(new Date());
                 } else {
                     toast.error("Flow component is not available for mounting.");
-                }            
-    
+                }
+
             } catch (err) {
                 console.error("Checkout Web Components Error:", err);
                 toast.error("Error loading Flow component: " + err.message);
@@ -247,7 +220,7 @@ const FlowHandleSubmit = () => {
 
         initializeFlowComponent(flowPaymentSession);
 
-    }, [flowPaymentSession, API_BASE_URL, navigate, demoConfig]);
+    }, [flowPaymentSession, API_BASE_URL, navigate, demoConfig]); // Dependencies simplified
 
 
     // For URL parameters (kept for success/failure redirects)
@@ -287,7 +260,7 @@ const FlowHandleSubmit = () => {
                                     Instead of the Flow component having its own "Pay" button, this demo provides a custom "Submit Payment" button. When clicked, it calls a function (`triggerValidation`) exposed by the Flow component to initiate validation and payment processing.
                                 </p>
                                 <p className="text-gray-700 mt-2">
-                                    The `handleSubmit` callback then receives a <code>session_data</code> token, which this demo uses to submit the payment to your backend (<code>/api/submit-flow-session-payment</code>) for **customized processing**.
+                                    This allows you to perform your own pre-submission logic or integrate the payment process more tightly into a larger form.
                                 </p>
                             </Card.Text>
                         </Card.Body>
@@ -389,7 +362,7 @@ const FlowHandleSubmit = () => {
                                     </div>
                                 </div>
                                 <div className="text-center mt-4">
-                                    <button onClick={createPaymentSession} disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out disabled:opacity-50">
+                                    <button onClick={createPaymentSession} disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
                                         {loading ? "Processing..." : "Create Session"}
                                     </button>
                                     <br />
@@ -419,10 +392,10 @@ const FlowHandleSubmit = () => {
                                 <div className="text-center mt-4 p-4">
                                     <button
                                         onClick={handleCustomSubmit}
-                                        disabled={!triggerValidationRef.current || submissionLoading} // Disable if Flow not ready or submitting
+                                        disabled={!triggerValidationRef.current || loading} // Disable if Flow not ready or loading
                                         className="w-full bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out disabled:opacity-50"
                                     >
-                                        {submissionLoading ? 'Submitting Payment...' : 'Submit Payment (via `handleSubmit`)'}
+                                        Submit Payment (via `handleSubmit`)
                                     </button>
                                 </div>
                             </>
