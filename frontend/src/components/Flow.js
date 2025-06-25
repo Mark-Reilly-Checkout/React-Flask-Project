@@ -204,6 +204,7 @@ const Flow = ({ passedPaymentSession = null }) => {
             });
 
             console.log("Billing Address:", config.billingAddress);
+            console.log("3ds", config.threeDsEnabled)
 
             setInternalPaymentSessionDetails(response.data);
             setLastUpdatedSession(new Date());

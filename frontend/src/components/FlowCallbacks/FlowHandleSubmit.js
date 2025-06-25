@@ -183,6 +183,7 @@ const FlowHandleSubmit = () => {
                                       country: demoConfig.demoCountry,
                                       email: demoConfig.demoEmail,
                                       billing_address: demoConfig.demoBillingAddress,
+                                      threeDsEnabled: demoConfig.threeDsEnabled,
                                   });
 
                                   if (response.data.status === 'Succeeded' || response.data.status === 'Authorized' || response.data.status === 'Captured') {
