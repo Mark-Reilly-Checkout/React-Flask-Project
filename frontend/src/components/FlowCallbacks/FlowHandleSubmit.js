@@ -140,6 +140,10 @@ const FlowHandleSubmit = () => {
 
     // --- Callback for Custom Submit Button ---
     const handleCustomSubmit = useCallback(() => {
+        console.log("--- DEBUGGING flowComponentInstanceRef.current ---");
+        console.log("Value of flowComponentInstanceRef.current:", flowComponentInstanceRef.current);
+        console.log("Type of flowComponentInstanceRef.current:", typeof flowComponentInstanceRef.current);
+
         if (triggerValidationRef.current) {
             toast.info("Custom submit button clicked! Triggering Flow validation...");
             console.log("Calling triggerValidationRef.current()");
@@ -204,6 +208,11 @@ const FlowHandleSubmit = () => {
                     }
                 });
                 const flowComponent = checkout.create('flow');
+                console.log("--- DEBUGGING flowComponent after creation ---");
+                console.log("flowComponent object:", flowComponent);
+                console.log("Type of flowComponent.submit:", typeof flowComponent.submit);
+                console.log("--- END DEBUGGING ---");
+                flowComponentInstanceRef.current = flowComponent;
                 
                 if (await flowComponent.isAvailable()) {
                     flowComponent.mount('#flow-container');
