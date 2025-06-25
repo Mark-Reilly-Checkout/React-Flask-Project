@@ -98,6 +98,9 @@ def create_payment_session():
                 "name": data.get("customer_name", "Anonymous Customer"), # Assuming you might add customer name later
                 "email": email
             },
+            "3ds": {
+                "enabled": True, # Enable 3DS by default, can be adjusted based on frontend settings
+            },
             "billing": {
                 "address": billing_address_from_frontend
             },
