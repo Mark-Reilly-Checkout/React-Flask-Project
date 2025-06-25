@@ -277,7 +277,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                     //navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                 }
             });
-            const flowComponent = checkout.create('flow',{
+            const flowComponent = checkout.create('card',{
                 // --- IMPORTANT: handleClick callback implementation ---
                                           handleClick: (_self) => {
                                               
