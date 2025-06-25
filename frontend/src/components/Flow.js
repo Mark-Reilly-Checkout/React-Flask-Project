@@ -268,24 +268,20 @@ const Flow = ({ passedPaymentSession = null }) => {
                     //avigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);
                     
                 },
-                onError: (component, error) => {
+                onError: (_component, error) => {
                     toast.error('Payment failed. Please try again.');
                     console.error("Payment Error:", error);
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
                     //navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                 }
             });
-            const flowComponent = checkout.create('flow',{
+            const flowComponent = checkout.create('googlepay',{
                 // --- IMPORTANT: handleClick callback implementation ---
                                           handleClick: (_self) => {
-                                              // Check the current value of the ref
-                                              if (acceptedTermsRef.current) {
-                                                  toast.info("Terms accepted! Proceeding with payment...");
-                                                  return { continue: true }; // Allow the payment flow to continue
-                                              } else {
+                                              
                                                   toast.warn("Please accept the terms and conditions to proceed!");
                                                   return { continue: false }; // Prevent the payment flow from starting
-                                              }
+                        
                                           },
             });
             
