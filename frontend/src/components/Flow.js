@@ -53,7 +53,8 @@ const defaultConfig = {
         zip: 'SW1A 0AA',
         country: 'GB'
     },
-    paymentType:'Regular'
+    paymentType:'Regular',
+    threeDsEnabled: false,
 };
 
 const Flow = ({ passedPaymentSession = null }) => {
@@ -198,7 +199,8 @@ const Flow = ({ passedPaymentSession = null }) => {
                 country: config.country,
                 currency: config.currency,
                 billing_address: config.billingAddress,
-                paymentType: config.paymentType
+                paymentType: config.paymentType,
+                threeDsEnabled: config.threeDsEnabled
             });
 
             console.log("Billing Address:", config.billingAddress);
@@ -253,13 +255,8 @@ const Flow = ({ passedPaymentSession = null }) => {
                           expandFirstPaymentMethod: config.flowExpandFirstPaymentMethod,
                         },
                         card: {
-                            displayCardholderName: config.cardDisplayCardholderName,
                             data: {
-                                email: config.cardDataEmail,
-                                country: config.country,
-                                currency: config.currency,
-                                billing_address: config.billingAddress,
-                                paymentType: config.paymentType
+                                displayCardholderName: config.cardDisplayCardholderName,
                             },
                         },
                     },
@@ -455,6 +452,17 @@ const Flow = ({ passedPaymentSession = null }) => {
                                                     className="form-checkbox h-4 w-4 text-blue-600"
                                                 />
                                                 <span className="ml-2 text-gray-700">Require Terms Acceptance (controls `handleClick`)</span>
+                                            </label>
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="inline-flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={config.threeDsEnabled}
+                                                    onChange={(e) => setConfig({ ...config, threeDsEnabled: e.target.checked })}
+                                                    className="form-checkbox h-4 w-4 text-blue-600"
+                                                />
+                                                <span className="ml-2 text-gray-700">Enable 3D Secure (on payment)</span>
                                             </label>
                                         </div>
 

@@ -37,6 +37,7 @@ const demoDefaultConfig = {
     },
     // --- NEW: Terms Acceptance for handleClick demo ---
     forceTermsAcceptance: false, // Default to false for initial UI state
+    threeDsEnabled: false,
 };
 
 const FlowHandleClick = () => {
@@ -133,6 +134,7 @@ const FlowHandleClick = () => {
                 country: demoConfig.demoCountry,
                 currency: demoConfig.demoCurrency,
                 billing_address: demoConfig.demoBillingAddress,
+                threeDsEnabled: config.threeDsEnabled,
             });
 
             setFlowPaymentSession(response.data);
@@ -171,14 +173,10 @@ const FlowHandleClick = () => {
                         flow: {
                           expandFirstPaymentMethod: false, 
                         },
-                        card: { // Hardcoded card options for this demo
-                          displayCardholderName: 'bottom',
-                          data: {
-                            email: demoConfig.demoEmail,
-                            country: demoConfig.demoCountry,
-                            currency: demoConfig.demoCurrency,
-                            billing_address: demoConfig.demoBillingAddress,
-                          },
+                        card: {
+                            data: {
+                                displayCardholderName: config.cardDisplayCardholderName,
+                            },
                         },
                     },
                     // Handle Flow payment events (these will be called after handleClick allows continuation)

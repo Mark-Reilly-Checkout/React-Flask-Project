@@ -34,7 +34,8 @@ const demoDefaultConfig = {
         city: 'London',
         zip: 'SW1A 0AA',
         country: 'GB'
-    }
+    },
+    threeDsEnabled: false,
 };
 
 const FlowHandleSubmit = () => {
@@ -120,6 +121,7 @@ const FlowHandleSubmit = () => {
                 country: demoConfig.demoCountry,
                 currency: demoConfig.demoCurrency,
                 billing_address: demoConfig.demoBillingAddress,
+                threeDsEnabled: config.threeDsEnabled,
             });
 
             setFlowPaymentSession(response.data); // Store the full session object
@@ -202,14 +204,10 @@ const FlowHandleSubmit = () => {
                               }
                           },
                         },
-                        card: { // Hardcoded card options for this demo
-                          displayCardholderName: 'bottom',
-                          data: {
-                            email: demoConfig.demoEmail,
-                            country: demoConfig.demoCountry,
-                            currency: demoConfig.demoCurrency,
-                            billing_address: demoConfig.demoBillingAddress,
-                          },
+                        card: {
+                            data: {
+                                displayCardholderName: config.cardDisplayCardholderName,
+                            },
                         },
                     },
                     // onPaymentCompleted and onError callbacks will NOT be called if handleSubmit takes control.
