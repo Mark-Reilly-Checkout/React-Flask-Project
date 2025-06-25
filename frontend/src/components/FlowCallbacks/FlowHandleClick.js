@@ -169,20 +169,7 @@ const FlowHandleClick = () => {
                     locale: 'en', // Hardcoded
                     componentOptions: {
                         flow: {
-                          expandFirstPaymentMethod: false, // Hardcoded
-                          // --- IMPORTANT: handleSubmit (not used for this demo, keeping structure) ---
-                          // handleSubmit: (triggerValidation, submitData) => { /* ... */ },
-                          // --- IMPORTANT: handleClick callback implementation ---
-                          handleClick: (_self) => {
-                              // Check the current value of the ref
-                              if (acceptedTermsRef.current) {
-                                  toast.info("Terms accepted! Proceeding with payment...");
-                                  return { continue: true }; // Allow the payment flow to continue
-                              } else {
-                                  toast.warn("Please accept the terms and conditions to proceed!");
-                                  return { continue: false }; // Prevent the payment flow from starting
-                              }
-                          },
+                          expandFirstPaymentMethod: false, 
                         },
                         card: { // Hardcoded card options for this demo
                           displayCardholderName: 'bottom',
@@ -206,7 +193,19 @@ const FlowHandleClick = () => {
                         navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                     }
                 });
-                const flowComponent = checkout.create('flow');
+                const flowComponent = checkout.create('flow',{
+                    // --- IMPORTANT: handleClick callback implementation ---
+                          handleClick: (_self) => {
+                              // Check the current value of the ref
+                              if (acceptedTermsRef.current) {
+                                  toast.info("Terms accepted! Proceeding with payment...");
+                                  return { continue: true }; // Allow the payment flow to continue
+                              } else {
+                                  toast.warn("Please accept the terms and conditions to proceed!");
+                                  return { continue: false }; // Prevent the payment flow from starting
+                              }
+                          },
+            });
                 
                 if (await flowComponent.isAvailable()) {
                     flowComponent.mount('#flow-container');
