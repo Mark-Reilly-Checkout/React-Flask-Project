@@ -275,7 +275,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                     //navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                 }
             });
-            const flowComponent = checkout.create('googlepay',{
+            const flowComponent = checkout.create('flow',{
                 // --- IMPORTANT: handleClick callback implementation ---
                                           handleClick: (_self) => {
                                               
