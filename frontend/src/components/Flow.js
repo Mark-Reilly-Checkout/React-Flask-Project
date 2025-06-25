@@ -283,6 +283,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                                                   return { continue: false }; // Prevent the payment flow from starting
                         
                                           },
+                                          showPayButton: false,
             });
             
             setLastUpdatedFlow(new Date());
