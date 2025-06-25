@@ -121,7 +121,7 @@ const FlowHandleSubmit = () => {
                 country: demoConfig.demoCountry,
                 currency: demoConfig.demoCurrency,
                 billing_address: demoConfig.demoBillingAddress,
-                threeDsEnabled: config.threeDsEnabled,
+                threeDsEnabled: demoConfig.threeDsEnabled,
             });
 
             setFlowPaymentSession(response.data); // Store the full session object
@@ -206,7 +206,7 @@ const FlowHandleSubmit = () => {
                         },
                         card: {
                             data: {
-                                displayCardholderName: config.cardDisplayCardholderName,
+                                displayCardholderName: demoConfig.cardDisplayCardholderName,
                             },
                         },
                     },

@@ -134,7 +134,7 @@ const FlowHandleClick = () => {
                 country: demoConfig.demoCountry,
                 currency: demoConfig.demoCurrency,
                 billing_address: demoConfig.demoBillingAddress,
-                threeDsEnabled: config.threeDsEnabled,
+                threeDsEnabled: demoConfig.threeDsEnabled, 
             });
 
             setFlowPaymentSession(response.data);
@@ -175,7 +175,7 @@ const FlowHandleClick = () => {
                         },
                         card: {
                             data: {
-                                displayCardholderName: config.cardDisplayCardholderName,
+                                displayCardholderName: demoConfig.cardDisplayCardholderName,
                             },
                         },
                     },
