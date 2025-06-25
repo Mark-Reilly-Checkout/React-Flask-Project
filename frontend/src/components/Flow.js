@@ -616,12 +616,12 @@ const Flow = ({ passedPaymentSession = null }) => {
                             )}
                         </Card.Body>
                         <Card.Footer>
-                            <small className="text-muted">{timeAgoFlow}</small>
+                            <button onClick={() => flowComponentRef.current && flowComponentRef.current.submit()} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
+                                Submit Payment
+                            </button>
                         </Card.Footer>
                     </Card>
-                    <button onClick={() => flowComponentRef.current && flowComponentRef.current.submit()}>
-  Submit Payment
-</button>
+                    
                 </div>
             )}
             {paymentIdFromUrl && (
