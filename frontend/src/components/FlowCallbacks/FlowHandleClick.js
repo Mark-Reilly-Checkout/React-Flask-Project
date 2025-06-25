@@ -283,6 +283,17 @@ const FlowHandleClick = () => {
                                     />
                                 </div>
                                 <div className="mb-4">
+                                    <label className="inline-flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={demoConfig.threeDsEnabled}
+                                            onChange={(e) => setConfig({ ...config, threeDsEnabled: e.target.checked })}
+                                            className="form-checkbox h-4 w-4 text-blue-600"
+                                        />
+                                        <span className="ml-2 text-gray-700">Enable 3D Secure (on payment)</span>
+                                    </label>
+                                </div>
+                                <div className="mb-4">
                                     <label className="block text-sm font-medium mb-1">Customer Email</label>
                                     <input
                                         type="email"

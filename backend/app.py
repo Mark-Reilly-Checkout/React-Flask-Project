@@ -85,6 +85,7 @@ def create_payment_session():
         paymentType = data.get("paymentType", "Regular") # Get payment type from frontend, default to "Regular"
         # Get billing_address from frontend. It will be a dict.
         billing_address_from_frontend = data.get("billing_address")
+        threeDsEnabled = data.get("threeDsEnabled", False)
 
         if not email or not country or not currency or not billing_address_from_frontend:
             return jsonify({"error": "Missing essential payment session data (email, country, currency, billing_address)"}), 400
@@ -99,7 +100,7 @@ def create_payment_session():
                 "email": email
             },
             "3ds": {
-                "enabled": True, # Enable 3DS by default, can be adjusted based on frontend settings
+                "enabled": threeDsEnabled, # Enable 3DS by default, can be adjusted based on frontend settings
                 "attempt_n3d": False
             },
             "billing": {
@@ -402,6 +403,7 @@ def submit_flow_session_payment():
         country = data.get("country") # From frontend demo config
         email = data.get("email") # From frontend demo config
         billing_address = data.get("billing_address") # From frontend demo config
+        threeDsEnabled = data.get("threeDsEnabled")
 
         # --- Basic Validation ---
         if not all([session_data_token, payment_session_id, amount, currency, country, email, billing_address]):
@@ -431,7 +433,7 @@ def submit_flow_session_payment():
             },
             # Optional: Add 3DS settings if applicable
             "3ds": {
-                "enabled": True, # Usually enabled
+                "enabled": threeDsEnabled, # Usually enabled
                 "challenge_indicator": "no_preference",
             },
             # Optional: IP Address (for fraud screening), you might get this from request.remote_addr
