@@ -76,6 +76,8 @@ const Flow = ({ passedPaymentSession = null }) => {
     const [timeAgoSession, setTimeAgoSession] = useState('');
     const [timeAgoFlow, setTimeAgoFlow] = useState('');
     const [timeAgoConfig, setTimeAgoConfig] = useState('');
+    const flowComponentRef = useRef(null);
+
 
 
     const getTimeAgo = (timestamp) => {
@@ -284,7 +286,10 @@ const Flow = ({ passedPaymentSession = null }) => {
                         
                                           },
                                           showPayButton: false,
+                                          
             });
+            flowComponent.mount('#flow-container');
+            flowComponentRef.current = flowComponent;
             
             setLastUpdatedFlow(new Date());
 
@@ -614,6 +619,9 @@ const Flow = ({ passedPaymentSession = null }) => {
                             <small className="text-muted">{timeAgoFlow}</small>
                         </Card.Footer>
                     </Card>
+                    <button onClick={() => flowComponentRef.current && flowComponentRef.current.submit()}>
+  Submit Payment
+</button>
                 </div>
             )}
             {paymentIdFromUrl && (
