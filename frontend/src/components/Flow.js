@@ -249,15 +249,6 @@ const Flow = ({ passedPaymentSession = null }) => {
                     componentOptions: {
                         flow: {
                           expandFirstPaymentMethod: config.flowExpandFirstPaymentMethod,
-                          handleClick: (_self) => {
-                              if (config.forceTermsAcceptance && !acceptedTermsRef.current) {
-                                  toast.warn("Please accept the terms and conditions before paying.");
-                                  return { continue: false };
-                              } else {
-                                  toast.info("Proceeding with payment...");
-                                  return { continue: true };
-                              }
-                          },
                         },
                         card: {
                             displayCardholderName: config.cardDisplayCardholderName,
@@ -284,7 +275,19 @@ const Flow = ({ passedPaymentSession = null }) => {
                     //navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                 }
             });
-            const flowComponent = checkout.create('googlepay');
+            const flowComponent = checkout.create('flow',{
+                // --- IMPORTANT: handleClick callback implementation ---
+                                          handleClick: (_self) => {
+                                              // Check the current value of the ref
+                                              if (acceptedTermsRef.current) {
+                                                  toast.info("Terms accepted! Proceeding with payment...");
+                                                  return { continue: true }; // Allow the payment flow to continue
+                                              } else {
+                                                  toast.warn("Please accept the terms and conditions to proceed!");
+                                                  return { continue: false }; // Prevent the payment flow from starting
+                                              }
+                                          },
+            });
             
             setLastUpdatedFlow(new Date());
 

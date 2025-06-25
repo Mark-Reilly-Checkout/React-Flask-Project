@@ -193,7 +193,7 @@ const FlowHandleClick = () => {
                         navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                     }
                 });
-                const flowComponent = checkout.create('googlepay',{
+                const flowComponent = checkout.create('applepay',{
                     // --- IMPORTANT: handleClick callback implementation ---
                           handleClick: (_self) => {
                               // Check the current value of the ref
