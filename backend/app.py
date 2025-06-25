@@ -100,6 +100,7 @@ def create_payment_session():
             },
             "3ds": {
                 "enabled": True, # Enable 3DS by default, can be adjusted based on frontend settings
+                "attempt_n3d": False
             },
             "billing": {
                 "address": billing_address_from_frontend
