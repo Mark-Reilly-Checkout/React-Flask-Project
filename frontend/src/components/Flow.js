@@ -275,17 +275,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                     //navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                 }
             });
-            const flowComponent = checkout.create('flow',{
-                // --- IMPORTANT: handleClick callback implementation ---
-                                          handleClick: (_self) => {
-                                              
-                                                  toast.warn("Please accept the terms and conditions to proceed!");
-                                                  return { continue: false }; // Prevent the payment flow from starting
-                        
-                                          },
-                                          showPayButton: false,
-                                          
-            });
+            const flowComponent = checkout.create('flow');
             flowComponent.mount('#flow-container');
             flowComponentRef.current = flowComponent;
             
