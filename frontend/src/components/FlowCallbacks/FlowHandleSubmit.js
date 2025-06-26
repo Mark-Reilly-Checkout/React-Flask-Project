@@ -26,8 +26,8 @@ const countries = [
 const demoDefaultConfig = {
   demoAmount: '50.00',
   demoEmail: 'test@example.com',
-  demoCountry: 'GB',
-  demoCurrency: 'GBP',
+  demoCountry: 'ES',
+  demoCurrency: 'EUR',
   demoBillingAddress: {
     address_line1: '123 Main St',
     address_line2: '',

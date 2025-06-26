@@ -399,10 +399,6 @@ def submit_flow_session_payment():
         session_data_token = data.get("session_data")
         payment_session_id = data.get("payment_session_id") # The ID from the initial payment session creation
         amount = data.get("amount") # Amount in minor units from frontend
-        currency = data.get("currency")
-        country = data.get("country") # From frontend demo config
-        email = data.get("email") # From frontend demo config
-        billing_address = data.get("billing_address") # From frontend demo config
         threeDsEnabled = data.get("threeDsEnabled")
 
         # --- Basic Validation ---
@@ -415,7 +411,6 @@ def submit_flow_session_payment():
         request_body = {
             "session_data": session_data_token,
             "amount": amount, # Amount in minor units
-            "currency": currency, # Currency from frontend
             "reference": f"SUBMIT-ORD-{payment_session_id}-{uuid.uuid4().hex[:6]}", # Generate a unique reference
             "items": [ # Using a simple item from the demo
                 {
@@ -426,11 +421,6 @@ def submit_flow_session_payment():
                     "reference": "ITEM-HEADPHONES"
                 }
             ],
-            "customer": {
-                "email": email,
-                # "name": "Customer Name from Frontend", # If you collect customer name on frontend
-                "billing_address": billing_address
-            },
             # Optional: Add 3DS settings if applicable
             "3ds": {
                 "enabled": threeDsEnabled, # Usually enabled
