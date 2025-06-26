@@ -360,19 +360,6 @@ const FlowHandleSubmit = () => {
                                           </div>
                                       </div>
                                   </div>
-                                  {/* --- NEW: Terms Acceptance Checkbox --- */}
-                                  <div className="mt-4">
-                                      <label className="inline-flex items-center">
-                                          <input
-                                              type="checkbox"
-                                              checked={demoConfig.forceTermsAcceptance}
-                                              onChange={handleTermsAcceptanceChange}
-                                              className="form-checkbox h-4 w-4 text-blue-600"
-                                          />
-                                          <span className="ml-2 text-gray-700">I accept the Terms & Conditions</span>
-                                      </label>
-                                  </div>
-                                  {/* --- END NEW --- */}
                                   <div className="text-center mt-4">
                                       <button onClick={createPaymentSession} disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out disabled:opacity-50">
                                           {loading ? "Processing..." : "Create Session"}
