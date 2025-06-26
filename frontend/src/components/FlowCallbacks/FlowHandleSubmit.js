@@ -169,10 +169,6 @@ const FlowHandleSubmit = () => {
                 session_data: submitData.session_data,
                 payment_session_id: flowPaymentSession.id,
                 amount: Math.round(parseFloat(demoConfig.demoAmount) * 100),
-                currency: demoConfig.demoCurrency,
-                country: demoConfig.demoCountry,
-                email: demoConfig.demoEmail,
-                billing_address: demoConfig.demoBillingAddress,
                 threeDsEnabled: true // Or get from your config
               };
               // Call your backend endpoint
