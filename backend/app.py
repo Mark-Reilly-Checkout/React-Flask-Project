@@ -402,7 +402,7 @@ def submit_flow_session_payment():
         threeDsEnabled = data.get("threeDsEnabled")
 
         # --- Basic Validation ---
-        if not all([session_data_token, payment_session_id, amount, currency, country, email, billing_address]):
+        if not all([session_data_token, payment_session_id, amount]):
             return jsonify({"error": "Missing essential submission data"}), 400
 
         # --- Construct the Request Body for Checkout.com API (based on cURL example) ---
