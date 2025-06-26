@@ -230,50 +230,203 @@ const FlowHandleSubmit = () => {
   }, []);
 
   return (
-    <div>
-      <Card body className="mb-3">
-        <h4>Demo: Flow Component with Custom Submit Button (handleSubmit)</h4>
-        <div>
-          <label>Amount:</label>
-          <input type="number" min="0" step="0.01" value={demoConfig.demoAmount} onChange={handleDemoAmountChange} />
-          <label>Email:</label>
-          <input type="email" value={demoConfig.demoEmail} onChange={handleDemoEmailChange} />
-          <label>Country:</label>
-          <select value={demoConfig.demoCountry} onChange={handleDemoCountryChange}>
-            {countries.map(c => (
-              <option key={c.code} value={c.code}>{c.name}</option>
-            ))}
-          </select>
-          <label>Billing Address:</label>
-          <input type="text" name="address_line1" placeholder="Address Line 1" value={demoConfig.demoBillingAddress.address_line1} onChange={handleDemoBillingAddressChange} />
-          <input type="text" name="address_line2" placeholder="Address Line 2" value={demoConfig.demoBillingAddress.address_line2} onChange={handleDemoBillingAddressChange} />
-          <input type="text" name="city" placeholder="City" value={demoConfig.demoBillingAddress.city} onChange={handleDemoBillingAddressChange} />
-          <input type="text" name="zip" placeholder="ZIP" value={demoConfig.demoBillingAddress.zip} onChange={handleDemoBillingAddressChange} />
-        </div>
-        <button onClick={createPaymentSession} disabled={loading}>
-          {loading ? "Creating Session..." : "Create Session"}
-        </button>
-      </Card>
-      <div>
-        <div id="flow-container" style={{ minHeight: 250, marginBottom: 16 }} />
-        <button onClick={handleCustomSubmit} disabled={loading || !flowPaymentSession?.id}>
-          Submit Payment
-        </button>
-      </div>
-      <div>
-        <p>Session ID: {flowPaymentSession?.id || '(none)'}</p>
-        <p>{timeAgoSession}</p>
-        <p>{timeAgoFlow}</p>
-      </div>
-      {paymentIdFromUrl && (
-        <div>
-          <h5>Payment completed!</h5>
-          <strong>Payment ID:</strong>
-          <code>{paymentIdFromUrl}</code>
-        </div>
-      )}
-    </div>
-  );
+          <div className="min-h-screen bg-gray-100 p-6">
+              <h1 className="text-3xl font-bold text-center mb-8"> Flow `handleSubmit` Demo</h1>
+  
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* LEFT COLUMN: Information Box + Session Request */}
+                  <div className="flex flex-col gap-6">
+                      {/* TOP LEFT CARD: Information about handleClick */}
+                      <Card>
+                          <Card.Body>
+                              <Card.Title className="text-center">About `handleSubmit`</Card.Title>
+                              <Card.Text>
+                                  <p className="text-gray-700">
+                                      The <code>handleClick()</code> callback in Checkout.com Flow component is invoked **before** a wallet payment button (like Apple Pay, Google Pay, or PayPal) is clicked.
+                                  </p>
+                                  <p className="text-gray-700 mt-2">
+                                      This allows you to perform **pre-payment checks or validations** (e.g., ensure terms are accepted, validate order value). You return <code>{`{ continue: true }`}</code> to proceed or <code>{`{ continue: false }`}</code> to stop the payment flow.
+                                  </p>
+                                  <p className="text-gray-700 mt-2">
+                                      In this demo, try clicking an APM button with/without checking the "Accept Terms" box below.
+                                  </p>
+                              </Card.Text>
+                          </Card.Body>
+                      </Card>
+  
+                      {/* BOTTOM LEFT CARD: Session Request */}
+                      <Card>
+                          <Card.Body>
+                              <Card.Title className="text-center">Request a new payment session</Card.Title>
+                              <Card.Text>
+                                  <div className="mb-4">
+                                      <label className="block text-sm font-medium mb-1">Amount ($)</label>
+                                      <input
+                                          type="text"
+                                          value={demoConfig.demoAmount}
+                                          onChange={handleDemoAmountChange}
+                                          className="w-full border rounded px-3 py-2"
+                                      />
+                                  </div>
+                                  <div className="mb-4">
+                                      <label className="inline-flex items-center">
+                                          <input
+                                              type="checkbox"
+                                              checked={demoConfig.threeDsEnabled}
+                                              onChange={(e) => setDemoConfig({ ...demoConfig, threeDsEnabled: e.target.checked })}
+                                              className="form-checkbox h-4 w-4 text-blue-600"
+                                          />
+                                          <span className="ml-2 text-gray-700">Enable 3D Secure (on payment)</span>
+                                      </label>
+                                  </div>
+                                  <div className="mb-4">
+                                      <label className="block text-sm font-medium mb-1">Customer Email</label>
+                                      <input
+                                          type="email"
+                                          value={demoConfig.demoEmail}
+                                          onChange={handleDemoEmailChange}
+                                          className="w-full border rounded px-3 py-2"
+                                      />
+                                  </div>
+                                  <div className="mb-4">
+                                      <label className="block text-sm font-medium mb-1">Country</label>
+                                      <select
+                                          value={demoConfig.demoCountry}
+                                          onChange={handleDemoCountryChange}
+                                          className="w-full border rounded px-3 py-2"
+                                      >
+                                          {countries.map((c) => (
+                                              <option key={c.code} value={c.code}>
+                                                  {c.name}
+                                              </option>
+                                          ))}
+                                      </select>
+                                  </div>
+                                  <div className="mb-4">
+                                      <label className="block text-sm font-medium mb-1">Currency (Auto-selected)</label>
+                                      <input
+                                          type="text"
+                                          value={demoConfig.demoCurrency}
+                                          readOnly
+                                          className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+                                      />
+                                  </div>
+                                  <h3 className="text-lg font-semibold mb-3 mt-4">Billing Address</h3>
+                                  <div className="space-y-4">
+                                      <div>
+                                          <label className="block text-sm font-medium mb-1">Address Line 1</label>
+                                          <input
+                                              type="text"
+                                              name="address_line1"
+                                              value={demoConfig.demoBillingAddress?.address_line1 || ''} 
+                                              onChange={handleDemoBillingAddressChange}
+                                              className="w-full border rounded px-3 py-2"
+                                              placeholder="123 Main St"
+                                          />
+                                      </div>
+                                      <div>
+                                          <label className="block text-sm font-medium mb-1">Address Line 2 (Optional)</label>
+                                          <input
+                                              type="text"
+                                              name="address_line2"
+                                              value={demoConfig.demoBillingAddress?.address_line2 || ''} 
+                                              onChange={handleDemoBillingAddressChange}
+                                              className="w-full border rounded px-3 py-2"
+                                              placeholder="Apt 4B"
+                                          />
+                                      </div>
+                                      <div className="flex gap-4">
+                                          <div className="flex-1">
+                                              <label className="block text-sm font-medium mb-1">City</label>
+                                              <input
+                                                  type="text"
+                                                  name="city"
+                                                  value={demoConfig.demoBillingAddress?.city || ''}
+                                                  onChange={handleDemoBillingAddressChange}
+                                                  className="w-full border rounded px-3 py-2"
+                                                  placeholder="London"
+                                              />
+                                          </div>
+                                          <div className="flex-1">
+                                              <label className="block text-sm font-medium mb-1">Zip Code</label>
+                                              <input
+                                                  type="text"
+                                                  name="zip"
+                                                  value={demoConfig.demoBillingAddress?.zip || ''} 
+                                                  onChange={handleDemoBillingAddressChange}
+                                                  className="w-full border rounded px-3 py-2"
+                                                  placeholder="SW1A 0AA"
+                                              />
+                                          </div>
+                                      </div>
+                                  </div>
+                                  {/* --- NEW: Terms Acceptance Checkbox --- */}
+                                  <div className="mt-4">
+                                      <label className="inline-flex items-center">
+                                          <input
+                                              type="checkbox"
+                                              checked={demoConfig.forceTermsAcceptance}
+                                              onChange={handleTermsAcceptanceChange}
+                                              className="form-checkbox h-4 w-4 text-blue-600"
+                                          />
+                                          <span className="ml-2 text-gray-700">I accept the Terms & Conditions</span>
+                                      </label>
+                                  </div>
+                                  {/* --- END NEW --- */}
+                                  <div className="text-center mt-4">
+                                      <button onClick={createPaymentSession} disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out disabled:opacity-50">
+                                          {loading ? "Processing..." : "Create Session"}
+                                      </button>
+                                      <br />
+                                      {flowPaymentSession && <p className="mt-2 text-sm text-gray-600">Session ID: {flowPaymentSession.id}</p>}
+                                  </div>
+                              </Card.Text>
+                          </Card.Body>
+                          <Card.Footer>
+                              <small className="text-muted">{timeAgoSession}</small>
+                          </Card.Footer>
+                      </Card>
+                  </div>
+  
+                  {/* RIGHT COLUMN: Flow Component Display */}
+                  <Card>
+                      <Card.Body className="flex flex-col h-full p-0">
+                          <Card.Title className="text-center p-4">Flow Component Display</Card.Title>
+                          {/* Render Flow component only if a session is available */}
+                          {flowPaymentSession?.id ? (
+                              <>
+                                  <div
+                                      id="flow-container"
+                                      className="mt-4 flex-grow w-full"
+                                      style={{ minHeight: '500px', height: 'auto', minWidth: '350px', width: 'auto' }}
+                                  ></div>
+                              </>
+                          ) : (
+                              <p className="text-center text-gray-500 mt-4">
+                                  Click 'Create Session' to load the payment component.
+                              </p>
+                          )}
+                          <div>
+                            <button onClick={handleCustomSubmit} disabled={loading || !flowPaymentSession?.id} className="px-4 py-2 rounded bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out disabled:opacity-50">
+                                Submit Payment
+                            </button>
+                          </div>
+                      </Card.Body>
+                      <Card.Footer>
+                          <small className="text-muted">{timeAgoFlow}</small>
+                      </Card.Footer>
+                  </Card>
+              </div>
+              {paymentIdFromUrl && (
+                  <div className="text-center my-3">
+                      <p className="text-success">Payment completed!</p>
+                      <p>
+                          <strong>Payment ID:</strong> <code>{paymentIdFromUrl}</code>
+                      </p>
+                  </div>
+              )}
+          </div>
+      );
 };
 
 export default FlowHandleSubmit;
