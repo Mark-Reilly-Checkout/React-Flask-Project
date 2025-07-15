@@ -417,7 +417,7 @@ def submit_flow_session_payment():
                     "name": "Wireless Headphones",
                     "quantity": 1,
                     "unit_price": amount, # Amount is total, for 1 item, unit_price = total_amount
-                    "total_amount": amount,
+                    "total_amount": 5555,
                     "reference": "ITEM-HEADPHONES"
                 }
             ],
