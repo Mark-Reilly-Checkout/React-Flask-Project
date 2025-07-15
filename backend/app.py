@@ -124,7 +124,7 @@ def create_payment_session():
                 }
             ],
             "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
-            "success_url": "https://react-frontend-elpl.onrender.com/success/heelo", # Changed to success page for better flow
+            "success_url": "https://react-frontend-elpl.onrender.com/successing", # Changed to success page for better flow
             "failure_url": "https://react-frontend-elpl.onrender.com/failure"
         }
 

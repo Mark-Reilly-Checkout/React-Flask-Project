@@ -45,7 +45,7 @@ function App() {
         <Route path="/failure" element={<Failure />} />
         <Route path="/googlePay" element={<GooglePay />} />
         <Route path="/test" element={<Test />} />
-        <Route path="/success" element={<Success />} />
+        <Route path="/successing" element={<Success />} />
         <Route path="/failure" element={<Failure />} />
         <Route path="/paypal" element={<PayPal />} />
         <Route path="/flowHandleSubmit" element={<FlowHandleSubmit />} />
