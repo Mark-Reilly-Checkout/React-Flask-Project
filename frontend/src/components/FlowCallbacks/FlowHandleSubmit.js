@@ -164,6 +164,7 @@ const FlowHandleSubmit = () => {
           handleSubmit: async (flowComponent, submitData) => {
             try {
               toast.info("Submitting payment...");
+              console.log("Submit Session Data ", submitData.session_data)
               // Compose the payload for your backend
               const payload = {
                 session_data: submitData.session_data,
