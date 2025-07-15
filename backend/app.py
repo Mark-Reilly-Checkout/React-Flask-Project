@@ -437,7 +437,7 @@ def submit_flow_session_payment():
         }
 
         # The URL for submitting payment sessions
-        submit_url = f'https://api.sandbox.checkout.com/payment-sessions/{payment_session_id}/submit'
+        submit_url = f'https://api.sandbox.checkout.com/payment-sessions/{payment_session_id}/submits'
 
         print(f"Submitting payment session to CKO: {submit_url}")
         print(f"Request body: {request_body}")
