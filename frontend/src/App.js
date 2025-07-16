@@ -41,11 +41,9 @@ function App() {
         <Route path="/paymentLink" element={<PaymentLink />} />
         <Route path="/applePay" element={<ApplePay />} />
         <Route path="/" element={<div>Welcome to the Payment App</div>} />
-        <Route path="/success" element={<Success />} />
-        <Route path="/failure" element={<Failure />} />
         <Route path="/googlePay" element={<GooglePay />} />
         <Route path="/test" element={<Test />} />
-        <Route path="/successing" element={<Success />} />
+        <Route path="/success" element={<Success />} />
         <Route path="/failure" element={<Failure />} />
         <Route path="/paypal" element={<PayPal />} />
         <Route path="/flowHandleSubmit" element={<FlowHandleSubmit />} />
