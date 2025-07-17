@@ -123,19 +123,28 @@ const FlowHandleClick = () => {
     };
 
 
-    // --- Function to create Payment Session ---
+    // --- UPDATED Function to create Payment Session ---
     const createPaymentSession = async () => {
         setLoading(true);
         setFlowPaymentSession(null);
         try {
-            const response = await axios.post(`${API_BASE_URL}api/create-payment-session`, {
+            // Build the full, nested payload that the CKO API expects
+            const payload = {
                 amount: Math.round(parseFloat(demoConfig.demoAmount) * 100),
-                email: demoConfig.demoEmail,
-                country: demoConfig.demoCountry,
                 currency: demoConfig.demoCurrency,
-                billing_address: demoConfig.demoBillingAddress,
-                threeDsEnabled: demoConfig.threeDsEnabled, 
-            });
+                reference: `handle-click-demo-${Date.now()}`,
+                "3ds": {
+                    enabled: demoConfig.threeDsEnabled,
+                },
+                billing: {
+                    address: demoConfig.demoBillingAddress
+                },
+                customer: {
+                    email: demoConfig.demoEmail
+                }
+            };
+
+            const response = await axios.post(`${API_BASE_URL}/api/create-payment-session`, payload);
 
             setFlowPaymentSession(response.data);
             setLastUpdatedSession(new Date());

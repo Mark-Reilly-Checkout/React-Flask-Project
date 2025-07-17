@@ -96,6 +96,7 @@ const DeliveryPage = () => {
     // const handleTermsAcceptance = (e) => { /* ... */ };
 
 
+    // --- UPDATED Confirm and Pay function ---
     const handleConfirmAndPay = async () => {
         if (!selectedDeliveryOption) {
             toast.warn("Please select a delivery option.",{
@@ -110,14 +111,35 @@ const DeliveryPage = () => {
 
         setLoadingPaymentSession(true);
         try {
-            const response = await axios.post(`${API_BASE_URL}api/create-payment-session`, {
-                amount: Math.round(totalAmount * 100), // Convert to minor units
-                currency: basket.currency, // Use currency from basket
-                country: billingAddress.country, // Use country from billing address
-                email: customerEmail,
-                billing_address: billingAddress, // Send the full billing address object
-                reference: `order-${Date.now()}` // Dynamic reference
-            });
+            // Build the full, nested payload required by the CKO API
+            const payload = {
+                amount: Math.round(totalAmount * 100), // Total amount in minor units
+                currency: basket.currency,
+                reference: `checkout-demo-ord-${Date.now()}`,
+                billing: {
+                    address: billingAddress
+                },
+                customer: {
+                    email: customerEmail
+                },
+                shipping: {
+                    address: billingAddress // In this demo, shipping is same as billing
+                },
+                items: [
+                    {
+                        name: basket.name,
+                        quantity: basket.quantity,
+                        unit_price: Math.round(basket.unitPrice * 100)
+                    },
+                    {
+                        name: selectedDeliveryOption.name,
+                        quantity: 1,
+                        unit_price: Math.round(selectedDeliveryOption.cost * 100)
+                    }
+                ]
+            };
+            
+            const response = await axios.post(`${API_BASE_URL}/api/create-payment-session`, payload);
 
             setPaymentSessionForFlow(response.data);
             toast.success("Payment session created! Flow component will now load.", {
