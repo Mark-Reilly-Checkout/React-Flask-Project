@@ -105,7 +105,9 @@ def create_payment_session():
                 "attempt_n3d": False
             },
             "billing": {
-                "address": billing_address_from_frontend
+                "address": {
+                    "country": "GB"
+                }
             },
             "display_name": "Online shop", # This is for the payment session display
             "locale": "en-GB", # This could also be dynamic based on 'country' or browser settings
