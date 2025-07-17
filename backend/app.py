@@ -109,8 +109,8 @@ def create_payment_session():
             "display_name": "Online shop", # This is for the payment session display
             "locale": "en-GB", # This could also be dynamic based on 'country' or browser settings
             "payment_method_configuration": {
-                "googlepay":{
-                    "store_payment_details":"disabled"
+                "card":{
+                    "store_payment_details":"enabled"
                 }
             },
             "payment_type": paymentType,
