@@ -59,19 +59,43 @@ const defaultConfig = {
 };
 
 const defaultSessionPayload = {
-    amount: 5000, // Amount should be in minor units (e.g., cents)
-    email: "test@example.com",
-    country: "GB",
-    currency: "GBP",
-    billing_address: {
-        address_line1: "123 Main St",
-        address_line2: "",
-        city: "London",
-        zip: "SW1A 0AA",
-        country: "GB"
+  "amount": 4700,
+  "currency": "GBP",
+  "reference": "ORD-123A",
+  "billing": {
+    "address": {
+      "country": "GB"
+    }
+  },
+  "3ds": {
+    "enabled": true
+  },
+  "customer": {
+    "name": "Mark Reilly",
+    "email": "mark.reilly@hotmail.com"
+  },
+  "shipping": {
+    "address": {
+      "address_line1": "123 High St.",
+      "address_line2": "Flat 456",
+      "city": "London",
+      "state": "str",
+      "zip": "SW1A 1AA",
+      "country": "GB"
+    }
+  },
+  "items": [
+    {
+      "name": "Tie-Dye Printed Skirt 40",
+      "unit_price": 2700,
+      "quantity": 1
     },
-    paymentType: "Regular",
-    threeDsEnabled: false
+    {
+      "name": "Printed Jersey T-Shirt M",
+      "unit_price": 2000,
+      "quantity": 1
+    }
+  ]
 };
 
 const Flow = ({ passedPaymentSession = null }) => {
@@ -499,6 +523,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                                     <Card.Text>
                                         <div className="mb-4">
                                             <label className="block text-sm font-medium mb-1">Session Request Payload</label>
+                                            <label className="block text-sm font-medium mb-1">Do not add processing channel, successURL & failureURL </label>
                                             <textarea
                                                 value={jsonInput}
                                                 onChange={handleJsonInputChange}
