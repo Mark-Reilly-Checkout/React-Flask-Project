@@ -114,6 +114,9 @@ def create_payment_session():
                     "store_payment_details":"enabled"
                 }
             },
+            "shipping":{
+                "address": billing_address_from_frontend
+            },
             "payment_type": paymentType,
             "items": [
                 {
