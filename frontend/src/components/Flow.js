@@ -54,6 +54,7 @@ const defaultConfig = {
         country: 'GB'
     },
     paymentType:'Regular',
+    capture:'True',
     threeDsEnabled: false,
 };
 
@@ -200,6 +201,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                 currency: config.currency,
                 billing_address: config.billingAddress,
                 paymentType: config.paymentType,
+                capture: config.capture,
                 threeDsEnabled: config.threeDsEnabled
             });
 
@@ -533,6 +535,17 @@ const Flow = ({ passedPaymentSession = null }) => {
                                                 className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
                                             />
                                         </div>
+                                        <div className="flex-1">
+                                                <label className="block text-sm font-medium mb-1">Capture</label>
+                                                <select
+                                                    value={config.capture}
+                                                    onChange={(e) => setConfig({ ...config, capture: e.target.value })}
+                                                    className="w-full border rounded px-3 py-2"
+                                                >
+                                                    <option value="true">True</option>
+                                                    <option value="false">False</option>
+                                                </select>
+                                            </div>
                                         {/* --- NEW: Billing Address Fields --- */}
                                         <h3 className="text-lg font-semibold mb-3 mt-4">Billing Address</h3>
                                         <div className="space-y-4">

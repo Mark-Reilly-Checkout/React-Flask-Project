@@ -86,6 +86,7 @@ def create_payment_session():
         # Get billing_address from frontend. It will be a dict.
         billing_address_from_frontend = data.get("billing_address")
         threeDsEnabled = data.get("threeDsEnabled", False)
+        capture = data.get("capture", True)
 
         if not email or not country or not currency or not billing_address_from_frontend:
             return jsonify({"error": "Missing essential payment session data (email, country, currency, billing_address)"}), 400
@@ -94,7 +95,7 @@ def create_payment_session():
             "amount": data["amount"],
             "currency": currency,
             "reference": f"order-{data.get('email', 'unknown')}-{currency}-{data['amount']}-{country}-{uuid.uuid4().hex[:8]}", # More robust unique reference
-            "capture": True,
+            "capture": capture,
             "customer": {
                 "name": data.get("customer_name", "Anonymous Customer"), # Assuming you might add customer name later
                 "email": email
