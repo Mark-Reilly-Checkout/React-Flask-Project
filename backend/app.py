@@ -105,7 +105,9 @@ def create_payment_session():
                 "attempt_n3d": False
             },
             "billing": {
-                "address": billing_address_from_frontend
+                "address": {
+                    "country":"GB"
+                }
             },
             "display_name": "Online shop", # This is for the payment session display
             "locale": "en-GB", # This could also be dynamic based on 'country' or browser settings
@@ -123,7 +125,6 @@ def create_payment_session():
                     "name":         "Wireless Headphones", # Updated to match demo product
                     "quantity":     data.get("item_quantity", 1), # Get quantity from frontend
                     "unit_price":   data.get("item_unit_price", data["amount"]), # Unit price in minor units
-                    "total_amount": data["amount"], # Total amount in minor units
                     "reference":    "Prod-Headphones"
                 }
             ],
