@@ -54,7 +54,7 @@ const defaultConfig = {
         country: 'GB'
     },
     paymentType:'Regular',
-    capture:'True',
+    capture: true,
     threeDsEnabled: false,
 };
 
@@ -535,17 +535,17 @@ const Flow = ({ passedPaymentSession = null }) => {
                                                 className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
                                             />
                                         </div>
-                                        <div className="flex-1">
-                                                <label className="block text-sm font-medium mb-1">Capture</label>
-                                                <select
-                                                    value={config.capture}
-                                                    onChange={(e) => setConfig({ ...config, capture: e.target.value })}
-                                                    className="w-full border rounded px-3 py-2"
-                                                >
-                                                    <option value="true">True</option>
-                                                    <option value="false">False</option>
-                                                </select>
-                                            </div>
+                                        <div className="mb-4">
+                                            <label className="inline-flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={config.capture}
+                                                    onChange={(e) => setConfig({ ...config, capture: e.target.checked })}
+                                                    className="form-checkbox h-4 w-4 text-blue-600"
+                                                />
+                                                <span className="ml-2 text-gray-700">Enable Captures</span>
+                                            </label>
+                                        </div>
                                         {/* --- NEW: Billing Address Fields --- */}
                                         <h3 className="text-lg font-semibold mb-3 mt-4">Billing Address</h3>
                                         <div className="space-y-4">
