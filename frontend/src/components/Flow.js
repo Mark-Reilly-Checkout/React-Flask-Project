@@ -58,6 +58,22 @@ const defaultConfig = {
     threeDsEnabled: false,
 };
 
+const defaultSessionPayload = {
+    amount: 5000, // Amount should be in minor units (e.g., cents)
+    email: "test@example.com",
+    country: "GB",
+    currency: "GBP",
+    billing_address: {
+        address_line1: "123 Main St",
+        address_line2: "",
+        city: "London",
+        zip: "SW1A 0AA",
+        country: "GB"
+    },
+    paymentType: "Regular",
+    threeDsEnabled: false
+};
+
 const Flow = ({ passedPaymentSession = null }) => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -68,6 +84,10 @@ const Flow = ({ passedPaymentSession = null }) => {
 
     const [config, setConfig] = useState(defaultConfig);
     const acceptedTermsRef = useRef(false);
+
+    const [sessionPayload, setSessionPayload] = useState(defaultSessionPayload);
+    const [jsonInput, setJsonInput] = useState(JSON.stringify(defaultSessionPayload, null, 2));
+    const [jsonError, setJsonError] = useState(null);
 
     const [showMainContent, setShowMainContent] = useState(passedPaymentSession !== null);
 
@@ -189,24 +209,32 @@ const Flow = ({ passedPaymentSession = null }) => {
         });
     };
 
+    const handleJsonInputChange = (e) => {
+        const value = e.target.value;
+        setJsonInput(value); // Keep the raw string in sync with the textarea
+        try {
+            const parsedJson = JSON.parse(value);
+            setSessionPayload(parsedJson); // Update the actual data object
+            setJsonError(null); // Clear any previous error
+        } catch (error) {
+            setJsonError('Invalid JSON format.'); // Set an error message to give user feedback
+        }
+    };
+
 
     const SessionRequest = async () => {
         setLoading(true);
         setInternalPaymentSessionDetails(null);
-        try {
-            const response = await axios.post(`${API_BASE_URL}api/create-payment-session`, {
-                amount: Math.round(parseFloat(config.initialAmount) * 100),
-                email: config.initialEmail,
-                country: config.country,
-                currency: config.currency,
-                billing_address: config.billingAddress,
-                paymentType: config.paymentType,
-                capture: config.capture,
-                threeDsEnabled: config.threeDsEnabled
-            });
 
-            console.log("Billing Address:", config.billingAddress);
-            console.log("3ds", config.threeDsEnabled)
+        if (jsonError) {
+            toast.error("Cannot create session. Please fix the invalid JSON.");
+            setLoading(false);
+            return;
+        }
+
+        try {
+            // The payload is now the validated sessionPayload state
+            const response = await axios.post(`${API_BASE_URL}/api/create-payment-session`, sessionPayload);
 
             setInternalPaymentSessionDetails(response.data);
             setLastUpdatedSession(new Date());
@@ -476,128 +504,27 @@ const Flow = ({ passedPaymentSession = null }) => {
 
                         {/* BOTTOM LEFT CARD: Session Request - Now includes Country & Currency selection */}
                         {passedPaymentSession === null && (
-                            <Card>
+                             <Card>
                                 <Card.Body>
-                                    <Card.Title className="text-center">Request a new payment session</Card.Title>
+                                    <Card.Title className="text-center">Request a New Payment Session (JSON)</Card.Title>
                                     <Card.Text>
                                         <div className="mb-4">
-                                            <label className="block text-sm font-medium mb-1">Amount ($)</label>
-                                            <input
-                                                type="text"
-                                                value={config.initialAmount}
-                                                onChange={(e) => setConfig({ ...config, initialAmount: e.target.value })}
-                                                className="w-full border rounded px-3 py-2"
+                                            <label className="block text-sm font-medium mb-1">Session Request Payload</label>
+                                            <textarea
+                                                value={jsonInput}
+                                                onChange={handleJsonInputChange}
+                                                className={`w-full border rounded px-3 py-2 font-mono text-sm ${jsonError ? 'border-red-500' : 'border-gray-300'}`}
+                                                rows={15}
+                                                placeholder="Enter session request JSON here..."
                                             />
-                                        </div>
-                                        <div className="mb-4">
-                                            <label className="block text-sm font-medium mb-1">Customer Email</label>
-                                            <input
-                                                type="email"
-                                                value={config.initialEmail}
-                                                onChange={(e) => setConfig({ ...config, initialEmail: e.target.value })}
-                                                className="w-full border rounded px-3 py-2"
-                                            />
-                                        </div>
-                                        <div className="mb-4">
-                                            <label className="block text-sm font-medium mb-1">Country</label>
-                                            <select
-                                                value={config.country}
-                                                onChange={handleCountryChange}
-                                                className="w-full border rounded px-3 py-2"
-                                            >
-                                                {countries.map((c) => (
-                                                    <option key={c.code} value={c.code}>
-                                                        {c.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div className="mb-4">
-                                            <label className="block text-sm font-medium mb-1">Payment Type</label>
-                                            <select
-                                                value={config.paymentType}
-                                                onChange={(e) => setConfig({ ...config, paymentType: e.target.value })}
-                                                className="w-full border rounded px-3 py-2"
-                                            >
-                                                {paymentTypes.map((type) => (
-                                                    <option key={type.value} value={type.value}>
-                                                        {type.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div className="mb-4">
-                                            <label className="block text-sm font-medium mb-1">Currency (Auto-selected)</label>
-                                            <input
-                                                type="text"
-                                                value={config.currency}
-                                                readOnly
-                                                className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-                                            />
-                                        </div>
-                                        <div className="mb-4">
-                                            <label className="inline-flex items-center">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={config.capture}
-                                                    onChange={(e) => setConfig({ ...config, capture: e.target.checked })}
-                                                    className="form-checkbox h-4 w-4 text-blue-600"
-                                                />
-                                                <span className="ml-2 text-gray-700">Enable Captures</span>
-                                            </label>
-                                        </div>
-                                        {/* --- NEW: Billing Address Fields --- */}
-                                        <h3 className="text-lg font-semibold mb-3 mt-4">Billing Address</h3>
-                                        <div className="space-y-4">
-                                            <div>
-                                                <label className="block text-sm font-medium mb-1">Address Line 1</label>
-                                                <input
-                                                    type="text"
-                                                    name="address_line1"
-                                                    value={config.billingAddress?.address_line1 || ''} 
-                                                    onChange={handleBillingAddressChange}
-                                                    className="w-full border rounded px-3 py-2"
-                                                    placeholder="123 Main St"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium mb-1">Address Line 2 (Optional)</label>
-                                                <input
-                                                    type="text"
-                                                    name="address_line2"
-                                                    value={config.billingAddress?.address_line2 || ''} 
-                                                    onChange={handleBillingAddressChange}
-                                                    className="w-full border rounded px-3 py-2"
-                                                    placeholder="Apt 4B"
-                                                />
-                                            </div>
-                                            <div className="flex gap-4">
-                                                <div className="flex-1">
-                                                    <label className="block text-sm font-medium mb-1">City</label>
-                                                    <input
-                                                        type="text"
-                                                        name="city"
-                                                        value={config.billingAddress?.city || ''}
-                                                        onChange={handleBillingAddressChange}
-                                                        className="w-full border rounded px-3 py-2"
-                                                        placeholder="London"
-                                                    />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <label className="block text-sm font-medium mb-1">Zip Code</label>
-                                                    <input
-                                                        type="text"
-                                                        name="zip"
-                                                        value={config.billingAddress?.zip || ''} 
-                                                        onChange={handleBillingAddressChange}
-                                                        className="w-full border rounded px-3 py-2"
-                                                        placeholder="SW1A 0AA"
-                                                    />
-                                                </div>
-                                            </div>
+                                            {jsonError && <p className="text-red-500 text-xs mt-1">{jsonError}</p>}
                                         </div>
                                         <div className="text-center mt-4">
-                                            <button onClick={SessionRequest} disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
+                                            <button 
+                                                onClick={SessionRequest} 
+                                                disabled={loading || !!jsonError} 
+                                                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
                                                 {loading ? "Processing..." : "Create Session"}
                                             </button>
                                             <br />

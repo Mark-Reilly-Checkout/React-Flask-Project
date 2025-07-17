@@ -76,90 +76,44 @@ def get_payment_details(payment_id):
 # POST - Flow - Create payment session
 @app.route('/api/create-payment-session', methods=['POST'])
 def create_payment_session():
-    response = None # Initialize response to None for error handling
+    rresponse = None # Initialize response to None for error handling
     try:
+        # Step 1: Get the raw JSON from the frontend
         data = request.json
-        email = data.get("email") # Get email from frontend, no default here as frontend should send it
-        country = data.get("country") # Get country from frontend
-        currency = data.get("currency") # Get currency from frontend
-        paymentType = data.get("paymentType", "Regular") # Get payment type from frontend, default to "Regular"
-        # Get billing_address from frontend. It will be a dict.
-        billing_address_from_frontend = data.get("billing_address")
-        threeDsEnabled = data.get("threeDsEnabled", False)
-        capture = data.get("capture", "true")
 
-        if not email or not country or not currency or not billing_address_from_frontend:
-            return jsonify({"error": "Missing essential payment session data (email, country, currency, billing_address)"}), 400
+        # Add success and failure URLs to the data received from the frontend.
+        # This ensures redirection still works.
+        data['success_url'] = "https://react-frontend-elpl.onrender.com/success"
+        data['failure_url'] = "https://react-frontend-elpl.onrender.com/failure"
+        data['processing_channel_id'] = "pc_pxk25jk2hvuenon5nyv3p6nf2i"
 
-        payment_request = {
-            "amount": data["amount"],
-            "currency": currency,
-            "reference": f"order-{data.get('email', 'unknown')}-{currency}-{data['amount']}-{country}-{uuid.uuid4().hex[:8]}", # More robust unique reference
-            "capture": capture,
-            "customer": {
-                "name": data.get("customer_name", "Anonymous Customer"), # Assuming you might add customer name later
-                "email": email
-            },
-            "3ds": {
-                "enabled": threeDsEnabled, # Enable 3DS by default, can be adjusted based on frontend settings
-                "attempt_n3d": False
-            },
-            "billing": {
-                "address": {
-                    "country": "GB"
-                }
-            },
-            "display_name": "Online shop", # This is for the payment session display
-            "locale": "en-GB", # This could also be dynamic based on 'country' or browser settings
-            "payment_method_configuration": {
-                "card":{
-                    "store_payment_details":"enabled"
-                }
-            },
-            "shipping":{
-                "address": billing_address_from_frontend
-            },
-            "payment_type": paymentType,
-            "items": [
-                {
-                    "name":         "Wireless Headphones", # Updated to match demo product
-                    "quantity":     data.get("item_quantity", 1), # Get quantity from frontend
-                    "unit_price":   data.get("item_unit_price", data["amount"]), # Unit price in minor units
-                    "reference":    "Prod-Headphones"
-                }
-            ],
-            "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
-            "success_url": "https://react-frontend-elpl.onrender.com/success", # Changed to success page for better flow
-            "failure_url": "https://react-frontend-elpl.onrender.com/failure"
-        }
 
-        # Validate existence of SDK client and method
-        if not hasattr(checkout_api, "payment_sessions") or not hasattr(checkout_api.payment_sessions, "create_payment_sessions"):
-            print("Error: Checkout.com SDK 'payment_sessions' client or 'create_payment_sessions' method not found.")
-            return jsonify({"error": "Payment Sessions SDK client not initialized correctly"}), 500
+        # The block that manually built the `payment_request` has been removed.
+        # We now pass the 'data' dictionary from the frontend directly.
 
         payment_sessions_client = checkout_api.payment_sessions
-        response = payment_sessions_client.create_payment_sessions(payment_request)
+        
+        # Step 2: Pass the entire frontend payload directly to the SDK
+        response = payment_sessions_client.create_payment_sessions(data)
 
         print(f"Payment Session created successfully with ID: {response.id}")
         return jsonify({
             "id": response.id,
-            "payment_session_secret": response.payment_session_secret, # Corrected key from `response.payment_session_secret `
+            "payment_session_secret": response.payment_session_secret,
             "payment_session_token": response.payment_session_token
-        }), 200 # Always return 200 on success
+        }), 200
 
     except Exception as e:
         import traceback
-        traceback.print_exc() # Print full traceback for debugging
+        traceback.print_exc()
         error_message = {"error": "Internal Server Error during payment session creation", "details": str(e)}
 
-        # Attempt to get more specific error details from Checkout.com API if it's a CheckoutApiException
         if hasattr(e, 'http_metadata') and e.http_metadata and hasattr(e.http_metadata, 'status_code'):
              error_message["http_status_code"] = e.http_metadata.status_code
              if hasattr(e, 'error_details') and e.error_details:
                  error_message["api_errors"] = e.error_details
              print(f"Checkout API Error: Status {e.http_metadata.status_code}, Details: {e.error_details}")
-        elif response and hasattr(response, 'error_type'): # Fallback for non-SDK specific errors
+        elif response and hasattr(response, 'error_type'):
             error_message["type"] = response.error_type
         return jsonify(error_message), 500
 
