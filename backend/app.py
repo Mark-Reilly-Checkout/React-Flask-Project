@@ -194,6 +194,9 @@ def paymentContext():
         success_url = data.get("success_url")
         failure_url = data.get("failure_url")
         user_action = data.get("user_action", "continue") # Default to 'continue' as per CKO docs
+        itemType = data.get("type", "digital") # Default to 'continue' as per CKO docs
+
+
 
         # Basic validation for mandatory fields from frontend
         if not all([amount, currency, customer_email, processing_channel_id, success_url, failure_url]):
@@ -227,7 +230,8 @@ def paymentContext():
                     "name": "Default Item",
                     "unit_price": amount,
                     "quantity": 1,
-                    "total_amount": amount
+                    "total_amount": amount,
+                    "type": itemType, # Use dynamic item typ
                 }
             ])
         }

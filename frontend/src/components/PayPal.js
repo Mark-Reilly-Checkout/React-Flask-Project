@@ -18,7 +18,8 @@ const defaultConfig = {
     failureUrl: 'https://react-flask-project-kpyi.onrender.com/failure', // Your failure redirect URL (adjust for deployment)
     disableFunding: 'credit,card,sepa,bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort',
     enableFunding: '', // 'paylater' to enable PayPal Pay Later
-    payment_type: 'Regular' // Default payment type for context creation
+    payment_type: 'Regular', // Default payment type for context creation
+    type: 'digital', // Default item type for context creation
 };
 
 const paymentTypes = [
@@ -35,6 +36,8 @@ const commitOptions = [{ value: true, label: 'Pay Now (true)' }, { value: false,
 
 // User action options for context API
 const userActionOptions = [{ value: 'pay_now', label: 'Pay Now' }, { value: 'continue', label: 'Continue' }];
+
+const typeOptions = [{value: 'digital', label: 'Digital' }, { value: 'physical', label: 'Physical' }];
 
 const PayPal = () => {
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -87,6 +90,7 @@ const PayPal = () => {
                 capture: config.capture,
                 payment_type: config.paymentType,
                 items: [{
+                    "type": config.type, // Use dynamic type from config
                     "name": "Wireless Headphones", // Example item, adjust as needed or make configurable
                     "unit_price": Math.round(parseFloat(config.amount) * 100),
                     "quantity": 1
@@ -368,6 +372,18 @@ const PayPal = () => {
                             ))}
                         </select>
                          <p className="text-xs text-gray-500 mt-1">Controls "Pay Now" vs "Continue" experience in PayPal pop-up.</p>
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1">Item Type`</label>
+                        <select
+                            value={config.type}
+                            onChange={(e) => setConfig({ ...config, type: e.target.value })}
+                            className="w-full border rounded px-3 py-2"
+                        >
+                            {typeOptions.map(option => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                        </select>
                     </div>
                     <div className="mb-4">
                                             <label className="block text-sm font-medium mb-1">Payment Type</label>
