@@ -31,8 +31,7 @@ const RememberMe = () => {
     const [sessionPayload, setSessionPayload] = useState(defaultSessionPayload);
     const [jsonInput, setJsonInput] = useState(JSON.stringify(defaultSessionPayload, null, 2));
     const [jsonError, setJsonError] = useState(null);
-    const [processingChannelId, setProcessingChannelId] = useState(''); // New state for the channel ID
-
+    const [processingChannelId, setProcessingChannelId] = useState('pc_yeh2m5bgbfpefmkd2m3kmetiqy');
     const flowComponentRef = useRef(null);
 
     // Handler for the JSON text area input
@@ -121,21 +120,21 @@ const RememberMe = () => {
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">
-            <h1 className="text-3xl font-bold text-center mb-8">Flow: Remember Me & Channel ID Demo</h1>
+            <h1 className="text-3xl font-bold text-center mb-8">Flow Remember Me</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Panel: Configuration */}
                 <Card className="p-6 rounded-xl shadow-md bg-white">
-                    <Card.Title className="text-xl font-semibold mb-4">Session Request</Card.Title>
+                    <Card.Title className="text-xl font-semibold mb-4">Payment Session Request</Card.Title>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium mb-1">Processing Channel ID (Optional)</label>
+                            <label className="block text-sm font-medium mb-1">Processing Channel ID</label>
                             <input
                                 type="text"
                                 value={processingChannelId}
                                 onChange={(e) => setProcessingChannelId(e.target.value)}
                                 className="w-full border rounded px-3 py-2"
-                                placeholder="pc_..."
+                                placeholder="pc_yeh2m5bgbfpefmkd2m3kmetiqy"
                             />
                         </div>
                         <div>
