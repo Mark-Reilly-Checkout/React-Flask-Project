@@ -422,7 +422,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                             Go to handleClick Demo
                         </button>
                         <button
-                            onClick={() => navigate('/remember-me')}
+                            onClick={() => navigate('/rememberMe')}
                             className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-teal-700 transition duration-300 ease-in-out mt-4"
                         >
                             Go to Remember Me Demo
