@@ -85,7 +85,7 @@ def create_payment_session():
         # This ensures redirection still works.
         data['success_url'] = "https://react-frontend-elpl.onrender.com/success"
         data['failure_url'] = "https://react-frontend-elpl.onrender.com/failure"
-        data['processing_channel_id'] = "pc_pxk25jk2hvuenon5nyv3p6nf2i"
+        data['processing_channel_id'] = "pc_yeh2m5bgbfpefmkd2m3kmetiqy"
 
 
         # The block that manually built the `payment_request` has been removed.
