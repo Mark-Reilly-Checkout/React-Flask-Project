@@ -397,34 +397,33 @@ const Flow = ({ passedPaymentSession = null }) => {
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">
-            <h1 className="text-3xl font-bold text-center mb-8">Checkout.com Flow Test Suite</h1>
+            <h1 className="text-3xl font-bold text-center mb-8">Flow Test Suite</h1>
 
             {!showMainContent && passedPaymentSession === null ? (
                 <div className="flex items-center justify-center min-h-[calc(100vh-100px)]">
                     <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
-                        <h2 className="text-2xl font-bold mb-6 text-gray-800">Ready to test the Flow Component?</h2>
-                        <p className="mb-6 text-gray-700">Click below to create a new payment session and load the Flow UI.</p>
+                        <h2 className="text-2xl font-bold mb-6 text-gray-800">Choose your Flow scenario</h2>
                         <button
                             onClick={handleInitialModeSelection}
                             className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out"
                         >
-                            Start New Session
+                            Flow Demo
                         </button>
                         <button
                             onClick={() => navigate('/flowHandleSubmit')}
-                            className="w-full bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out mt-4"
+                            className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out mt-4"
                         >
                             Go to handleSubmit Demo
                         </button>
                         <button
                             onClick={() => navigate('/flowHandleClick')}
-                            className="w-full bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition duration-300 ease-in-out mt-4"
+                            className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition duration-300 ease-in-out mt-4"
                         >
                             Go to handleClick Demo
                         </button>
                         <button
                             onClick={() => navigate('/remember-me')}
-                            className="w-full bg-teal-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-teal-700 transition duration-300 ease-in-out mt-4"
+                            className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-teal-700 transition duration-300 ease-in-out mt-4"
                         >
                             Go to Remember Me Demo
                         </button>
