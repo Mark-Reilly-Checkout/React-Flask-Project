@@ -17,6 +17,7 @@ import CheckoutDemoApp from './components/CheckoutDemoApp';
 import PayPal from './components/PayPal';
 import FlowHandleSubmit from './components/FlowCallbacks/FlowHandleSubmit'
 import FlowHandleClick from './components/FlowCallbacks/FlowHandleClick';
+import RememberMe from './components/FlowCallbacks/RememberMe';
 
 function App() {
   const [data, setData] = useState('');
@@ -48,6 +49,7 @@ function App() {
         <Route path="/paypal" element={<PayPal />} />
         <Route path="/flowHandleSubmit" element={<FlowHandleSubmit />} />
         <Route path="/flowHandleClick" element={<FlowHandleClick />} />
+        <Route path="/rememberMe" element={<RememberMe/>} />
 
         {/* --- NEW ROUTE FOR CHECKOUT DEMO --- */}
         {/* CheckoutDemoApp handles its own nested routes for /checkout-demo and /checkout-demo/delivery */}
