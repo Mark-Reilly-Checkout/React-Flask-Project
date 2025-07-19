@@ -109,8 +109,19 @@ const Flow = ({ passedPaymentSession = null }) => {
     const [config, setConfig] = useState(defaultConfig);
     const acceptedTermsRef = useRef(false);
 
-    const [sessionPayload, setSessionPayload] = useState(defaultSessionPayload);
-    const [jsonInput, setJsonInput] = useState(JSON.stringify(defaultSessionPayload, null, 2));
+    // --- MODIFIED: Initialize state from localStorage or fall back to default ---
+    const [jsonInput, setJsonInput] = useState(() => {
+        const savedJson = localStorage.getItem('flowJsonPayload');
+        return savedJson || JSON.stringify(defaultSessionPayload, null, 2);
+    });
+    const [sessionPayload, setSessionPayload] = useState(() => {
+        const savedJson = localStorage.getItem('flowJsonPayload');
+        try {
+            return savedJson ? JSON.parse(savedJson) : defaultSessionPayload;
+        } catch (e) {
+            return defaultSessionPayload;
+        }
+    });
     const [jsonError, setJsonError] = useState(null);
 
     const [showMainContent, setShowMainContent] = useState(passedPaymentSession !== null);
@@ -188,6 +199,10 @@ const Flow = ({ passedPaymentSession = null }) => {
     const handleReset = () => {
         setConfig(defaultConfig);
         localStorage.removeItem('flowConfig');
+        // --- Also clear the saved JSON payload on reset ---
+        localStorage.removeItem('flowJsonPayload');
+        setJsonInput(JSON.stringify(defaultSessionPayload, null, 2));
+        setSessionPayload(defaultSessionPayload);
         setInternalPaymentSessionDetails(null);
         setLastUpdatedSession(null);
         setLastUpdatedFlow(null);
@@ -233,9 +248,11 @@ const Flow = ({ passedPaymentSession = null }) => {
         });
     };
 
+    // --- MODIFIED: Saves JSON to localStorage on every change ---
     const handleJsonInputChange = (e) => {
         const value = e.target.value;
         setJsonInput(value); // Keep the raw string in sync with the textarea
+        localStorage.setItem('flowJsonPayload', value); // Save to localStorage
         try {
             const parsedJson = JSON.parse(value);
             setSessionPayload(parsedJson); // Update the actual data object
@@ -394,12 +411,6 @@ const Flow = ({ passedPaymentSession = null }) => {
                             Start New Session
                         </button>
                         <button
-                            onClick={() => navigate('/rememberMe')}
-                            className="w-full bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out mt-4"
-                        >
-                            Remember Me Demo
-                        </button>
-                        <button
                             onClick={() => navigate('/flowHandleSubmit')}
                             className="w-full bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out mt-4"
                         >
@@ -407,9 +418,15 @@ const Flow = ({ passedPaymentSession = null }) => {
                         </button>
                         <button
                             onClick={() => navigate('/flowHandleClick')}
-                            className="w-full bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out mt-4"
+                            className="w-full bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition duration-300 ease-in-out mt-4"
                         >
                             Go to handleClick Demo
+                        </button>
+                        <button
+                            onClick={() => navigate('/remember-me')}
+                            className="w-full bg-teal-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-teal-700 transition duration-300 ease-in-out mt-4"
+                        >
+                            Go to Remember Me Demo
                         </button>
                     </div>
                 </div>
