@@ -197,6 +197,7 @@ def paymentContext():
         failure_url = data.get("failure_url")
         user_action = data.get("user_action", "continue") # Default to 'continue' as per CKO docs
         itemType = data.get("type", "digital") # Default to 'continue' as per CKO docs
+        shipping_preference = data.get("shipping_preference", "set_provided_address") # Default to 'set_provided_address' as per CKO docs
 
 
 
@@ -222,7 +223,8 @@ def paymentContext():
                 "user_action": user_action,
                 "plan":{
                     "type":"merchant_initiated_billing_single_agreement"
-                }
+                },
+                "shipping_preference": shipping_preference
             },
             "processing_channel_id": processing_channel_id, # Use dynamic processing_channel_id
             "success_url": success_url, # Use dynamic success_url

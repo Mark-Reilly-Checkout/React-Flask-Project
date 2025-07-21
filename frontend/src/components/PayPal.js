@@ -20,6 +20,7 @@ const defaultConfig = {
     enableFunding: '', // 'paylater' to enable PayPal Pay Later
     payment_type: 'Regular', // Default payment type for context creation
     type: 'digital', // Default item type for context creation
+    shippingPreference: 'set_provided_address', // Default shipping preference for context creation
 };
 
 const paymentTypes = [
@@ -38,6 +39,8 @@ const commitOptions = [{ value: true, label: 'Pay Now (true)' }, { value: false,
 const userActionOptions = [{ value: 'pay_now', label: 'Pay Now' }, { value: 'continue', label: 'Continue' }];
 
 const typeOptions = [{value: 'digital', label: 'Digital' }, { value: 'physical', label: 'Physical' }];
+
+const shippingPreferenceOptions = [{value: 'no_shipping', label: 'No Shipping' }, { value: 'set_provided_address', label: 'Provide Address' }, { value: 'get_from_file', label: 'Use Paypal Shipping Address' }];
 
 const PayPal = () => {
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -97,7 +100,8 @@ const PayPal = () => {
                 }],
                 processing: {
                     "invoice_id": `inv-${Date.now()}`,
-                    "user_action": config.userAction
+                    "user_action": config.userAction,
+                    "shipping_preference": config.shippingPreference // Use dynamic shipping preference from config
                 },
                 processing_channel_id: config.processingChannelId,
                 success_url: config.successUrl,
@@ -374,13 +378,25 @@ const PayPal = () => {
                          <p className="text-xs text-gray-500 mt-1">Controls "Pay Now" vs "Continue" experience in PayPal pop-up.</p>
                     </div>
                     <div className="mb-4">
-                        <label className="block text-sm font-medium mb-1">Item Type`</label>
+                        <label className="block text-sm font-medium mb-1">Item Type</label>
                         <select
                             value={config.type}
                             onChange={(e) => setConfig({ ...config, type: e.target.value })}
                             className="w-full border rounded px-3 py-2"
                         >
                             {typeOptions.map(option => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                     <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1">Shipping Preference</label>
+                        <select
+                            value={config.shippingPreference}
+                            onChange={(e) => setConfig({ ...config, shippingPreference: e.target.value })}
+                            className="w-full border rounded px-3 py-2"
+                        >
+                            {shippingPreferenceOptions.map(option => (
                                 <option key={option.value} value={option.value}>{option.label}</option>
                             ))}
                         </select>
