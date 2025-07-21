@@ -20,7 +20,7 @@ const defaultConfig = {
     enableFunding: '', // 'paylater' to enable PayPal Pay Later
     payment_type: 'Regular', // Default payment type for context creation
     type: 'digital', // Default item type for context creation
-    shippingPreference: 'set_provided_address', // Default shipping preference for context creation
+    shippingPreference: 'get_from_file', // Default shipping preference for context creation
 };
 
 const paymentTypes = [
@@ -101,7 +101,7 @@ const PayPal = () => {
                 processing: {
                     "invoice_id": `inv-${Date.now()}`,
                     "user_action": config.userAction,
-                    "shipping_preference": config.shippingPreference // Use dynamic shipping preference from config
+                    "shipping_preference": config.shippingPreference,// Use dynamic shipping preference from config
                 },
                 processing_channel_id: config.processingChannelId,
                 success_url: config.successUrl,

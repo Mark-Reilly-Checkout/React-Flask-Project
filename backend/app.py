@@ -197,7 +197,7 @@ def paymentContext():
         failure_url = data.get("failure_url")
         user_action = data.get("user_action", "continue") # Default to 'continue' as per CKO docs
         itemType = data.get("type", "digital") # Default to 'continue' as per CKO docs
-        shipping_preference = data.get("shipping_preference", "set_provided_address") # Default to 'set_provided_address' as per CKO docs
+        shipping_preference = data.get("shipping_preference", "get_from_file") # Default to 'set_provided_address' as per CKO docs
 
 
 
