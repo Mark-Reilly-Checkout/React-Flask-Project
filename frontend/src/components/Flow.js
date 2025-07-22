@@ -294,7 +294,7 @@ const Flow = ({ passedPaymentSession = null }) => {
         en: {
           'form.required': 'Please provide this field',
           'form.full_name.placeholder': 'Mark Reilly',
-          'pay_button.pay': 'Authorize',
+          'pay_button.pay': 'Pay',
           'pay_button.payment_failed': 'Payment failed, please try again',
         },
       };
