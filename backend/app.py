@@ -236,6 +236,12 @@ def paymentContext():
                     "type": "merchant_initiated_billing_single_agreement"
                 }
             },
+            "shipping": {
+            "address": {
+                "address_line1": "123 High St.",
+                "country": "GB"
+                }
+            },
             "processing_channel_id": processing_channel_id,
             "success_url": success_url,
             "failure_url": failure_url,
