@@ -69,7 +69,7 @@ const PayPal = () => {
         localStorage.setItem('paypalConfig', JSON.stringify(config));
     }, [config]);
 
-    // --- NEW: Function to create Payment Context ---
+    // --- UPDATED: Function to create Payment Context ---
     const handleCreatePaymentContext = async () => {
         setContextCreationLoading(true); // Start loading
         setPaymentStatus(null); // Clear previous payment status
@@ -77,7 +77,6 @@ const PayPal = () => {
         setCkoPaymentContextId(null); // Clear previous context ID
         setPaypalOrderId(null); // Clear previous PayPal Order ID
 
-        // Ensure buttons are cleaned up before new context creation if they were rendered
         const buttonContainer = document.getElementById('paypal-button-container');
         if (buttonContainer) {
             buttonContainer.innerHTML = ''; // Clear existing buttons
@@ -85,33 +84,35 @@ const PayPal = () => {
         buttonsRenderedRef.current = false; // Reset flag for re-rendering
 
         try {
-            // 1. Call backend to request Checkout.com payment context
-            const response = await axios.post(`${API_BASE_URL}api/payment-contexts`, {
+            // Construct the payload with the correct nested structure
+            const payload = {
                 source: { type: "paypal" },
                 currency: config.currency,
                 amount: Math.round(parseFloat(config.amount) * 100),
                 capture: config.capture,
                 payment_type: config.paymentType,
+                processing_channel_id: config.processingChannelId,
+                success_url: config.successUrl,
+                failure_url: config.failureUrl,
+                reference: `cko-paypal-ref-${Date.now()}`,
                 items: [{
-                    "type": config.type, // Use dynamic type from config
-                    "name": "Wireless Headphones", // Example item, adjust as needed or make configurable
+                    "type": config.type,
+                    "name": "Wireless Headphones",
                     "unit_price": Math.round(parseFloat(config.amount) * 100),
                     "quantity": 1
                 }],
                 processing: {
                     "invoice_id": `inv-${Date.now()}`,
                     "user_action": config.userAction,
-                    "shipping_preference": config.shippingPreference,// Use dynamic shipping preference from config
+                    "shipping_preference": config.shippingPreference,
                 },
-                processing_channel_id: config.processingChannelId,
-                success_url: config.successUrl,
-                failure_url: config.failureUrl,
-                reference: `cko-paypal-ref-${Date.now()}`
-            });
+            };
+            
+            const response = await axios.post(`${API_BASE_URL}/api/payment-contexts`, payload);
 
             toast.success("Checkout.com payment context created successfully!");
-            setCkoPaymentContextId(response.data.id); // Store Checkout.com context ID
-            setPaypalOrderId(response.data.order_id); // Store PayPal's order_id
+            setCkoPaymentContextId(response.data.id);
+            setPaypalOrderId(response.data.order_id);
 
         } catch (error) {
             toast.error("Failed to create Checkout.com payment context. Check console for details.");

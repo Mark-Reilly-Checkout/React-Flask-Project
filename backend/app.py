@@ -195,49 +195,51 @@ def paymentContext():
         processing_channel_id = data.get("processing_channel_id")
         success_url = data.get("success_url")
         failure_url = data.get("failure_url")
-        user_action = data.get("user_action", "continue") # Default to 'continue' as per CKO docs
-        itemType = data.get("type", "digital") # Default to 'continue' as per CKO docs
-        shipping_preference = data.get("shipping_preference", "get_from_file") # Default to 'set_provided_address' as per CKO docs
+        # --- FIXED: Extract nested processing and item data correctly ---
+        processing_data = data.get("processing", {})
+        user_action = processing_data.get("user_action", "continue")
+        shipping_preference = processing_data.get("shipping_preference", "get_from_file")
+        invoice_id = processing_data.get("invoice_id", f"inv-{uuid.uuid4().hex[:10]}")
 
+        items_data = data.get("items", [])
+        if not items_data: # Provide a default item if none are sent
+            items_data = [{
+                "name": "Default Item",
+                "unit_price": amount,
+                "quantity": 1,
+                "total_amount": amount,
+                "type": "digital",
+            }]
 
 
         # Basic validation for mandatory fields from frontend
         if not all([amount, currency, customer_email, processing_channel_id, success_url, failure_url]):
             return jsonify({"error": "Missing essential fields for payment context (amount, currency, email, billing_address, processing_channel_id, success_url, failure_url)"}), 400
 
+        # Construct the request for the Checkout.com API
         requestPaymentContext = {
-            "source": { # As per documentation example for PayPal payment contexts
-                "type": "paypal"
-            },
+            "source": { "type": "paypal" },
             "amount": amount,
             "currency": currency,
             "reference": reference,
             "capture": capture,
-            "payment_type": payment_type, # Use dynamic payment_type
+            "payment_type": payment_type,
             "customer": {
                 "name": customer_name,
                 "email": customer_email
             },
-            "processing": { # As per documentation example
-                "invoice_id": data.get("invoice_id", f"inv-{uuid.uuid4().hex[:10]}"), # Use provided invoice_id or generate
+            "processing": {
+                "invoice_id": invoice_id,
                 "user_action": user_action,
-                "plan":{
-                    "type":"merchant_initiated_billing_single_agreement"
-                },
-                "shipping_preference": shipping_preference
-            },
-            "processing_channel_id": processing_channel_id, # Use dynamic processing_channel_id
-            "success_url": success_url, # Use dynamic success_url
-            "failure_url": failure_url, # Use dynamic failure_url
-            "items": data.get("items", [ # Items from frontend, or default dummy item
-                {
-                    "name": "Default Item",
-                    "unit_price": amount,
-                    "quantity": 1,
-                    "total_amount": amount,
-                    "type": itemType, # Use dynamic item typ
+                "shipping_preference": shipping_preference, # Use the correctly extracted value
+                "plan": {
+                    "type": "merchant_initiated_billing_single_agreement"
                 }
-            ])
+            },
+            "processing_channel_id": processing_channel_id,
+            "success_url": success_url,
+            "failure_url": failure_url,
+            "items": items_data
         }
         
         # Ensure 'contexts' exists in 'checkout_api' client
