@@ -18,6 +18,7 @@ import PayPal from './components/PayPal';
 import FlowHandleSubmit from './components/FlowCallbacks/FlowHandleSubmit'
 import FlowHandleClick from './components/FlowCallbacks/FlowHandleClick';
 import RememberMe from './components/FlowCallbacks/RememberMe';
+import Tokenization from './components/FlowCallbacks/Tokenization';
 
 function App() {
   const [data, setData] = useState('');
@@ -50,6 +51,7 @@ function App() {
         <Route path="/flowHandleSubmit" element={<FlowHandleSubmit />} />
         <Route path="/flowHandleClick" element={<FlowHandleClick />} />
         <Route path="/rememberMe" element={<RememberMe/>} />
+        <Route path='/tokenization' element={<Tokenization/>}/>
 
         {/* --- NEW ROUTE FOR CHECKOUT DEMO --- */}
         {/* CheckoutDemoApp handles its own nested routes for /checkout-demo and /checkout-demo/delivery */}
