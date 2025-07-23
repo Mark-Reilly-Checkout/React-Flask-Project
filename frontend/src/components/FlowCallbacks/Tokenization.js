@@ -26,15 +26,16 @@ const Tokenization = () => {
     const [tokenizationResponse, setTokenizationResponse] = useState(null);
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
 
-    // --- NEW: State for the JSON editor ---
+    // State for the JSON editor
     const [sessionPayload, setSessionPayload] = useState(defaultSessionPayload);
     const [jsonInput, setJsonInput] = useState(JSON.stringify(defaultSessionPayload, null, 2));
     const [jsonError, setJsonError] = useState(null);
 
-    // Ref to hold the card component instance
+    // --- MODIFIED: Refs for the component instance and its container element ---
     const cardComponentRef = useRef(null);
+    const cardContainerRef = useRef(null); // Ref for the container div
 
-    // --- NEW: Handler for the JSON text area input ---
+    // Handler for the JSON text area input
     const handleJsonInputChange = (e) => {
         const value = e.target.value;
         setJsonInput(value); // Keep the raw string in sync with the textarea
@@ -47,7 +48,7 @@ const Tokenization = () => {
         }
     };
 
-    // --- UPDATED: Function to create the payment session ---
+    // Function to create the payment session
     const createPaymentSession = async () => {
         setLoading(true);
         setPaymentSession(null);
@@ -72,16 +73,24 @@ const Tokenization = () => {
         }
     };
 
-    // Effect to initialize and mount the Card component
+    // --- MODIFIED: Effect to initialize and mount the Card component using refs ---
     useEffect(() => {
+        // Cleanup logic for when the payment session is removed
         if (!paymentSession?.id) {
-            const cardContainer = document.getElementById('card-container');
-            if (cardContainer) cardContainer.innerHTML = '';
+            if (cardContainerRef.current) {
+                cardContainerRef.current.innerHTML = '';
+            }
             cardComponentRef.current = null;
             return;
         }
 
         const initializeCardComponent = async (session) => {
+            // Ensure the container element exists before trying to mount
+            if (!cardContainerRef.current) {
+                toast.error("Card container element not found in the DOM.");
+                return;
+            }
+            
             try {
                 const checkout = await loadCheckoutWebComponents({
                     paymentSession: session,
@@ -95,7 +104,8 @@ const Tokenization = () => {
                 });
                 
                 if (await cardComponent.isAvailable()) {
-                    cardComponent.mount('#card-container');
+                    // Mount using the direct DOM element reference from the ref
+                    cardComponent.mount(cardContainerRef.current);
                     cardComponentRef.current = cardComponent; // Store instance in ref
                 } else {
                     toast.error("Card component is not available.");
@@ -111,7 +121,7 @@ const Tokenization = () => {
 
     }, [paymentSession]);
 
-    // --- Handler for the custom "Tokenize" button ---
+    // Handler for the custom "Tokenize" button
     const handleTokenize = async () => {
         if (!cardComponentRef.current) {
             toast.error("Card component is not initialized.");
@@ -143,7 +153,6 @@ const Tokenization = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Panel: Actions */}
                 <div className="flex flex-col gap-6">
-                    {/* --- MODIFIED: Session Request Card with JSON Editor --- */}
                     <Card className="p-6 rounded-xl shadow-md bg-white">
                         <Card.Title className="text-xl font-semibold mb-4">1. Create Session</Card.Title>
                         <div className="mb-4">
@@ -173,8 +182,8 @@ const Tokenization = () => {
 
                     <Card className="p-6 rounded-xl shadow-md bg-white">
                         <Card.Title className="text-xl font-semibold mb-4">2. Enter Card & Tokenize</Card.Title>
-                        {/* Container where the card component will be mounted */}
-                        <div id="card-container" className="min-h-[150px]">
+                        {/* --- MODIFIED: Attach the ref to the container div --- */}
+                        <div ref={cardContainerRef} id="card-container" className="min-h-[150px]">
                             {!paymentSession && <p className="text-center text-gray-500">Create a session to load the card form.</p>}
                         </div>
                         <button
