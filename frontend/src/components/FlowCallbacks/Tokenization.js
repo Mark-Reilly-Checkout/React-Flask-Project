@@ -26,16 +26,42 @@ const Tokenization = () => {
     const [tokenizationResponse, setTokenizationResponse] = useState(null);
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
 
+    // --- NEW: State for the JSON editor ---
+    const [sessionPayload, setSessionPayload] = useState(defaultSessionPayload);
+    const [jsonInput, setJsonInput] = useState(JSON.stringify(defaultSessionPayload, null, 2));
+    const [jsonError, setJsonError] = useState(null);
+
     // Ref to hold the card component instance
     const cardComponentRef = useRef(null);
 
-    // Function to create the payment session
+    // --- NEW: Handler for the JSON text area input ---
+    const handleJsonInputChange = (e) => {
+        const value = e.target.value;
+        setJsonInput(value); // Keep the raw string in sync with the textarea
+        try {
+            const parsedJson = JSON.parse(value);
+            setSessionPayload(parsedJson); // Update the actual data object
+            setJsonError(null); // Clear any previous error
+        } catch (error) {
+            setJsonError('Invalid JSON format.'); // Set an error message to give user feedback
+        }
+    };
+
+    // --- UPDATED: Function to create the payment session ---
     const createPaymentSession = async () => {
         setLoading(true);
         setPaymentSession(null);
         setTokenizationResponse(null);
+
+        if (jsonError) {
+            toast.error("Cannot create session. Please fix the invalid JSON.");
+            setLoading(false);
+            return;
+        }
+
         try {
-            const response = await axios.post(`${API_BASE_URL}/api/create-payment-session`, defaultSessionPayload);
+            // The payload is now the validated sessionPayload state
+            const response = await axios.post(`${API_BASE_URL}/api/create-payment-session`, sessionPayload);
             setPaymentSession(response.data);
             toast.success("Payment session created. Card component will now load.");
         } catch (error) {
@@ -117,14 +143,23 @@ const Tokenization = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Panel: Actions */}
                 <div className="flex flex-col gap-6">
+                    {/* --- MODIFIED: Session Request Card with JSON Editor --- */}
                     <Card className="p-6 rounded-xl shadow-md bg-white">
                         <Card.Title className="text-xl font-semibold mb-4">1. Create Session</Card.Title>
-                        <p className="text-gray-600 mb-4">
-                            First, create a payment session. This authenticates the component and allows it to be displayed securely.
-                        </p>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium mb-1">Session Request Payload</label>
+                            <textarea
+                                value={jsonInput}
+                                onChange={handleJsonInputChange}
+                                className={`w-full border rounded px-3 py-2 font-mono text-sm ${jsonError ? 'border-red-500' : 'border-gray-300'}`}
+                                rows={15}
+                                placeholder="Enter session request JSON here..."
+                            />
+                            {jsonError && <p className="text-red-500 text-xs mt-1">{jsonError}</p>}
+                        </div>
                         <button
                             onClick={createPaymentSession}
-                            disabled={loading}
+                            disabled={loading || !!jsonError}
                             className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 disabled:opacity-50"
                         >
                             {loading ? "Creating Session..." : "Create Payment Session"}
