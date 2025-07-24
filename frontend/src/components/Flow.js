@@ -318,6 +318,8 @@ const Flow = ({ passedPaymentSession = null }) => {
 
         const initializeFlowComponent = async (sessionObject) => {
             try {
+                console.log('Public Key:', publicKey);
+
                 const checkout = await loadCheckoutWebComponents({
                     paymentSession: sessionObject,
                     publicKey,
