@@ -31,20 +31,19 @@ const Tokenization = () => {
     const [jsonInput, setJsonInput] = useState(JSON.stringify(defaultSessionPayload, null, 2));
     const [jsonError, setJsonError] = useState(null);
 
-    // --- MODIFIED: Refs for the component instance and its container element ---
     const cardComponentRef = useRef(null);
-    const cardContainerRef = useRef(null); // Ref for the container div
+    const cardContainerRef = useRef(null); 
 
     // Handler for the JSON text area input
     const handleJsonInputChange = (e) => {
         const value = e.target.value;
-        setJsonInput(value); // Keep the raw string in sync with the textarea
+        setJsonInput(value); 
         try {
             const parsedJson = JSON.parse(value);
-            setSessionPayload(parsedJson); // Update the actual data object
-            setJsonError(null); // Clear any previous error
+            setSessionPayload(parsedJson); 
+            setJsonError(null); 
         } catch (error) {
-            setJsonError('Invalid JSON format.'); // Set an error message to give user feedback
+            setJsonError('Invalid JSON format.'); 
         }
     };
 
@@ -61,7 +60,6 @@ const Tokenization = () => {
         }
 
         try {
-            // The payload is now the validated sessionPayload state
             const response = await axios.post(`${API_BASE_URL}/api/create-payment-session`, sessionPayload);
             setPaymentSession(response.data);
             toast.success("Payment session created. Card component will now load.");
@@ -73,9 +71,8 @@ const Tokenization = () => {
         }
     };
 
-    // --- MODIFIED: Effect to initialize and mount the Card component using refs ---
+    // Effect to initialize and mount the Card component
     useEffect(() => {
-        // Cleanup logic for when the payment session is removed
         if (!paymentSession?.id) {
             if (cardContainerRef.current) {
                 cardContainerRef.current.innerHTML = '';
@@ -85,8 +82,8 @@ const Tokenization = () => {
         }
 
         const initializeCardComponent = async (session) => {
-            // Ensure the container element exists before trying to mount
             if (!cardContainerRef.current) {
+                // This check is now a safeguard, but less likely to fail with conditional rendering
                 toast.error("Card container element not found in the DOM.");
                 return;
             }
@@ -94,19 +91,17 @@ const Tokenization = () => {
             try {
                 const checkout = await loadCheckoutWebComponents({
                     paymentSession: session,
-                    publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4', // Use your public key
+                    publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4',
                     environment: 'sandbox',
                 });
 
                 const cardComponent = checkout.create('card', {
-                    // We hide the component's own pay button to use our custom one
                     showPayButton: false, 
                 });
                 
                 if (await cardComponent.isAvailable()) {
-                    // Mount using the direct DOM element reference from the ref
                     cardComponent.mount(cardContainerRef.current);
-                    cardComponentRef.current = cardComponent; // Store instance in ref
+                    cardComponentRef.current = cardComponent;
                 } else {
                     toast.error("Card component is not available.");
                 }
@@ -130,7 +125,6 @@ const Tokenization = () => {
         setLoading(true);
         setTokenizationResponse(null);
         try {
-            // This is the core tokenization call
             const { data } = await cardComponentRef.current.tokenize();
             
             setTokenizationResponse(data);
@@ -182,10 +176,18 @@ const Tokenization = () => {
 
                     <Card className="p-6 rounded-xl shadow-md bg-white">
                         <Card.Title className="text-xl font-semibold mb-4">2. Enter Card & Tokenize</Card.Title>
-                        {/* --- MODIFIED: Attach the ref to the container div --- */}
-                        <div ref={cardContainerRef} id="card-container" className="min-h-[150px]">
-                            {!paymentSession && <p className="text-center text-gray-500">Create a session to load the card form.</p>}
-                        </div>
+                        
+                        {/* --- MODIFIED: Conditional rendering for the container --- */}
+                        {paymentSession ? (
+                            <div ref={cardContainerRef} id="card-container" className="min-h-[150px]">
+                                {/* The card component will be mounted here by the useEffect hook */}
+                            </div>
+                        ) : (
+                            <div className="min-h-[150px] flex items-center justify-center">
+                                <p className="text-center text-gray-500">Create a session to load the card form.</p>
+                            </div>
+                        )}
+
                         <button
                             onClick={handleTokenize}
                             disabled={loading || !paymentSession}
