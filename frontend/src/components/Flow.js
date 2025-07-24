@@ -314,11 +314,13 @@ const Flow = ({ passedPaymentSession = null }) => {
             flowContainer.innerHTML = '';
         }
 
+        const publicKey = config.publicKey;
+
         const initializeFlowComponent = async (sessionObject) => {
             try {
                 const checkout = await loadCheckoutWebComponents({
                     paymentSession: sessionObject,
-                    publicKey: config.publicKey,
+                    publicKey,
                     environment: config.environment,
                     locale: config.locale,
                     translations,
