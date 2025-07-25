@@ -402,7 +402,7 @@ def submit_flow_session_payment():
 
         # --- Make the API Call to Checkout.com ---
         headers = {
-            'Authorization': f'Bearer sk_sbox_vyafhd3nyddbhrs6ks53gpx2mi5', # Use your Checkout.com Secret Key
+            'Authorization': f'Bearer sk_sbox_gqlhkcadk6rsjqcy5z5mzd52vya', # Use your Checkout.com Secret Key
             'Content-Type': 'application/json'
         }
 
