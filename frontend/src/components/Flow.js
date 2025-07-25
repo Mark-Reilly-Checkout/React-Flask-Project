@@ -323,6 +323,12 @@ const Flow = ({ passedPaymentSession = null }) => {
                 const checkout = await loadCheckoutWebComponents({
                     paymentSession: sessionObject,
                     publicKey,
+                    onPaymentCompleted: (_component, paymentResponse) => {
+                    toast.success('Payment completed successfully!');
+                    toast.info('Payment ID: ' + paymentResponse.id);
+                    //avigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);fdfd
+                    
+                },
                     environment: config.environment,
                     locale: config.locale,
                     translations,
@@ -338,12 +344,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                         },
                     },
 
-                onPaymentCompleted: (_component, paymentResponse) => {
-                    toast.success('Payment completed successfully!');
-                    toast.info('Payment ID: ' + paymentResponse.id);
-                    //avigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);
-                    
-                },
+                
                 onError: (_component, error) => {
                     toast.error('Payment failed. Please try again.');
                     console.error("Payment Error:", error);
