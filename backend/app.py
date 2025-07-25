@@ -19,6 +19,9 @@ CORS(app, origins=["https://react-frontend-elpl.onrender.com", "https://react-fl
 CHECKOUT_SECRET_KEY = os.environ.get('CHECKOUT_SECRET_KEY')
 CHECKOUT_PUBLIC_KEY = os.environ.get('CHECKOUT_PUBLIC_KEY')
 
+print("Checkout Secret Key:", CHECKOUT_SECRET_KEY)
+print("Checkout Public Key:", CHECKOUT_PUBLIC_KEY)
+
 # Path to your Apple Pay merchant certificate and key
 APPLE_PAY_CERT = './certificate_sandbox.pem'
 APPLE_PAY_KEY = './certificate_sandbox.key'
