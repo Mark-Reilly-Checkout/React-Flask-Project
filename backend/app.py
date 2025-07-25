@@ -15,6 +15,10 @@ app = Flask(__name__)
 app.config["DEBUG"] = True
 CORS(app, origins=["https://react-frontend-elpl.onrender.com", "https://react-flask-project-kpyi.onrender.com"]) #Frontend is running on https://
 
+# These will be loaded from your .env file locally, or from Render's environment settings in production
+CHECKOUT_SECRET_KEY = os.environ.get('CHECKOUT_SECRET_KEY')
+CHECKOUT_PUBLIC_KEY = os.environ.get('CHECKOUT_PUBLIC_KEY')
+
 # Path to your Apple Pay merchant certificate and key
 APPLE_PAY_CERT = './certificate_sandbox.pem'
 APPLE_PAY_KEY = './certificate_sandbox.key'
@@ -22,8 +26,8 @@ MERCHANT_ID = 'merchant.com.reactFlask.sandbox'
 
 # Initialise Checkout SDK
 checkout_api = CheckoutSdk.builder() \
-    .secret_key('sk_sbox_vyafhd3nyddbhrs6ks53gpx2mi5') \
-    .public_key('pk_sbox_z6zxchef4pyoy3bziidwee4clm4')\
+    .secret_key(CHECKOUT_SECRET_KEY) \
+    .public_key(CHECKOUT_PUBLIC_KEY)\
     .environment(Environment.sandbox()) \
     .build() 
 payments_client = checkout_api.payments    
@@ -402,7 +406,7 @@ def submit_flow_session_payment():
 
         # --- Make the API Call to Checkout.com ---
         headers = {
-            'Authorization': f'Bearer sk_sbox_gqlhkcadk6rsjqcy5z5mzd52vya', # Use your Checkout.com Secret Key
+            'Authorization': f'Bearer {CHECKOUT_SECRET_KEY}', # Use your Checkout.com Secret Key
             'Content-Type': 'application/json'
         }
 
