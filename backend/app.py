@@ -8,6 +8,8 @@ from checkout_sdk.checkout_configuration import CheckoutConfiguration
 from checkout_sdk.oauth_scopes import OAuthScopes
 from checkout_sdk.payments.sessions.sessions_client import PaymentSessionsClient
 from checkout_sdk.payments.sessions.sessions import PaymentSessionsRequest
+from checkout_sdk.hosted_payments import HostedPaymentsSessionRequest, Billing, Customer
+from checkout_sdk.common.common import Address
 import json, datetime, traceback, os, requests, uuid, traceback
 
 
@@ -34,6 +36,7 @@ checkout_api = CheckoutSdk.builder() \
     .environment(Environment.sandbox()) \
     .build() 
 payments_client = checkout_api.payments    
+
 
 
 # Test to show FE and BE communicating ff
@@ -450,6 +453,53 @@ def submit_flow_session_payment():
         traceback.print_exc()
         print(f"An unexpected error occurred during payment session submission: {e}")
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+
+@app.route('/api/hosted-payments', methods=['POST'])
+def create_hosted_payments_page_session():
+    try:
+        data = request.json
+
+        # Build the request object from the frontend JSON
+        request_data = HostedPaymentsSessionRequest()
+        request_data.amount = data.get('amount')
+        request_data.currency = data.get('currency')
+        request_data.reference = data.get('reference')
+        
+        if 'billing' in data and 'address' in data['billing']:
+            billing_address = Address()
+            billing_address.country = data['billing']['address'].get('country')
+            billing_info = Billing()
+            billing_info.address = billing_address
+            request_data.billing = billing_info
+
+        if 'customer' in data:
+            customer = Customer()
+            customer.name = data['customer'].get('name')
+            customer.email = data['customer'].get('email')
+            request_data.customer = customer
+
+        request_data.success_url = data.get('success_url')
+        request_data.failure_url = data.get('failure_url')
+        request_data.cancel_url = data.get('cancel_url')
+
+        response = checkout_api.hosted_payments.create_hosted_payments_page_session(request_data)
+
+        # The SDK response object needs to be converted to a dict to be JSON serializable
+        response_dict = {
+            "id": response.id,
+            "reference": response.reference,
+            "_links": {
+                "redirect": {
+                    "href": response._links['redirect'].href
+                }
+            }
+        }
+        
+        return jsonify(response_dict), 201
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": "Failed to create Hosted Payments session", "details": str(e)}), 500
 
 
 if __name__ == '__main__':

@@ -11,7 +11,7 @@ const NavigationBar = () => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
             <Nav.Link href="/flow">Flow</Nav.Link>
-            <Nav.Link href="/requestPayment">Hosted Payment Pages</Nav.Link>
+            <Nav.Link href="/hosted-payment-pages">Hosted Payment Pages</Nav.Link>
             <Nav.Link href="/paymentLink">Payment Link</Nav.Link>
             <Nav.Link href="/applePay">Apple Pay</Nav.Link>
             <Nav.Link href="/googlePay">Google Pay</Nav.Link>
