@@ -2,14 +2,6 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from checkout_sdk.checkout_sdk import CheckoutSdk
 from checkout_sdk.environment import Environment
-from checkout_sdk.api_client import ApiClient
-from checkout_sdk.authorization_type import AuthorizationType
-from checkout_sdk.checkout_configuration import CheckoutConfiguration
-from checkout_sdk.oauth_scopes import OAuthScopes
-from checkout_sdk.payments.sessions.sessions_client import PaymentSessionsClient
-from checkout_sdk.payments.sessions.sessions import PaymentSessionsRequest
-from checkout_sdk.hosted_payments import HostedPaymentsSessionRequest, Billing, Customer
-from checkout_sdk.common.common import Address
 import json, datetime, traceback, os, requests, uuid, traceback
 
 
@@ -457,32 +449,13 @@ def submit_flow_session_payment():
 @app.route('/api/hosted-payments', methods=['POST'])
 def create_hosted_payments_page_session():
     try:
-        data = request.json
+        # The frontend sends a JSON payload that matches the expected API structure.
+        # We can pass this dictionary directly to the SDK method.
+        payload = request.json
 
-        # Build the request object from the frontend JSON
-        request_data = HostedPaymentsSessionRequest()
-        request_data.amount = data.get('amount')
-        request_data.currency = data.get('currency')
-        request_data.reference = data.get('reference')
-        
-        if 'billing' in data and 'address' in data['billing']:
-            billing_address = Address()
-            billing_address.country = data['billing']['address'].get('country')
-            billing_info = Billing()
-            billing_info.address = billing_address
-            request_data.billing = billing_info
-
-        if 'customer' in data:
-            customer = Customer()
-            customer.name = data['customer'].get('name')
-            customer.email = data['customer'].get('email')
-            request_data.customer = customer
-
-        request_data.success_url = data.get('success_url')
-        request_data.failure_url = data.get('failure_url')
-        request_data.cancel_url = data.get('cancel_url')
-
-        response = checkout_api.hosted_payments.create_hosted_payments_page_session(request_data)
+        # The SDK's hosted_payments client is accessed directly from the main API instance.
+        # The payload dictionary is passed as the argument.
+        response = checkout_api.hosted_payments.create_hosted_payments_page_session(payload)
 
         # The SDK response object needs to be converted to a dict to be JSON serializable
         response_dict = {
@@ -499,7 +472,11 @@ def create_hosted_payments_page_session():
 
     except Exception as e:
         traceback.print_exc()
-        return jsonify({"error": "Failed to create Hosted Payments session", "details": str(e)}), 500
+        # Attempt to get more detailed error info from the SDK exception if available
+        error_details = str(e)
+        if hasattr(e, 'error_details'):
+            error_details = e.error_details
+        return jsonify({"error": "Failed to create Hosted Payments session", "details": error_details}), 500
 
 
 if __name__ == '__main__':
