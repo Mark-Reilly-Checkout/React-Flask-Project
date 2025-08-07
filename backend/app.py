@@ -121,6 +121,40 @@ def create_payment_session():
             error_message["type"] = response.error_type
         return jsonify(error_message), 500
 
+
+# --- NEW ENDPOINT for Direct Card Payment with Risk Data ---
+@app.route('/api/request-card-payment', methods=['POST'])
+def request_card_payment():
+    try:
+        # Get the full JSON payload from the frontend
+        payment_data = request.json
+        
+        print(f"Requesting card payment with data: {payment_data}")
+
+        # Use the payments client to request a payment
+        # The frontend payload already matches the structure needed by the SDK
+        response = payments_client.request_payment(payment_data)
+
+        # Convert the response object to a JSON-serializable dictionary
+        response_data = make_json_serializable(vars(response))
+
+        print(f"Payment response received: {response_data}")
+
+        return jsonify(response_data)
+
+    except Exception as e:
+        traceback.print_exc()
+        # Handle potential errors from the SDK
+        error_details = str(e)
+        status_code = 500
+        if hasattr(e, 'http_metadata') and e.http_metadata:
+            status_code = e.http_metadata.status_code
+        if hasattr(e, 'error_details'):
+            error_details = e.error_details
+        
+        return jsonify({"error": "Failed to process card payment", "details": error_details}), status_code
+
+
 # POST - Regular - Payment
 @app.route('/api/payments', methods=['POST'])
 
