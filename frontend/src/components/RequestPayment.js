@@ -4,86 +4,137 @@ import { toast } from 'react-toastify';
 
 const RequestPayment = () => {
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
-    const [cardDetails, setCardDetails] = useState({
-        number: '',
-        expiry_month: '',
-        expiry_year: '',
-        cvv: '',
-        name: ''
-    });
     const [deviceSessionId, setDeviceSessionId] = useState(null);
     const [paymentResponse, setPaymentResponse] = useState(null);
     const [loading, setLoading] = useState(false);
+    
+    // --- NEW: State for Frames.js ---
+    const [isCardValid, setIsCardValid] = useState(false);
+    const [cardToken, setCardToken] = useState(null);
+    const [errorMessage, setErrorMessage] = useState('');
 
-    // Effect to load and initialize the Risk.js SDK
+    // --- MODIFIED: This effect now handles both Risk.js and Frames.js ---
     useEffect(() => {
-        const scriptId = 'risk-js';
-        if (document.getElementById(scriptId)) {
-            return; // Script already added
+        // --- 1. Load Risk.js SDK ---
+        const riskScriptId = 'risk-js';
+        if (!document.getElementById(riskScriptId)) {
+            const riskScript = document.createElement('script');
+            riskScript.id = riskScriptId;
+            riskScript.src = "https://risk.sandbox.checkout.com/cdn/risk/2.3/risk.js";
+            riskScript.defer = true;
+            riskScript.onload = async () => {
+                try {
+                    const risk = await window.Risk.create("pk_sbox_z6zxchef4pyoy3bziidwee4clm4");
+                    const dsid = await risk.publishRiskData();
+                    setDeviceSessionId(dsid);
+                    toast.info(`Risk device session created.`);
+                } catch (err) {
+                    console.error("Risk.js initialization failed:", err);
+                    toast.error("Failed to initialize fraud detection SDK.");
+                }
+            };
+            document.body.appendChild(riskScript);
         }
 
-        const script = document.createElement('script');
-        script.id = scriptId;
-        script.src = "https://risk.sandbox.checkout.com/cdn/risk/2.3/risk.js";
-        script.defer = true;
-        script.integrity = "sha384-ZGdiIppkJzwran7Bjk0sUZy5z1mZGpR/MJx7LC0xCTyFE2sBpPFeLu4r15yGVei6";
-        script.crossOrigin = "anonymous";
+        // --- 2. Load Frames.js SDK ---
+        const framesScriptId = 'frames-js';
+        if (document.getElementById(framesScriptId)) {
+            return;
+        }
+        const framesScript = document.createElement('script');
+        framesScript.id = framesScriptId;
+        framesScript.src = "https://cdn.checkout.com/js/framesv2.min.js";
+        framesScript.defer = true;
+        
+        framesScript.onload = () => {
+            if (window.Frames) {
+                window.Frames.init("pk_sbox_z6zxchef4pyoy3bziidwee4clm4");
 
-        script.addEventListener('load', async () => {
-            try {
-                console.log("Risk.js SDK loaded.");
-                // Initialize Risk.js with your public API key
-                const risk = await window.Risk.create("pk_sbox_z6zxchef4pyoy3bziidwee4clm4");
-                // Publish device data to get the session ID
-                const dsid = await risk.publishRiskData();
-                setDeviceSessionId(dsid);
-                toast.success(`Risk device session created: ${dsid}`);
-                console.log("Device Session ID:", dsid);
-            } catch (err) {
-                console.error("Risk.js initialization failed:", err);
-                toast.error("Failed to initialize fraud detection SDK.");
+                // --- Event Handlers for Frames ---
+                window.Frames.addEventHandler(
+                    window.Frames.Events.CARD_VALIDATION_CHANGED,
+                    (event) => {
+                        setIsCardValid(window.Frames.isCardValid());
+                    }
+                );
+
+                window.Frames.addEventHandler(
+                    window.Frames.Events.FRAME_VALIDATION_CHANGED,
+                    (event) => {
+                        const errors = {
+                            "card-number": "Please enter a valid card number",
+                            "expiry-date": "Please enter a valid expiry date",
+                            "cvv": "Please enter a valid cvv code",
+                        };
+                        if (!event.isValid && !event.isEmpty) {
+                            setErrorMessage(errors[event.element]);
+                        } else {
+                            setErrorMessage('');
+                        }
+                    }
+                );
+
+                window.Frames.addEventHandler(
+                    window.Frames.Events.CARD_TOKENIZED,
+                    (event) => {
+                        console.log("Card tokenized:", event.token);
+                        // We set the token and trigger the payment request from here
+                        setCardToken(event.token); 
+                    }
+                );
+
+                window.Frames.addEventHandler(
+                    window.Frames.Events.CARD_TOKENIZATION_FAILED,
+                    (error) => {
+                        console.error("CARD_TOKENIZATION_FAILED: ", error);
+                        toast.error("Card tokenization failed.");
+                        setLoading(false); // Re-enable button
+                    }
+                );
             }
-        });
+        };
+        document.body.appendChild(framesScript);
 
-        document.body.appendChild(script);
-
-        // Cleanup function to remove the script when the component unmounts
+        // Cleanup function
         return () => {
-            const riskScript = document.getElementById(scriptId);
-            if (riskScript) {
-                riskScript.remove();
-            }
+            const riskScript = document.getElementById(riskScriptId);
+            if (riskScript) riskScript.remove();
+            const framesScriptElem = document.getElementById(framesScriptId);
+            if (framesScriptElem) framesScriptElem.remove();
+            // It's good practice to clear Frames to remove handlers and instances
+            if (window.Frames) window.Frames.removeAllEventHandlers();
         };
     }, []);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setCardDetails(prev => ({ ...prev, [name]: value }));
-    };
+    // --- NEW: This effect triggers the payment request AFTER a token is received ---
+    useEffect(() => {
+        if (cardToken) {
+            handleRequestPaymentWithToken(cardToken);
+        }
+    }, [cardToken]);
 
-    const handleRequestPayment = async () => {
+
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
         if (!deviceSessionId) {
             toast.error("Device session ID is not available. Please wait or refresh.");
             return;
         }
-
         setLoading(true);
         setPaymentResponse(null);
+        window.Frames.submitCard(); // This triggers the CARD_TOKENIZED event on success
+    };
 
+    const handleRequestPaymentWithToken = async (token) => {
         try {
-            // Construct the payment request payload
             const payload = {
                 source: {
-                    type: "card",
-                    number: cardDetails.number,
-                    expiry_month: parseInt(cardDetails.expiry_month),
-                    expiry_year: parseInt(cardDetails.expiry_year),
-                    cvv: cardDetails.cvv,
-                    name: cardDetails.name
+                    type: "token",
+                    token: token // Use the token from Frames
                 },
-                amount: 1000, // Example amount (e.g., 10.00 GBP)
+                amount: 1000,
                 currency: "GBP",
-                reference: `risk-demo-${Date.now()}`,
+                reference: `risk-frames-demo-${Date.now()}`,
                 risk: {
                     device_session_id: deviceSessionId
                 },
@@ -92,7 +143,6 @@ const RequestPayment = () => {
                 }
             };
 
-            // Send the request to your backend
             const response = await axios.post(`${API_BASE_URL}/api/request-card-payment`, payload);
             setPaymentResponse(response.data);
             toast.success(`Payment processed! Status: ${response.data.status}`);
@@ -102,6 +152,7 @@ const RequestPayment = () => {
             setPaymentResponse(error.response ? error.response.data : { error: error.message });
         } finally {
             setLoading(false);
+            setCardToken(null); // Reset token after use
         }
     };
 
@@ -110,42 +161,40 @@ const RequestPayment = () => {
             <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Panel: Card Form */}
                 <div className="bg-white p-6 rounded-xl shadow-md">
-                    <h2 className="text-xl font-semibold mb-4">Direct Card Payment with Risk.js</h2>
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Card Number</label>
-                            <input type="text" name="number" value={cardDetails.number} onChange={handleInputChange} className="w-full border rounded px-3 py-2" />
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="flex-1">
-                                <label className="block text-sm font-medium mb-1">Expiry Month</label>
-                                <input type="text" name="expiry_month" value={cardDetails.expiry_month} onChange={handleInputChange} className="w-full border rounded px-3 py-2" placeholder="MM" />
+                    <h2 className="text-xl font-semibold mb-4">Direct Card Payment with Frames.js & Risk.js</h2>
+                    
+                    {/* --- MODIFIED: This is now a form that uses Frames.js placeholders --- */}
+                    <form id="payment-form" onSubmit={handleFormSubmit}>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Card Number</label>
+                                <div className="card-number-frame w-full border rounded px-3 py-2"></div>
                             </div>
-                            <div className="flex-1">
-                                <label className="block text-sm font-medium mb-1">Expiry Year</label>
-                                <input type="text" name="expiry_year" value={cardDetails.expiry_year} onChange={handleInputChange} className="w-full border rounded px-3 py-2" placeholder="YYYY" />
+                            <div className="flex gap-4">
+                                <div className="flex-1">
+                                    <label className="block text-sm font-medium mb-1">Expiry Date</label>
+                                    <div className="expiry-date-frame w-full border rounded px-3 py-2"></div>
+                                </div>
+                                <div className="flex-1">
+                                    <label className="block text-sm font-medium mb-1">CVV</label>
+                                    <div className="cvv-frame w-full border rounded px-3 py-2"></div>
+                                </div>
                             </div>
+                            <div className="text-red-500 text-sm h-4">{errorMessage}</div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">CVV</label>
-                            <input type="text" name="cvv" value={cardDetails.cvv} onChange={handleInputChange} className="w-full border rounded px-3 py-2" />
+                        <div className="mt-4 pt-4 border-t">
+                            <p className="text-sm text-gray-600"><strong>Device Session ID:</strong></p>
+                            <p className="text-xs text-gray-500 break-all">{deviceSessionId || "Initializing..."}</p>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Cardholder Name</label>
-                            <input type="text" name="name" value={cardDetails.name} onChange={handleInputChange} className="w-full border rounded px-3 py-2" />
-                        </div>
-                    </div>
-                    <div className="mt-4 pt-4 border-t">
-                        <p className="text-sm text-gray-600"><strong>Device Session ID:</strong></p>
-                        <p className="text-xs text-gray-500 break-all">{deviceSessionId || "Initializing..."}</p>
-                    </div>
-                    <button
-                        onClick={handleRequestPayment}
-                        disabled={loading || !deviceSessionId}
-                        className="mt-4 w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 disabled:opacity-50"
-                    >
-                        {loading ? "Processing..." : "Request Payment"}
-                    </button>
+                        <button
+                            type="submit"
+                            id="pay-button"
+                            disabled={loading || !isCardValid || !deviceSessionId}
+                            className="mt-4 w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 disabled:opacity-50"
+                        >
+                            {loading ? "Processing..." : "Pay Now"}
+                        </button>
+                    </form>
                 </div>
 
                 {/* Right Panel: Response */}
