@@ -49,7 +49,34 @@ const ApplePay = () => {
     localStorage.setItem('applePayConfig', JSON.stringify(config));
   }, [config]);
 
-  // --- REMOVED: The useEffect that loaded Risk.js has been removed from here ---
+  // Effect to load the Risk.js script when the component mounts
+  useEffect(() => {
+    const scriptId = 'risk-js';
+    if (document.getElementById(scriptId)) {
+        return; // Script already on the page
+    }
+
+    const script = document.createElement('script');
+    script.id = scriptId;
+    script.src = "https://risk.sandbox.checkout.com/cdn/risk/2.3/risk.js";
+    script.defer = true;
+    script.integrity = "sha384-ZGdiIppkJzwran7Bjk0sUZy5z1mZGpR/MJx7LC0xCTyFE2sBpPFeLu4r15yGVei6";
+    script.crossOrigin = "anonymous";
+    
+    script.onload = () => {
+        console.log("Risk.js SDK script has been loaded.");
+    };
+    
+    document.body.appendChild(script);
+
+    // Cleanup function to remove the script when the component unmounts
+    return () => {
+        const riskScript = document.getElementById(scriptId);
+        if (riskScript) {
+            riskScript.remove();
+        }
+    };
+  }, []);
 
 
   // Effect to create/re-create the Apple Pay button when config changes
@@ -101,36 +128,20 @@ const ApplePay = () => {
   };
 
 
-  const handleApplePay = async () => {
+  const handleApplePay = () => { // --- REMOVED ASYNC ---
     if (!window.ApplePaySession || !ApplePaySession.canMakePayments()) {
       toast.error("Apple Pay is not available on this device/browser.");
       return;
     }
     
-    // Check if the Risk SDK has loaded onto the window object
     if (typeof window.Risk === 'undefined') {
         toast.error("Fraud detection script is still loading. Please try again in a moment.");
         return;
     }
 
     setLoading(true);
+    // This variable will be accessible across the session's event handlers
     let deviceSessionId = null;
-
-    // --- Risk.js is now initialized on click ---
-    try {
-        toast.info("Starting security check...");
-        const risk = await window.Risk.create("pk_sbox_z6zxchef4pyoy3bziidwee4clm4");
-        const dsid = await risk.publishRiskData();
-        deviceSessionId = dsid;
-        toast.success(`Security check complete.`);
-        console.log("Risk.js Device Session ID:", dsid);
-    } catch (err) {
-        console.error("Risk.js initialization failed:", err);
-        toast.error("Could not start fraud detection session. Payment aborted.");
-        setLoading(false);
-        return; // Abort the payment if risk assessment fails
-    }
-
 
     const paymentRequest = {
       countryCode: config.countryCode,
@@ -144,24 +155,36 @@ const ApplePay = () => {
       },
     };
 
+    // --- Create the session SYNCHRONOUSLY ---
     const session = new window.ApplePaySession(3, paymentRequest);
 
     session.onvalidatemerchant = async (event) => {
-        const validationURL = event.validationURL;
+        // --- MODIFIED: Perform Risk.js logic and merchant validation here ---
         try {
-          const res = await axios.post(`${API_BASE_URL}/api/apple-pay/validate-merchant`, {
-            validationURL,
-            initiativeContext: config.initiativeContext,
-            merchantIdentifier: config.merchantIdentifier,
-            displayName: config.displayName
-          });
-          session.completeMerchantValidation(res.data);
+            // 1. Run Risk.js data collection
+            toast.info("Starting security check...");
+            const risk = await window.Risk.create("pk_sbox_z6zxchef4pyoy3bziidwee4clm4");
+            const dsid = await risk.publishRiskData();
+            deviceSessionId = dsid; // Store the ID for the payment step
+            toast.success(`Security check complete.`);
+            console.log("Risk.js Device Session ID:", dsid);
+
+            // 2. Validate the merchant with your backend
+            const validationURL = event.validationURL;
+            const res = await axios.post(`${API_BASE_URL}/api/apple-pay/validate-merchant`, {
+                validationURL,
+                initiativeContext: config.initiativeContext,
+                merchantIdentifier: config.merchantIdentifier,
+                displayName: config.displayName
+            });
+            session.completeMerchantValidation(res.data);
+
         } catch (err) {
-          console.error("Merchant validation failed", err);
-          toast.error("Merchant validation failed. Please try again.");
-          session.abort();
+            console.error("Risk assessment or Merchant validation failed", err);
+            toast.error("Security check or merchant validation failed. Please try again.");
+            session.abort();
         }
-      };
+    };
 
     session.onpaymentauthorized = async (event) => {
       const token = event.payment.token;
@@ -173,7 +196,7 @@ const ApplePay = () => {
             amount: Math.round(parseFloat(config.amount) * 100),
             currencyCode: config.currencyCode,
             countryCode: config.countryCode,
-            deviceSessionId: deviceSessionId
+            deviceSessionId: deviceSessionId // Use the ID generated during validation
           });
 
           if (res.data.approved) {
