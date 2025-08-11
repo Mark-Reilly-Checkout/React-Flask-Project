@@ -319,6 +319,7 @@ def paymentContext():
 def apple_pay_session():
     data = request.get_json()
     print("Data in Apple Pay session call:", data)
+    
     # 1. Tokenize the Apple Pay token using the SDK
     try:
         token_response = checkout_api.tokens.request_wallet_token({
@@ -330,6 +331,7 @@ def apple_pay_session():
     except Exception as e:
         print(f"Tokenization failed: {e}")
         return jsonify({"error": "Tokenization failed", "details": str(e)}), 400
+    
     # 2. Use the token to create a payment request
     try:
         payment_request = {
@@ -337,14 +339,25 @@ def apple_pay_session():
                 "type": "token",
                 "token": token,
                 "billing_address": {
-                    "country": data.get("countryCode", "IE"),  # Default country if not sent from FE
+                    "country": data.get("countryCode", "GB"),
                 }
             },
-            "amount": data["amount"],  # Amount from frontend (integer, e.g., 5000)
-            "currency": data["currencyCode"],         # Or use data["currency"] if dynamic
-            "reference": "apple_pay_txn_001",
+            "amount": data["amount"],
+            "currency": data["currencyCode"],
+            "reference": f"apple-pay-risk-demo-{uuid.uuid4().hex[:6]}",
         }
+
+        # --- NEW: Add risk data if device session ID is provided ---
+        device_session_id = data.get("deviceSessionId")
+        if device_session_id:
+            payment_request['risk'] = {
+                "enabled": True, # It's good practice to explicitly enable risk
+                "device_session_id": device_session_id
+            }
+            print(f"Including risk data with device_session_id: {device_session_id}")
+        
         payment_response = payments_client.request_payment(payment_request)
+        
         # Determine payment status
         is_approved = payment_response.status == "Authorized" or payment_response.status == "Captured"
         return jsonify({
@@ -354,9 +367,13 @@ def apple_pay_session():
         }), 200
     except Exception as e:
         print(f"Payment failed: {str(e)}")
+        # Try to get more detailed error info from the SDK exception
+        error_details = str(e)
+        if hasattr(e, 'error_details'):
+            error_details = e.error_details
         return jsonify({
             "approved": False,
-            "error": str(e),
+            "error": error_details,
             "status": "Failed"
         }), 400
 
