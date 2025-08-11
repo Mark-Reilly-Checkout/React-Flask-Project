@@ -30,9 +30,7 @@ const ApplePay = () => {
   const [paymentToken, setPaymentToken] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [viewRaw, setViewRaw] = useState(false);
-
-  // --- NEW: State for Risk.js device session ID ---
-  const [deviceSessionId, setDeviceSessionId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [showMainContent, setShowMainContent] = useState(false);
   const [initialPaymentMode, setInitialPaymentMode] = useState(defaultConfig.paymentMode);
@@ -51,44 +49,7 @@ const ApplePay = () => {
     localStorage.setItem('applePayConfig', JSON.stringify(config));
   }, [config]);
 
-  // --- NEW: Effect to load and initialize Risk.js in the background ---
-  useEffect(() => {
-    const scriptId = 'risk-js';
-    if (document.getElementById(scriptId)) {
-        return; // Script already added
-    }
-
-    const script = document.createElement('script');
-    script.id = scriptId;
-    script.src = "https://risk.sandbox.checkout.com/cdn/risk/2.3/risk.js";
-    script.defer = true;
-
-    script.onload = async () => {
-        try {
-            // Initialize Risk.js with your public API key
-            const risk = await window.Risk.create("pk_sbox_z6zxchef4pyoy3bziidwee4clm4");
-            // Publish device data to get the session ID
-            const dsid = await risk.publishRiskData();
-            setDeviceSessionId(dsid);
-            // Notify user that the security scan is active
-            toast.info(`Fraud detection session has started.`);
-            console.log("Risk.js Device Session ID:", dsid);
-        } catch (err) {
-            console.error("Risk.js initialization failed:", err);
-            toast.error("Could not start fraud detection session.");
-        }
-    };
-
-    document.body.appendChild(script);
-
-    // Cleanup function to remove the script when the component unmounts
-    return () => {
-        const riskScript = document.getElementById(scriptId);
-        if (riskScript) {
-            riskScript.remove();
-        }
-    };
-  }, []);
+  // --- REMOVED: The useEffect that loaded Risk.js has been removed from here ---
 
 
   // Effect to create/re-create the Apple Pay button when config changes
@@ -111,7 +72,7 @@ const ApplePay = () => {
     return () => {
       applePayButton.removeEventListener('click', handleApplePay);
     };
-  }, [config, showMainContent, deviceSessionId]); // Added deviceSessionId dependency
+  }, [config, showMainContent]); 
 
 
   const toggleNetwork = (network) => {
@@ -145,12 +106,31 @@ const ApplePay = () => {
       toast.error("Apple Pay is not available on this device/browser.");
       return;
     }
-
-    // --- NEW: Check if risk session is ready before proceeding ---
-    if (config.paymentMode === 'processPayment' && !deviceSessionId) {
-        toast.error("Fraud detection session is not ready. Please wait a moment and try again.");
+    
+    // Check if the Risk SDK has loaded onto the window object
+    if (typeof window.Risk === 'undefined') {
+        toast.error("Fraud detection script is still loading. Please try again in a moment.");
         return;
     }
+
+    setLoading(true);
+    let deviceSessionId = null;
+
+    // --- Risk.js is now initialized on click ---
+    try {
+        toast.info("Starting security check...");
+        const risk = await window.Risk.create("pk_sbox_z6zxchef4pyoy3bziidwee4clm4");
+        const dsid = await risk.publishRiskData();
+        deviceSessionId = dsid;
+        toast.success(`Security check complete.`);
+        console.log("Risk.js Device Session ID:", dsid);
+    } catch (err) {
+        console.error("Risk.js initialization failed:", err);
+        toast.error("Could not start fraud detection session. Payment aborted.");
+        setLoading(false);
+        return; // Abort the payment if risk assessment fails
+    }
+
 
     const paymentRequest = {
       countryCode: config.countryCode,
@@ -175,8 +155,6 @@ const ApplePay = () => {
             merchantIdentifier: config.merchantIdentifier,
             displayName: config.displayName
           });
-          console.log("Validation URL", validationURL);
-          console.log("Merchant validation response", res.data);
           session.completeMerchantValidation(res.data);
         } catch (err) {
           console.error("Merchant validation failed", err);
@@ -190,13 +168,12 @@ const ApplePay = () => {
 
       if (config.paymentMode === 'processPayment') {
         try {
-          // --- MODIFIED: Send deviceSessionId to the backend ---
           const res = await axios.post(`${API_BASE_URL}/api/apple-pay-session`, {
             tokenData: token.paymentData,
             amount: Math.round(parseFloat(config.amount) * 100),
             currencyCode: config.currencyCode,
             countryCode: config.countryCode,
-            deviceSessionId: deviceSessionId // Include the risk session ID
+            deviceSessionId: deviceSessionId
           });
 
           if (res.data.approved) {
@@ -218,13 +195,17 @@ const ApplePay = () => {
             session.completePayment(window.ApplePaySession.STATUS_FAILURE);
           }
       } else { 
-          // For 'generateTokenOnly' mode, just set the token and complete the session
           setPaymentToken(JSON.stringify(token.paymentData));
           setPaymentSuccess(true);
           session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
           toast.info('Apple Pay token generated successfully on frontend!');
-          console.log("Generated Apple Pay Token (Frontend Only):", token.paymentData);
       }
+      setLoading(false);
+    };
+    
+    session.oncancel = () => {
+        setLoading(false);
+        toast.warn("Payment cancelled by user.");
     };
 
     session.begin();
@@ -241,13 +222,12 @@ const ApplePay = () => {
     URL.revokeObjectURL(url);
   };
 
-  // --- NEW: Function to handle initial mode selection and show main content ---
   const handleInitialModeSelection = () => {
       setConfig(prevConfig => ({
           ...prevConfig,
-          paymentMode: initialPaymentMode // Set the chosen mode into the main config
+          paymentMode: initialPaymentMode
       }));
-      setShowMainContent(true); // Show the rest of the page
+      setShowMainContent(true);
   };
 
 
@@ -255,9 +235,7 @@ const ApplePay = () => {
     <div className="min-h-screen bg-gray-100 p-6">
       <h1 className="text-3xl font-bold text-center mb-8">Apple Pay</h1>
 
-      {/* --- CONDITIONAL RENDERING BASED ON showMainContent --- */}
       {!showMainContent ? (
-        // Initial screen for mode selection
         <div className="flex items-center justify-center min-h-[calc(100vh-100px)]">
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
                 <h2 className="text-2xl font-bold mb-6 text-gray-800">Choose your Apple Pay flow</h2>
@@ -284,13 +262,11 @@ const ApplePay = () => {
             </div>
         </div>
       ) : (
-        // Main content (configuration panel and Apple Pay button)
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Configuration Panel */}
           <div className="bg-white p-6 rounded-xl shadow-md">
             <h2 className="text-xl font-semibold mb-4">Configuration</h2>
 
-            {/* Payment Action Radio Buttons (now within the main config) */}
             <div className="mb-6">
                 <label className="block text-sm font-medium mb-2">Payment Action</label>
                 <div className="flex flex-col space-y-2">
@@ -319,8 +295,6 @@ const ApplePay = () => {
                 </div>
             </div>
 
-
-            {/* Merchant Identifier */}
             <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Merchant Identifier (e.g., merchant.com.yourdomain)</label>
                 <input
@@ -331,7 +305,6 @@ const ApplePay = () => {
                 />
             </div>
 
-            {/* Display Name */}
             <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Display Name (for Payment Sheet)</label>
                 <input
@@ -342,7 +315,6 @@ const ApplePay = () => {
                 />
             </div>
 
-            {/* Initiative Context */}
             <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Initiative Context (The current domain)</label>
                 <input
@@ -353,7 +325,6 @@ const ApplePay = () => {
                 />
             </div>
 
-            {/* Country, Currency, Amount inputs */}
             <div className="flex gap-4 mb-4">
                 <div className="flex-1">
                     <label className="block text-sm font-medium mb-1">Country Code</label>
@@ -384,7 +355,6 @@ const ApplePay = () => {
                 </div>
             </div>
 
-            {/* Supported Card Networks Section */}
             <div className="mb-6 text-center">
                 <label className="block text-sm font-medium mb-2">Supported Card Networks</label>
                 <div className="flex flex-wrap justify-center gap-2">
@@ -403,18 +373,15 @@ const ApplePay = () => {
                 </div>
             </div>
 
-            {/* Merchant Capabilities Section */}
             <div className="mb-6 text-center">
                 <label className="block text-sm font-medium mb-2">Merchant Capabilities</label>
                 <div className="flex flex-wrap justify-center gap-2">
-                    {/* supports3DS - Always present and not clickable */}
                     <button
                         className="px-3 py-1 rounded border text-sm bg-blue-600 text-white border-blue-600 cursor-not-allowed"
                         onClick={() => toast.info("supports3DS is a required capability and is always enabled.")}
                     >
                         supports3DS (Required)
                     </button>
-                    {/* Optional capabilities */}
                     {allOptionalMerchantCapabilities.map(capability => (
                         <button
                             key={capability}
@@ -430,7 +397,6 @@ const ApplePay = () => {
                 </div>
             </div>
 
-            {/* Reset Button */}
             <button
               onClick={handleReset}
               className="mt-2 px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
@@ -439,14 +405,11 @@ const ApplePay = () => {
             </button>
           </div>
 
-          {/* Right Panel (Button and Token Display) */}
           <div className="flex flex-col h-full">
             <div className="flex justify-center items-center mb-6">
-              {/* Apple Pay Button */}
               <div ref={containerRef} className="text-center" />
             </div>
 
-            {/* Token Display + Download */}
             <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-64 whitespace-pre-wrap break-words">
               {paymentToken
                 ? viewRaw
@@ -455,7 +418,6 @@ const ApplePay = () => {
                 : config.paymentMode === 'generateTokenOnly' ? 'Apple Pay token will appear here after generation (Frontend Only).' : 'Waiting for payment...'}
             </div>
 
-            {/* Controls */}
             <div className="flex justify-between items-center mt-4">
               {paymentToken && (
                 <button
@@ -478,7 +440,7 @@ const ApplePay = () => {
             </div>
           </div>
         </div>
-      )} {/* End Conditional Rendering */}
+      )}
       <style>
         {`
           apple-pay-button {
