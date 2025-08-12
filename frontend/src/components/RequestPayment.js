@@ -7,11 +7,13 @@ import { toast } from 'react-toastify';
 // Raw card details should not be used in a real application.
 const defaultPaymentPayload = {
   "source": {
-    "type": "token",
-    "token": "tok_..." // Replace with a valid one-time-use token
+   "type": "card",
+    "number": "4242424242424242",
+    "expiry_month":"09",
+    "expiry_year":29
   },
   "amount": 1000,
-  "currency": "GBP",
+  "currency": "EUR",
   "reference": "risk-json-demo-123",
   "customer": {
     "email": "customer@example.com"
@@ -28,30 +30,20 @@ const RequestPayment = () => {
     const [jsonInput, setJsonInput] = useState(JSON.stringify(defaultPaymentPayload, null, 2));
     const [jsonError, setJsonError] = useState(null);
 
-    // Effect to load and initialize the Risk.js SDK
+    // --- MODIFIED: Effect now only initializes Risk.js, assuming the script is loaded from index.html ---
     useEffect(() => {
-        const scriptId = 'risk-js';
-        if (document.getElementById(scriptId)) {
-            // If script is already there, just run the init logic
+        // A function to check if Risk.js is loaded and then initialize it.
+        const tryInitializeRisk = () => {
             if (window.Risk) {
                 initializeRisk();
-            }
-            return;
-        }
-
-        const script = document.createElement('script');
-        script.id = scriptId;
-        script.src = "https://risk.sandbox.checkout.com/cdn/risk/2.3/risk.js";
-        script.defer = true;
-        script.onload = initializeRisk; // Initialize after script loads
-        document.body.appendChild(script);
-
-        return () => {
-            const riskScript = document.getElementById(scriptId);
-            if (riskScript) {
-                riskScript.remove();
+            } else {
+                // If the script isn't loaded yet, wait and try again.
+                // This handles cases where the component mounts before the script from index.html has finished loading.
+                setTimeout(tryInitializeRisk, 500);
             }
         };
+        
+        tryInitializeRisk();
     }, []);
 
     const initializeRisk = async () => {
