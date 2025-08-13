@@ -40,6 +40,7 @@ const defaultConfig = {
     publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4',
     environment: 'sandbox',
     locale: 'en',
+    flowType: 'flow', // --- NEW: Configurable component type ---
     flowExpandFirstPaymentMethod: false,
     cardDisplayCardholderName: 'bottom',
     cardDataEmail: 'mark.reilly1234@checkot.com',
@@ -109,7 +110,6 @@ const Flow = ({ passedPaymentSession = null }) => {
     const [config, setConfig] = useState(defaultConfig);
     const acceptedTermsRef = useRef(false);
 
-    // --- MODIFIED: Initialize state from localStorage or fall back to default ---
     const [jsonInput, setJsonInput] = useState(() => {
         const savedJson = localStorage.getItem('flowJsonPayload');
         return savedJson || JSON.stringify(defaultSessionPayload, null, 2);
@@ -170,9 +170,8 @@ const Flow = ({ passedPaymentSession = null }) => {
                 try {
                     const parsedConfig = JSON.parse(savedConfig);
                     const loadedConfig = {
-                        ...defaultConfig, // Start with all defaults
-                        ...parsedConfig, // Overlay saved top-level properties
-                        // Ensure billingAddress is an object, even if parsedConfig.billingAddress was null/undefined
+                        ...defaultConfig,
+                        ...parsedConfig,
                         billingAddress: {
                             ...defaultConfig.billingAddress,
                             ...(parsedConfig.billingAddress || {})
@@ -199,7 +198,6 @@ const Flow = ({ passedPaymentSession = null }) => {
     const handleReset = () => {
         setConfig(defaultConfig);
         localStorage.removeItem('flowConfig');
-        // --- Also clear the saved JSON payload on reset ---
         localStorage.removeItem('flowJsonPayload');
         setJsonInput(JSON.stringify(defaultSessionPayload, null, 2));
         setSessionPayload(defaultSessionPayload);
@@ -224,41 +222,38 @@ const Flow = ({ passedPaymentSession = null }) => {
             ...prevConfig,
             country: selectedCountryCode,
             currency: selectedCountry ? selectedCountry.currency : prevConfig.currency,
-            // --- FIX: Ensure billingAddress.country is updated from here too ---
             billingAddress: {
-                ...(prevConfig.billingAddress || {}), // Ensure prevConfig.billingAddress is an object
+                ...(prevConfig.billingAddress || {}),
                 country: selectedCountryCode
             }
         }));
     };
     
 
-    // --- FIX: handleBillingAddressChange function to ensure prevConfig.billingAddress is object ---
     const handleBillingAddressChange = (e) => {
         const { name, value } = e.target;
         setConfig(prevConfig => {
-            const currentBillingAddress = prevConfig.billingAddress || {}; // Ensure it's an object
+            const currentBillingAddress = prevConfig.billingAddress || {};
             return {
                 ...prevConfig,
                 billingAddress: {
-                    ...currentBillingAddress, // Spread the current (or defaulted) billing address
+                    ...currentBillingAddress,
                     [name]: value
                 }
             };
         });
     };
 
-    // --- MODIFIED: Saves JSON to localStorage on every change ---
     const handleJsonInputChange = (e) => {
         const value = e.target.value;
-        setJsonInput(value); // Keep the raw string in sync with the textarea
-        localStorage.setItem('flowJsonPayload', value); // Save to localStorage
+        setJsonInput(value);
+        localStorage.setItem('flowJsonPayload', value);
         try {
             const parsedJson = JSON.parse(value);
-            setSessionPayload(parsedJson); // Update the actual data object
-            setJsonError(null); // Clear any previous error
+            setSessionPayload(parsedJson);
+            setJsonError(null);
         } catch (error) {
-            setJsonError('Invalid JSON format.'); // Set an error message to give user feedback
+            setJsonError('Invalid JSON format.');
         }
     };
 
@@ -274,7 +269,6 @@ const Flow = ({ passedPaymentSession = null }) => {
         }
 
         try {
-            // The payload is now the validated sessionPayload state
             const response = await axios.post(`${API_BASE_URL}/api/create-payment-session`, sessionPayload);
 
             setInternalPaymentSessionDetails(response.data);
@@ -326,7 +320,6 @@ const Flow = ({ passedPaymentSession = null }) => {
                     onPaymentCompleted: (_component, paymentResponse) => {
                     toast.success('Payment completed successfully!');
                     toast.info('Payment ID: ' + paymentResponse.id);
-                    //avigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);fdfd
                     
                 },
                     environment: config.environment,
@@ -349,18 +342,16 @@ const Flow = ({ passedPaymentSession = null }) => {
                     toast.error('Payment failed. Please try again.');
                     console.error("Payment Error:", error);
                     toast.info('Request ID: ' + (error?.request_id || 'N/A'));
-                    //navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                 }
             });
-            const flowComponent = checkout.create('flow');
+            // --- MODIFIED: Use the configurable flow type ---
+            const flowComponent = checkout.create(config.flowType);
             flowComponent.mount('#flow-container');
             flowComponentRef.current = flowComponent;
             
             setLastUpdatedFlow(new Date());
 
              (async () => {
-                // const klarnaComponent = checkout.create("klarna");
-                // const klarnaElement = document.getElementById('klarna-container');
                 if (await flowComponent.isAvailable()) {
                     flowComponent.mount('#flow-container');
                 }
@@ -486,6 +477,18 @@ const Flow = ({ passedPaymentSession = null }) => {
                                         </div>
 
                                         <h3 className="text-lg font-semibold mb-3 mt-4">Flow Component Options</h3>
+                                        {/* --- NEW: Dropdown for component type --- */}
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium mb-1">Component Type</label>
+                                            <select
+                                                value={config.flowType}
+                                                onChange={(e) => setConfig({ ...config, flowType: e.target.value })}
+                                                className="w-full border rounded px-3 py-2"
+                                            >
+                                                <option value="flow">Flow</option>
+                                                <option value="card">Card</option>
+                                            </select>
+                                        </div>
                                         <div className="mb-4">
                                             <label className="inline-flex items-center">
                                                 <input
