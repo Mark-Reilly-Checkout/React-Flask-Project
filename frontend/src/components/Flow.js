@@ -346,7 +346,7 @@ const Flow = ({ passedPaymentSession = null }) => {
             });
             // --- MODIFIED: Use the configurable flow type ---
             const flowComponent = checkout.create(config.flowType);
-            flowComponent.mount('#flow-container');
+            //flowComponent.mount('#flow-container');
             flowComponentRef.current = flowComponent;
             
             setLastUpdatedFlow(new Date());
@@ -354,6 +354,8 @@ const Flow = ({ passedPaymentSession = null }) => {
              (async () => {
                 if (await flowComponent.isAvailable()) {
                     flowComponent.mount('#flow-container');
+                    flowComponentRef.current = flowComponent;
+
                 }
             })(); 
 
