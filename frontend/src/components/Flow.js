@@ -487,6 +487,7 @@ const Flow = ({ passedPaymentSession = null }) => {
                                             >
                                                 <option value="flow">Flow</option>
                                                 <option value="card">Card</option>
+                                                <option value="tabby">Tabby</option>
                                             </select>
                                         </div>
                                         <div className="mb-4">
