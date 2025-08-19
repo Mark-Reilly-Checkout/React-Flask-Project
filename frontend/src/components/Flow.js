@@ -431,6 +431,12 @@ const Flow = ({ passedPaymentSession = null }) => {
                         >
                             Go to Tokenization Demo
                         </button>
+                        <button
+                            onClick={() => navigate('/onAuthorized')}
+                            className="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-indigo-700 transition duration-300 ease-in-out mt-4"
+                        >
+                            Go to onAuthorized Demo
+                        </button>
                     </div>
                 </div>
             ) : (

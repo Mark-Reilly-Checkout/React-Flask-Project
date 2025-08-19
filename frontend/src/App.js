@@ -20,6 +20,8 @@ import FlowHandleClick from './components/FlowCallbacks/FlowHandleClick';
 import RememberMe from './components/FlowCallbacks/RememberMe';
 import Tokenization from './components/FlowCallbacks/Tokenization';
 import HostedPaymentPages from './components/HostedPaymentPages';
+import OnAuthorized from './components/FlowCallbacks/OnAuthorized';
+
 
 
 function App() {
@@ -52,6 +54,7 @@ function App() {
         <Route path="/paypal" element={<PayPal />} />
         <Route path="/flowHandleSubmit" element={<FlowHandleSubmit />} />
         <Route path="/flowHandleClick" element={<FlowHandleClick />} />
+        <Route path="/onAuthorized" element={<OnAuthorized />} />
         <Route path="/rememberMe" element={<RememberMe/>} />
         <Route path='/tokenization' element={<Tokenization/>}/>
         <Route path="/hosted-payment-pages" element={<HostedPaymentPages />}/>
