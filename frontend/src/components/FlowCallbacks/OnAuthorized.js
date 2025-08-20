@@ -79,7 +79,14 @@ const OnAuthorized = () => {
                     paymentSession: session,
                     publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4',
                     environment: 'sandbox',
-                  
+                    componentOptions: {
+                        applepay: {
+                            onAuthorized, // Assign the callback here
+                        },
+                        googlepay: {
+                            onAuthorized, // You can use the same callback for Google Pay
+                        }
+                    },
                     onPaymentCompleted: (component, paymentResponse) => {
                         toast.success(`Payment completed! ID: ${paymentResponse.id}`);
                         navigate(`/success?cko-payment-id=${paymentResponse.id}`);
