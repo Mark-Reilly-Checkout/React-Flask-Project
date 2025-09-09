@@ -165,7 +165,7 @@ const ApplePay = () => {
             toast.info("Starting security check...");
             const risk = await window.Risk.create("pk_sbox_z6zxchef4pyoy3bziidwee4clm4");
             const dsid = await risk.publishRiskData();
-            deviceSessionId = dsid; // Store the ID for the payment step
+            deviceSessionId = "dsid"; // Store the ID for the payment step
             toast.success(`Security check complete.`);
             console.log("Risk.js Device Session ID:", dsid);
 
