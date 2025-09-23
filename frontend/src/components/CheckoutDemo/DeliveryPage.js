@@ -1,29 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react'; // Added useRef
+import React, { useState, useEffect, useRef } from 'react';
 import { Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components'; // Import for Flow component
-import { toast } from 'react-toastify'; // Import toast
+import { loadCheckoutWebComponents } from '@checkout.com/checkout-web-components';
+import { toast } from 'react-toastify';
 
-
-// --- Country to Currency Mapping (Retained for basket currency check) ---
-const countries = [
-    { code: 'GB', name: 'United Kingdom', currency: 'GBP' },
-    { code: 'US', name: 'United States', currency: 'USD' },
-    { code: 'AT', name: 'Austria', currency: 'EUR' },
-    { code: 'BE', name: 'Belgium', currency: 'EUR' },
-    { code: 'CN', name: 'China', currency: 'CNY' },
-    { code: 'DE', name: 'Germany', currency: 'EUR' },
-    { code: 'FR', name: 'France', currency: 'EUR' },
-    { code: 'IT', name: 'Italy', currency: 'EUR' },
-    { code: 'KW', name: 'Kuwait', currency: 'KWD' },
-    { code: 'NL', name: 'Netherlands', currency: 'EUR' },
-    { code: 'PT', name: 'Portugal', currency: 'EUR' },
-    { code: 'SA', name: 'Saudi Arabia', currency: 'SAR' },
-    { code: 'ES', name: 'Spain', currency: 'EUR' },
-];
-
-// --- Translations for Flow Component (Moved from Flow.js) ---
+// --- Translations for Components ---
 const translations = {
     en: {
       'form.required': 'Please provide this field',
@@ -31,7 +13,7 @@ const translations = {
       'pay_button.pay': 'Pay now',
       'pay_button.payment_failed': 'Payment failed, please try again',
     },
-  };
+};
 
 
 const DeliveryPage = () => {
@@ -42,17 +24,13 @@ const DeliveryPage = () => {
     const [billingAddress, setBillingAddress] = useState(null);
     const [customerEmail, setCustomerEmail] = useState(null);
     const [subtotal, setSubtotal] = useState(0);
-
     const [selectedDeliveryOption, setSelectedDeliveryOption] = useState(null);
     const [totalAmount, setTotalAmount] = useState(0);
-
-    const [paymentSessionForFlow, setPaymentSessionForFlow] = useState(null);
+    const [paymentSession, setPaymentSession] = useState(null);
     const [loadingPaymentSession, setLoadingPaymentSession] = useState(false);
-
-    // --- Removed flowConfig state and acceptedTermsRef as they are no longer needed ---
-    // const [flowConfig, setFlowConfig] = useState(flowComponentDefaultConfig);
-    // const acceptedTermsRef = useRef(false);
-
+    
+    // Ref to hold the card component instance for manual submission
+    const cardComponentRef = useRef(null);
 
     // Dummy delivery options
     const deliveryOptions = [
@@ -92,16 +70,9 @@ const DeliveryPage = () => {
         setSelectedDeliveryOption(option);
     };
 
-    // --- Removed handleTermsAcceptance as terms checkbox is gone ---
-    // const handleTermsAcceptance = (e) => { /* ... */ };
-
-
-    // --- UPDATED Confirm and Pay function ---
     const handleConfirmAndPay = async () => {
         if (!selectedDeliveryOption) {
-            toast.warn("Please select a delivery option.",{
-                position: "bottom-left",
-            });
+            toast.warn("Please select a delivery option.", { position: "bottom-left" });
             return;
         }
         if (!totalAmount || !billingAddress || !customerEmail || !basket) {
@@ -111,122 +82,99 @@ const DeliveryPage = () => {
 
         setLoadingPaymentSession(true);
         try {
-            // Build the full, nested payload required by the CKO API
             const payload = {
-                amount: Math.round(totalAmount * 100), // Total amount in minor units
+                amount: Math.round(totalAmount * 100),
                 currency: basket.currency,
                 reference: `checkout-demo-ord-${Date.now()}`,
-                billing: {
-                    address: billingAddress
-                },
-                customer: {
-                    email: customerEmail
-                },
-                shipping: {
-                    address: billingAddress // In this demo, shipping is same as billing
-                },
+                billing: { address: billingAddress },
+                customer: { email: customerEmail },
+                shipping: { address: billingAddress },
                 items: [
-                    {
-                        name: basket.name,
-                        quantity: basket.quantity,
-                        unit_price: Math.round(basket.unitPrice * 100)
-                    },
-                    {
-                        name: selectedDeliveryOption.name,
-                        quantity: 1,
-                        unit_price: Math.round(selectedDeliveryOption.cost * 100)
-                    }
+                    { name: basket.name, quantity: basket.quantity, unit_price: Math.round(basket.unitPrice * 100) },
+                    { name: selectedDeliveryOption.name, quantity: 1, unit_price: Math.round(selectedDeliveryOption.cost * 100) }
                 ]
             };
             
             const response = await axios.post(`${API_BASE_URL}/api/create-payment-session`, payload);
-
-            setPaymentSessionForFlow(response.data);
-            toast.success("Payment session created! Flow component will now load.", {
-                position: "bottom-left",
-            });
+            setPaymentSession(response.data);
+            toast.success("Payment session created! Payment options will now load.", { position: "bottom-left" });
 
         } catch (error) {
             console.error("Error creating payment session:", error.response ? error.response.data : error.message);
             toast.error("Failed to create payment session. Please try again.");
-            setPaymentSessionForFlow(null);
+            setPaymentSession(null);
         } finally {
             setLoadingPaymentSession(false);
         }
     };
 
-    // --- useEffect for loading/mounting Flow Component (Simplified and Transplanted) ---
+    // --- UPDATED useEffect to load multiple individual payment components ---
     useEffect(() => {
-        // Only proceed if paymentSessionForFlow has data
-        if (!paymentSessionForFlow?.id) {
-             console.log("Waiting for payment session details to load Flow component.");
+        if (!paymentSession?.id) {
+             console.log("Waiting for payment session details to load components.");
             return;
         }
+        
+        // Clear previous component containers
+        document.getElementById('card-container').innerHTML = '';
+        document.getElementById('apple-pay-container').innerHTML = '';
+        document.getElementById('google-pay-container').innerHTML = '';
+        document.getElementById('paypal-container').innerHTML = '';
 
-        const flowContainer = document.getElementById('flow-container');
-        if (flowContainer) {
-            flowContainer.innerHTML = ''; // Clear existing Checkout.com component
-        }
-
-        const initializeFlowComponent = async (sessionObject) => {
+        const initializePaymentComponents = async (sessionObject) => {
             try {
                 const checkout = await loadCheckoutWebComponents({
-                    paymentSession: sessionObject, // Pass the full session object
-                    // --- Hardcoded Flow Component Configuration ---
-                    publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4', // Hardcoded public key
-                    environment: 'sandbox', // Hardcoded environment
-                    locale: 'en', // Hardcoded locale
-                    translations, // Use the translations object from above
-                    componentOptions: {
-                        flow: {
-                          expandFirstPaymentMethod: false, // Hardcoded option
-                          // Removed handleClick logic for simplicity in this demo
-                        },
-                        card: {
-                          displayCardholderName: 'bottom', // Hardcoded option
-                          data: {
-                            email: customerEmail, // Use customer email from state
-                            country: billingAddress?.country, // Pass billing address country
-                            currency: basket?.currency, // Pass basket currency
-                            billing_address: billingAddress // Pass full billing address
-                          },
-                        },
-                      },
+                    paymentSession: sessionObject,
+                    publicKey: 'pk_sbox_z6zxchef4pyoy3bziidwee4clm4',
+                    environment: 'sandbox',
+                    locale: 'en',
+                    translations,
+                    onPaymentCompleted: (_component, paymentResponse) => {
+                        toast.success('Payment completed successfully!');
+                        console.log("Payment ID:", paymentResponse.id);
+                        navigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);
+                    },
+                    onError: (_component, error) => {
+                        toast.error('Payment failed. Please try again.');
+                        console.error("Payment Error:", error);
+                        navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
+                    }
+                });
 
-                onPaymentCompleted: (_component, paymentResponse) => {
-                    toast.success('Payment completed successfully!');
-                    toast.info('Payment ID: ' + paymentResponse.id);
-                    console.log("Payment ID:", paymentResponse.id);
-                     navigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);
-                },
-                onError: (component, error) => {
-                    toast.error('Payment failed. Please try again.');
-                    console.error("Payment Error:", error);
-                    toast.info('Request ID: ' + (error?.request_id || 'N/A'));
-                    navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
-                }
-            });
-            const flowComponent = checkout.create('flow');
-            
-            (async () => {
-                // const klarnaComponent = checkout.create("klarna");
-                // const klarnaElement = document.getElementById('klarna-container');
-                if (await flowComponent.isAvailable()) {
-                    flowComponent.mount('#flow-container');
-                }
-            })();
+                // --- Create each component instance ---
+                const cardComponent = checkout.create('card');
+                const applePayComponent = checkout.create('applepay');
+                const googlePayComponent = checkout.create('googlepay');
+                const paypalComponent = checkout.create('paypal');
+                
+                // Store card component in ref to access its .submit() method
+                cardComponentRef.current = cardComponent;
+                
+                // --- Mount each component if it's available ---
+                (async () => {
+                    if (await cardComponent.isAvailable()) {
+                        cardComponent.mount('#card-container');
+                    }
+                    if (await applePayComponent.isAvailable()) {
+                        applePayComponent.mount('#apple-pay-container');
+                    }
+                    if (await googlePayComponent.isAvailable()) {
+                        googlePayComponent.mount('#google-pay-container');
+                    }
+                    if (await paypalComponent.isAvailable()) {
+                        paypalComponent.mount('#paypal-container');
+                    }
+                })();
 
             } catch (err) {
                 console.error("Checkout Web Components Error:", err);
-                toast.error("Error loading Flow component: " + err.message);
-            } finally {
-                setLoadingPaymentSession(false);
+                toast.error("Error loading payment components: " + err.message);
             }
         };
 
-        initializeFlowComponent(paymentSessionForFlow);
+        initializePaymentComponents(paymentSession);
 
-    }, [paymentSessionForFlow, API_BASE_URL, customerEmail, billingAddress, basket]); // Dependencies updated
+    }, [paymentSession, API_BASE_URL, customerEmail, billingAddress, basket, navigate]);
 
     if (!basket || !billingAddress || !customerEmail || subtotal === null) {
         return <div className="text-center mt-8 text-gray-700">Loading order details...</div>;
@@ -235,15 +183,14 @@ const DeliveryPage = () => {
     return (
         <div className="min-h-screen bg-gray-100 p-6">
             <h1 className="text-3xl font-bold text-center mb-8">Choose Delivery & Pay</h1>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Panel: Order Summary & Delivery Options */}
                 <div className="flex flex-col gap-6">
                     <Card className="p-6 rounded-xl shadow-md bg-white">
                         <Card.Title className="text-xl font-semibold mb-4">Order Summary</Card.Title>
                         <div className="space-y-2 mb-4 border-b pb-4">
-                            <div className="flex justify-between items-center">
-                                <span className="font-medium">{basket.name} (x{basket.quantity})</span>
+                            <div className="flex justify-between items-center font-medium">
+                                <span>{basket.name} (x{basket.quantity})</span>
                                 <span>{basket.currency} {(basket.unitPrice * basket.quantity).toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm text-gray-600">
@@ -263,58 +210,47 @@ const DeliveryPage = () => {
                         </div>
                     </Card>
 
-                    {/* Removed Configuration Panel for Flow Component */}
-                    {/* The configuration panel from Flow.js is no longer here */}
-
                     <Card className="p-6 rounded-xl shadow-md bg-white">
                         <Card.Title className="text-xl font-semibold mb-4">Delivery Options</Card.Title>
                         <div className="space-y-3">
                             {deliveryOptions.map(option => (
                                 <label key={option.id} className="flex items-center space-x-3 cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        name="deliveryOption"
-                                        value={option.id}
-                                        checked={selectedDeliveryOption?.id === option.id}
-                                        onChange={() => handleDeliverySelection(option.id)}
-                                        className="form-radio h-5 w-5 text-blue-600"
-                                    />
-                                    <span className="text-gray-700 font-medium">
-                                        {option.name} - {basket?.currency || 'GBP'} {option.cost.toFixed(2)}
-                                    </span>
+                                    <input type="radio" name="deliveryOption" value={option.id} checked={selectedDeliveryOption?.id === option.id} onChange={() => handleDeliverySelection(option.id)} className="form-radio h-5 w-5 text-blue-600" />
+                                    <span className="text-gray-700 font-medium">{option.name} - {basket?.currency || 'GBP'} {option.cost.toFixed(2)}</span>
                                 </label>
                             ))}
                         </div>
-                        <button
-                            onClick={handleConfirmAndPay}
-                            disabled={!selectedDeliveryOption || loadingPaymentSession}
-                            className="mt-6 w-full bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 disabled:opacity-50 transition duration-300 ease-in-out"
-                        >
-                            {loadingPaymentSession ? "Generating Payment Session..." : "Confirm Delivery & Pay"}
+                        <button onClick={handleConfirmAndPay} disabled={!selectedDeliveryOption || loadingPaymentSession} className="mt-6 w-full bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 disabled:opacity-50 transition duration-300 ease-in-out">
+                            {loadingPaymentSession ? "Generating Session..." : "Confirm Delivery & Pay"}
                         </button>
                     </Card>
                 </div>
 
-                {/* Right Panel: Flow Component */}
-                <Card className="p-6 rounded-xl shadow-md bg-white flex flex-col items-center justify-center min-h-[500px] min-w-[350px]">
+                {/* Right Panel: Individual Payment Components */}
+                <Card className="p-6 rounded-xl shadow-md bg-white flex flex-col items-center">
                     <Card.Title className="text-xl font-semibold mb-4">Payment Details</Card.Title>
-                    {paymentSessionForFlow ? (
-                        <>
-                            <div
-                                id="flow-container"
-                                className="mt-4 flex-grow w-full"
-                                style={{ minHeight: '500px', height: 'auto', minWidth: '350px', width: 'auto' }}
-                            ></div>
-                            <div
-                                id='klarna-container'
-                                className="mt-4 flex-grow w-full"
-                                style={{ minHeight: '100px', height: 'auto', minWidth: '350px', width: 'auto' }}
-                            ></div>
-                        </>
+                    {paymentSession ? (
+                        <div className="w-full">
+                            {/* Grid for payment methods */}
+                            <div id="payment-methods-grid" className="grid grid-cols-2 gap-4 w-full mb-4">
+                                <div id="google-pay-container" className="h-12 flex items-center justify-center"></div>
+                                <div id="apple-pay-container" className="h-12 flex items-center justify-center"></div>
+                                <div id="paypal-container" className="col-span-2 h-12 flex items-center justify-center"></div>
+                            </div>
+                             {/* Card form and its dedicated submit button */}
+                            <div id="card-container" className="w-full border-t pt-4"></div>
+                            <button 
+                                onClick={() => cardComponentRef.current?.submit()} 
+                                className="mt-4 w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition duration-300 ease-in-out">
+                                Pay with Card
+                            </button>
+                        </div>
                     ) : (
-                        <div className="text-center text-gray-500">
-                            <p>Select delivery and confirm to load payment options.</p>
-                            {loadingPaymentSession && <p className="mt-2">Loading...</p>}
+                        <div className="text-center text-gray-500 flex-grow flex items-center justify-center">
+                            <div>
+                                <p>Select delivery and confirm to load payment options.</p>
+                                {loadingPaymentSession && <p className="mt-2 animate-pulse">Loading...</p>}
+                            </div>
                         </div>
                     )}
                 </Card>
