@@ -115,11 +115,16 @@ const DeliveryPage = () => {
             return;
         }
         
-        // Clear previous component containers
-        document.getElementById('card-container').innerHTML = '';
-        document.getElementById('apple-pay-container').innerHTML = '';
-        document.getElementById('google-pay-container').innerHTML = '';
-        document.getElementById('paypal-container').innerHTML = '';
+        // Ensure containers exist before trying to clear them
+        const clearContainer = (id) => {
+            const container = document.getElementById(id);
+            if (container) container.innerHTML = '';
+        }
+        
+        clearContainer('card-container');
+        clearContainer('apple-pay-container');
+        clearContainer('google-pay-container');
+        clearContainer('paypal-container');
 
         const initializePaymentComponents = async (sessionObject) => {
             try {
@@ -226,37 +231,41 @@ const DeliveryPage = () => {
                     </Card>
                 </div>
 
-                {/* Right Panel: Individual Payment Components */}
-                <Card className="p-6 rounded-xl shadow-md bg-white flex flex-col items-center">
-                    <Card.Title className="text-xl font-semibold mb-4">Payment Details</Card.Title>
+                {/* Right Panel: Individual Payment Components in separate cards */}
+                <div className="flex flex-col gap-6">
                     {paymentSession ? (
-                        <div className="w-full">
-                            {/* Grid for payment methods */}
-                            <div id="payment-methods-grid" className="grid grid-cols-2 gap-4 w-full mb-4">
+                        <>
+                            <Card className="p-4 rounded-xl shadow-md bg-white">
                                 <div id="google-pay-container" className="h-12 flex items-center justify-center"></div>
+                            </Card>
+                            <Card className="p-4 rounded-xl shadow-md bg-white">
                                 <div id="apple-pay-container" className="h-12 flex items-center justify-center"></div>
-                                <div id="paypal-container" className="col-span-2 h-12 flex items-center justify-center"></div>
-                            </div>
-                             {/* Card form and its dedicated submit button */}
-                            <div id="card-container" className="w-full border-t pt-4"></div>
-                            <button 
-                                onClick={() => cardComponentRef.current?.submit()} 
-                                className="mt-4 w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition duration-300 ease-in-out">
-                                Pay with Card
-                            </button>
-                        </div>
+                            </Card>
+                            <Card className="p-4 rounded-xl shadow-md bg-white">
+                                <div id="paypal-container" className="h-12 flex items-center justify-center"></div>
+                            </Card>
+                            <Card className="p-6 rounded-xl shadow-md bg-white">
+                                <div id="card-container" className="w-full"></div>
+                                <button 
+                                    onClick={() => cardComponentRef.current?.submit()} 
+                                    className="mt-4 w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out">
+                                    Pay with Card
+                                </button>
+                            </Card>
+                        </>
                     ) : (
-                        <div className="text-center text-gray-500 flex-grow flex items-center justify-center">
-                            <div>
+                        <Card className="p-6 rounded-xl shadow-md bg-white flex flex-col items-center justify-center min-h-[500px]">
+                            <div className="text-center text-gray-500">
                                 <p>Select delivery and confirm to load payment options.</p>
                                 {loadingPaymentSession && <p className="mt-2 animate-pulse">Loading...</p>}
                             </div>
-                        </div>
+                        </Card>
                     )}
-                </Card>
+                </div>
             </div>
         </div>
     );
 };
 
 export default DeliveryPage;
+
