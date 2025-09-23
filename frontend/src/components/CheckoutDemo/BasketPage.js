@@ -10,7 +10,7 @@ const BasketPage = () => {
         name: "Wireless Headphones",
         unitPrice: 50.00,
         quantity: 1,
-        currency: "GBP"
+        currency: "EUR"
     };
 
     const [billingAddress, setBillingAddress] = useState({
@@ -141,6 +141,7 @@ const BasketPage = () => {
                                 <option value="US">United States</option>
                                 <option value="IE">Ireland</option>
                                 <option value="DE">Germany</option>
+                                <option value="NL">Netherlands</option>
                                 {/* Add more countries as needed */}
                             </select>
                         </div>

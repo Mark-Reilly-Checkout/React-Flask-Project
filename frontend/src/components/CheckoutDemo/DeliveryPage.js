@@ -122,7 +122,7 @@ const DeliveryPage = () => {
         }
         
         clearContainer('card-container');
-        clearContainer('apple-pay-container');
+        clearContainer('ideal-pay-container');
         clearContainer('google-pay-container');
         clearContainer('paypal-container');
 
@@ -148,7 +148,7 @@ const DeliveryPage = () => {
 
                 // --- Create each component instance ---
                 const cardComponent = checkout.create('card');
-                const applePayComponent = checkout.create('applepay');
+                const iDealComponent = checkout.create('ideal');
                 const googlePayComponent = checkout.create('googlepay');
                 const paypalComponent = checkout.create('paypal');
                 
@@ -160,8 +160,8 @@ const DeliveryPage = () => {
                     if (await cardComponent.isAvailable()) {
                         cardComponent.mount('#card-container');
                     }
-                    if (await applePayComponent.isAvailable()) {
-                        applePayComponent.mount('#apple-pay-container');
+                    if (await iDealComponent.isAvailable()) {
+                        iDealComponent.mount('#ideal-pay-container');
                     }
                     if (await googlePayComponent.isAvailable()) {
                         googlePayComponent.mount('#google-pay-container');
@@ -221,7 +221,7 @@ const DeliveryPage = () => {
                             {deliveryOptions.map(option => (
                                 <label key={option.id} className="flex items-center space-x-3 cursor-pointer">
                                     <input type="radio" name="deliveryOption" value={option.id} checked={selectedDeliveryOption?.id === option.id} onChange={() => handleDeliverySelection(option.id)} className="form-radio h-5 w-5 text-blue-600" />
-                                    <span className="text-gray-700 font-medium">{option.name} - {basket?.currency || 'GBP'} {option.cost.toFixed(2)}</span>
+                                    <span className="text-gray-700 font-medium">{option.name} - {basket?.currency || 'EUR'} {option.cost.toFixed(2)}</span>
                                 </label>
                             ))}
                         </div>
@@ -239,7 +239,7 @@ const DeliveryPage = () => {
                                 <div id="google-pay-container" className="h-12 flex items-center justify-center"></div>
                             </Card>
                             <Card className="p-4 rounded-xl shadow-md bg-white">
-                                <div id="apple-pay-container" className="h-12 flex items-center justify-center"></div>
+                                <div id="ideal-pay-container" className="h-12 flex items-center justify-center"></div>
                             </Card>
                             <Card className="p-4 rounded-xl shadow-md bg-white">
                                 <div id="paypal-container" className="h-12 flex items-center justify-center"></div>
