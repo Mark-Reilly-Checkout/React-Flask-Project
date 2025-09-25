@@ -248,7 +248,7 @@ const GooglePay = () => {
                                 const combined = {
                                     token: tokenData,
                                     ...(billing ? { billingAddress: billing } : {}),
-                                    ...(cardFundingSource ? { cardFundingSource:cardFunding } : {})
+                                    ...(cardFunding ? { cardFundingSource:cardFunding } : {})
                                 };
 
                                 setBillingAddress(billing || null);
