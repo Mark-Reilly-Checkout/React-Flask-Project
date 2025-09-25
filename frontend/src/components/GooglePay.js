@@ -11,7 +11,7 @@ const defaultConfig = {
     amount: '1.00',
     selectedNetworks: ['MASTERCARD', 'VISA'],
     billingAddressRequired: false,
-    billingAddressParameters: null, // or { format: 'MIN' | 'FULL' }
+    billingAddressParameters: null, // { format: 'MIN' | 'FULL' }
 };
 
 const GooglePay = () => {
