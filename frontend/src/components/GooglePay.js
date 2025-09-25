@@ -244,9 +244,11 @@ const GooglePay = () => {
                                 const tokenData = JSON.parse(paymentRequest.paymentMethodData.tokenizationData.token);
 
                                 const billing = paymentRequest.paymentMethodData.info?.billingAddress;
+                                const cardFunding= paymentRequest.paymentMethodData.info?.cardFundingSource;
                                 const combined = {
                                     token: tokenData,
-                                    ...(billing ? { billingAddress: billing } : {})
+                                    ...(billing ? { billingAddress: billing } : {}),
+                                    ...(cardFundingSource ? { cardFundingSource:cardFunding } : {})
                                 };
 
                                 setBillingAddress(billing || null);
