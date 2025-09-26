@@ -84,13 +84,21 @@ const PayPal = () => {
         buttonsRenderedRef.current = false; // Reset flag for re-rendering
 
         try {
+            // --- ADDED LOGIC: Force authorize for subscription payment types ---
+            const isSubscription = config.payment_type === 'Recurring' || config.payment_type === 'Unscheduled';
+            const finalCaptureValue = isSubscription ? false : config.capture;
+
+            if (isSubscription && config.capture) {
+                toast.warn("'Capture' is not applicable for Subscription/Unscheduled payments. Forcing 'Authorize'.");
+            }
+
             // Construct the payload with the correct nested structure
             const payload = {
                 source: { type: "paypal" },
                 currency: config.currency,
                 amount: Math.round(parseFloat(config.amount) * 100),
-                capture: config.capture,
-                payment_type: config.paymentType,
+                capture: finalCaptureValue, // Use the determined capture value
+                payment_type: config.payment_type,
                 processing_channel_id: config.processingChannelId,
                 success_url: config.successUrl,
                 failure_url: config.failureUrl,
@@ -153,9 +161,10 @@ const PayPal = () => {
         scriptUrl.searchParams.append('currency', config.currency);
         scriptUrl.searchParams.append('buyer-country', config.buyerCountry);
 
-        // --- CORRECTED LOGIC ---
-        // The intent (capture vs authorize) must match the 'capture' setting, not the 'commit' setting.
-        if (!config.capture) {
+        // --- CORRECTED & ENHANCED LOGIC ---
+        const isSubscription = config.payment_type === 'Recurring' || config.payment_type === 'Unscheduled';
+        // The intent must be 'authorize' for subscriptions or when capture is manually set to false.
+        if (isSubscription || !config.capture) {
             scriptUrl.searchParams.append('intent', 'authorize');
         }
         
@@ -401,8 +410,8 @@ const PayPal = () => {
                     <div className="mb-4">
                                             <label className="block text-sm font-medium mb-1">Payment Type</label>
                                             <select
-                                                value={config.paymentType}
-                                                onChange={(e) => setConfig({ ...config, paymentType: e.target.value })}
+                                                value={config.payment_type}
+                                                onChange={(e) => setConfig({ ...config, payment_type: e.target.value })}
                                                 className="w-full border rounded px-3 py-2"
                                             >
                                                 {paymentTypes.map((type) => (
@@ -554,3 +563,4 @@ const PayPal = () => {
 };
 
 export default PayPal;
+
