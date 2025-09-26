@@ -125,41 +125,40 @@ const PayPal = () => {
 
     // Dynamic PayPal SDK Loader and Button Renderer
     useEffect(() => {
-        // Only attempt to load and render PayPal buttons if we have a pre-fetched paypalOrderId
         if (!paypalOrderId) {
-            // Ensure buttons are cleared and a placeholder message is shown if no orderId
             const buttonContainer = document.getElementById('paypal-button-container');
             if (buttonContainer) { buttonContainer.innerHTML = '<p class="text-gray-500">Create Payment Context to render PayPal buttons.</p>'; }
-            buttonsRenderedRef.current = false; // Reset flag
+            buttonsRenderedRef.current = false;
             return;
         }
 
-        // Cleanup function for previous script and buttons before re-rendering
         const cleanup = () => {
             const existingScript = document.querySelector(`script[data-partner-attribution-id="CheckoutLtd_PSP"]`);
             if (existingScript) { existingScript.remove(); }
             const buttonContainer = document.getElementById('paypal-button-container');
             if (buttonContainer) { buttonContainer.innerHTML = ''; }
-            buttonsRenderedRef.current = false; // Reset flag
+            buttonsRenderedRef.current = false;
         };
-        cleanup(); // Perform cleanup on every config change or component re-mount
+        cleanup();
 
-        if (buttonsRenderedRef.current) { // Check ref to prevent double-rendering if effect runs too quickly
+        if (buttonsRenderedRef.current) {
             return;
         }
 
-        // Construct PayPal SDK script URL dynamically based on config
         const scriptUrl = new URL("https://www.paypal.com/sdk/js");
-        scriptUrl.searchParams.append('client-id', config.ckoClientId); // Use config.ckoClientId
-        scriptUrl.searchParams.append('merchant-id', config.paypalMerchantId); // Use config.paypalMerchantId
+        scriptUrl.searchParams.append('client-id', config.ckoClientId);
+        scriptUrl.searchParams.append('merchant-id', config.paypalMerchantId);
         scriptUrl.searchParams.append('disable-funding', config.disableFunding);
         scriptUrl.searchParams.append('commit', String(config.commit));
         scriptUrl.searchParams.append('currency', config.currency);
         scriptUrl.searchParams.append('buyer-country', config.buyerCountry);
 
-        if (!config.commit) {
-            scriptUrl.searchParams.append('intent', 'authorize'); // Add intent=authorize if commit=false
+        // --- CORRECTED LOGIC ---
+        // The intent (capture vs authorize) must match the 'capture' setting, not the 'commit' setting.
+        if (!config.capture) {
+            scriptUrl.searchParams.append('intent', 'authorize');
         }
+        
         if (config.enableFunding) {
             scriptUrl.searchParams.append('enable-funding', config.enableFunding);
         }
@@ -175,17 +174,14 @@ const PayPal = () => {
                     window.paypal.Buttons({
                         createOrder: async (data, actions) => {
                             toast.info("PayPal button clicked. Using pre-fetched Order ID.");
-                            // --- FIX: Directly return the pre-fetched paypalOrderId ---
-                            return paypalOrderId; // This is the key change!
+                            return paypalOrderId;
                         },
                         onApprove: async (data, actions) => {
                             toast.info("PayPal payment approved by user. Requesting payment capture/authorization...");
                             try {
-                                // Call backend to request payment (capture or authorize) using the Checkout.com context ID
                                 const response = await axios.post(`${API_BASE_URL}api/payments`, {
-                                    payment_context_id: ckoPaymentContextId, // Use the stored Checkout.com context ID
+                                    payment_context_id: ckoPaymentContextId,
                                     processing_channel_id: config.processingChannelId,
-                                    // Optionally update amount/shipping here if user changed on PayPal side (for 'continue' flow)
                                 });
 
                                 if (response.data.status === 'Authorized' || response.data.status === 'Captured' || response.data.status === 'Pending') {
@@ -221,8 +217,8 @@ const PayPal = () => {
                         console.error("PayPal Buttons failed to render:", renderErr);
                         toast.error("Failed to render PayPal buttons. Check your PayPal Merchant ID and client-id.");
                     });
-                    buttonsRenderedRef.current = true; // Mark as rendered
-                } catch (renderErr) { // Catch errors from rendering PayPal buttons
+                    buttonsRenderedRef.current = true;
+                } catch (renderErr) {
                     console.error("Error rendering PayPal buttons:", renderErr);
                     toast.error("An error occurred while rendering PayPal buttons.");
                 }
@@ -233,8 +229,8 @@ const PayPal = () => {
 
         document.body.appendChild(script);
 
-        return cleanup; // Cleanup on component unmount or re-render
-    }, [config, API_BASE_URL, paypalOrderId, ckoPaymentContextId]); // Dependencies: now include IDs to re-render buttons
+        return cleanup;
+    }, [config, API_BASE_URL, paypalOrderId, ckoPaymentContextId]);
 
 
     const handleReset = () => {
@@ -242,10 +238,10 @@ const PayPal = () => {
         localStorage.removeItem('paypalConfig');
         setPaymentStatus(null);
         setPaymentDetails(null);
-        setCkoPaymentContextId(null); // Clear context ID
-        setPaypalOrderId(null); // Clear PayPal Order ID
-        setContextCreationLoading(false); // Reset loading state
-        buttonsRenderedRef.current = false; // Reset flag
+        setCkoPaymentContextId(null);
+        setPaypalOrderId(null);
+        setContextCreationLoading(false);
+        buttonsRenderedRef.current = false;
     };
 
     const handleDownload = () => {
