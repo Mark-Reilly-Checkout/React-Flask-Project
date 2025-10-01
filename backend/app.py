@@ -84,8 +84,8 @@ def create_payment_session():
         data = request.json
 
         # Only set the default channel ID if one is not provided by the frontend
-        if 'processing_channel_id' not in data:
-            data['processing_channel_id'] = "pc_pxk25jk2hvuenon5nyv3p6nf2i"
+        #if 'processing_channel_id' not in data:
+       #     data['processing_channel_id'] = "pc_pxk25jk2hvuenon5nyv3p6nf2i"
         # Add success and failure URLs to the data received from the frontend.
         # This ensures redirection still works.
         data['success_url'] = "https://react-frontend-elpl.onrender.com/success"
