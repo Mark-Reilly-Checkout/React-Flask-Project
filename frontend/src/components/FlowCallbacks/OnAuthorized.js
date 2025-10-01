@@ -60,7 +60,12 @@ const OnAuthorized = () => {
                 // --- The onAuthorized callback implementation ---
                 const onAuthorized = async (self, authorizeResult) => {
                     console.log("onAuthorized event triggered:", authorizeResult);
-                    const cardType = authorizeResult?.payment?.token?.paymentMethodData?.info?.cardFundingSource;
+                    const cardType = authorizeResult?.payment?.token?.paymentMethodData.info?.cardFundingSource;
+                    const cardType1 = authorizeResult?.paymentMethodData.info?.cardFundingSource;
+                    console.log("card type 1" + cardType1);
+                    const cardType2 = authorizeResult?.payment.token.paymentMethodData.info?.cardFundingSource;
+                     console.log("card type 2" + cardType2);
+
                     toast.info(`Wallet card type is: ${cardType || 'Unknown'}`);
 
                     if (cardType && cardType === config.cardTypeToReject) {
