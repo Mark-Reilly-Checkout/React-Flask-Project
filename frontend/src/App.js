@@ -12,7 +12,6 @@ import Success from './components/Redirects/Success';
 import Failure from './components/Redirects/Failure';
 import OnAuthorized from './components/FlowCallbacks/OnAuthorized';
 import PayPal from './components/PayPal';
-import CheckoutDemo from './components/CheckoutDemo';
 import DeliveryPage from './components/DeliveryPage';
 import PaymentLink from './components/PaymentLink';
 import ApplePay from './components/ApplePay';
