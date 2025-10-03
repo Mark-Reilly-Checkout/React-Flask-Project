@@ -56,6 +56,50 @@ class User(UserMixin):
 def load_user(user_id):
     return User.get(user_id)
 
+@app.route('/api/register', methods=['POST'])
+def register():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({"error": "Email and password are required"}), 400
+    if email in users:
+        return jsonify({"error": "User already exists"}), 409
+
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    new_user = User(email=email, password_hash=hashed_password)
+    users[email] = new_user
+
+    return jsonify({"message": "User registered successfully"}), 201
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+    user = users.get(email)
+
+    if user and bcrypt.check_password_hash(user.password_hash, password):
+        login_user(user) # This handles the session cookie
+        return jsonify({"message": "Logged in successfully", "user": {"email": user.email}}), 200
+
+    return jsonify({"error": "Invalid credentials"}), 401
+
+
+@app.route('/api/logout', methods=['POST'])
+@login_required
+def logout():
+    logout_user()
+    return jsonify({"message": "Logged out successfully"}), 200
+
+@app.route('/api/status', methods=['GET'])
+def status():
+    if current_user.is_authenticated:
+        return jsonify({"isLoggedIn": True, "user": {"email": current_user.email}}), 200
+    else:
+        return jsonify({"isLoggedIn": False, "user": None}), 200
+
 
 # Test to show FE and BE communicating ff
 @app.route('/')
