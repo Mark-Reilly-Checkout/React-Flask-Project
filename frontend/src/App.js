@@ -5,7 +5,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Import your page components (merged list)
-import Home from './components/Home';
 import Flow from './components/Flow';
 import RequestPayment from './components/RequestPayment';
 import Success from './components/Redirects/Success';
@@ -107,7 +106,7 @@ function App() {
             <div className="container mx-auto p-4">
                 <Routes>
                     {/* Merged Routes */}
-                    <Route path="/" element={<Home />} />
+                    <Route path="/" element={<div>Welcome to the Integrations Testing Tool</div>} />
                     <Route path="/flow" element={<Flow />} />
                     <Route path="/requestPayment" element={<RequestPayment />} />
                     <Route path="/paymentLink" element={<PaymentLink />} />
