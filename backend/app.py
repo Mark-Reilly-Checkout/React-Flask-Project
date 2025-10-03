@@ -3,10 +3,13 @@ from flask_cors import CORS
 from checkout_sdk.checkout_sdk import CheckoutSdk
 from checkout_sdk.environment import Environment
 import json, datetime, traceback, os, requests, uuid, traceback
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_bcrypt import Bcrypt
 
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'a_very_secret_key_for_development')
 CORS(app, origins=["https://react-frontend-elpl.onrender.com", "https://react-flask-project-kpyi.onrender.com"]) #Frontend is running on https://
 
 # These will be loaded from your .env file locally, or from Render's environment settings in production
@@ -29,6 +32,29 @@ checkout_api = CheckoutSdk.builder() \
     .build() 
 payments_client = checkout_api.payments    
 
+# --- NEW: Initialize Bcrypt and LoginManager ---
+bcrypt = Bcrypt(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+# --- NEW: Simple in-memory user store (for demonstration) ---
+users = {}
+
+# --- NEW: User class for Flask-Login ---
+class User(UserMixin):
+    def __init__(self, id, email, password_hash):
+        self.id = id
+        self.email = email
+        self.password_hash = password_hash
+
+    @staticmethod
+    def get(user_id):
+        return users.get(user_id)
+
+# --- NEW: User loader function for Flask-Login ---
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id)
 
 
 # Test to show FE and BE communicating ff
