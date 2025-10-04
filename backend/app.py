@@ -94,7 +94,7 @@ def logout():
     logout_user()
     return jsonify({"message": "Logged out successfully"}), 200
 
-@app.route('/api/status', methods=['GET'])
+@app.route('api/status', methods=['GET'])
 def status():
     if current_user.is_authenticated:
         return jsonify({"isLoggedIn": True, "user": {"email": current_user.email}}), 200
