@@ -10,8 +10,13 @@ from flask_bcrypt import Bcrypt
 app = Flask(__name__)
 app.config["DEBUG"] = True
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'a_very_secret_key_for_development')
-CORS(app, origins=["https://react-frontend-elpl.onrender.com", "https://react-flask-project-kpyi.onrender.com"], supports_credentials=True)
-
+CORS(
+    app,
+    origins=["https://react-frontend-elpl.onrender.com", "https://react-flask-project-kpyi.onrender.com"],
+    supports_credentials=True,
+    methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"]
+)
 
 # These will be loaded from your .env file locally, or from Render's environment settings in production
 CHECKOUT_SECRET_KEY = os.environ.get('CHECKOUT_SECRET_KEY')
