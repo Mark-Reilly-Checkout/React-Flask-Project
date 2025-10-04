@@ -62,21 +62,41 @@ function App() {
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true); // To handle initial auth check
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
+    const [loadingMessage, setLoadingMessage] = useState("Connecting to server...");
 
     // Check login status on app load
     useEffect(() => {
+        // --- NEW: checkLoginStatus function with retry logic ---
         const checkLoginStatus = async () => {
-            try {
-                const response = await axios.get(`${API_BASE_URL}/api/status`, { withCredentials: true });
-                if (response.data.isLoggedIn) {
-                    setCurrentUser(response.data.user);
+            const maxRetries = 5;
+            const initialDelay = 3000; // 3 seconds
+
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    const response = await axios.get(`${API_BASE_URL}/api/status`, {
+                        withCredentials: true,
+                        timeout: 15000 // 15 second timeout for this specific request
+                    });
+
+                    if (response.data.isLoggedIn) {
+                        setCurrentUser(response.data.user);
+                    }
+                    setLoading(false); // Success, stop loading
+                    return; // Exit the function
+                } catch (error) {
+                    console.error(`Attempt ${attempt} failed:`, error.message);
+                    if (attempt < maxRetries) {
+                        setLoadingMessage(`Server is waking up, this may take a moment... (Attempt ${attempt + 1})`);
+                        await new Promise(res => setTimeout(res, initialDelay * attempt)); // Wait longer each time
+                    } else {
+                        setLoadingMessage("Could not connect to the server. Please try refreshing the page later.");
+                        // Optional: Keep loading spinner or show an error message permanently
+                        // setLoading(false);
+                    }
                 }
-            } catch (error) {
-                console.error("Could not fetch login status:", error);
-            } finally {
-                setLoading(false);
             }
         };
+
         checkLoginStatus();
     }, [API_BASE_URL]);
 
@@ -96,11 +116,18 @@ function App() {
     };
 
     if (loading) {
-        return <div>Loading...</div>; // Or a proper spinner component
+        return (
+            <div className="flex flex-col items-center justify-center h-screen">
+                <div className="text-xl font-semibold">{loadingMessage}</div>
+                <div className="mt-4">
+                    {/* You can add a spinner GIF or CSS animation here */}
+                </div>
+            </div>
+        );
     }
 
     return (
-        <Router>
+        <>
             <ToastContainer position="bottom-right" autoClose={5000} hideProgressBar={false} />
             <AppNavbar currentUser={currentUser} onLogout={handleLogout} />
             <div className="container mx-auto p-4">
@@ -130,7 +157,7 @@ function App() {
                     <Route path="/register" element={<Register />} />
                 </Routes>
             </div>
-        </Router>
+        </>
     );
 }
 

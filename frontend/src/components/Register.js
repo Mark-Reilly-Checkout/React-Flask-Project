@@ -12,7 +12,7 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`${API_BASE_URL}/api/register`, { email, password });
+            await axios.post(`${API_BASE_URL}/api/register`, { email, password }, {timeout: 30000});
             toast.success('Registration successful! Please log in.');
             navigate('/login'); // Redirect to login page
         } catch (error) {

@@ -14,7 +14,10 @@ const Login = ({ onLoginSuccess }) => {
         try {
             const response = await axios.post(`${API_BASE_URL}/api/login`, 
                 { email, password },
-                { withCredentials: true } // Important: sends cookies with the request
+                { 
+                    withCredentials: true,
+                    timeout: 30000
+                } 
             );
             
             toast.success('Logged in successfully!');
