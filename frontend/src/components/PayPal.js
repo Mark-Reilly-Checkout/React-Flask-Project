@@ -158,8 +158,8 @@ const PayPal = () => {
         scriptUrl.searchParams.append('merchant-id', config.paypalMerchantId);
         scriptUrl.searchParams.append('disable-funding', config.disableFunding);
         scriptUrl.searchParams.append('commit', String(config.commit));
-        scriptUrl.searchParams.append('currency', config.currency);
-        scriptUrl.searchParams.append('buyer-country', config.buyerCountry);
+        //scriptUrl.searchParams.append('currency', config.currency);
+        //scriptUrl.searchParams.append('buyer-country', config.buyerCountry);
 
         // --- CORRECTED & ENHANCED LOGIC ---
         const isSubscription = config.payment_type === 'Recurring' || config.payment_type === 'Unscheduled';
