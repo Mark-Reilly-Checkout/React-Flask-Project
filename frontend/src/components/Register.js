@@ -14,7 +14,7 @@ const Register = () => {
         try {
             await axios.post(`${API_BASE_URL}/api/register`, { email, password }, {timeout: 30000});
             toast.success('Registration successful! Please log in.');
-            navigate('/login'); // Redirect to login page
+            navigate('/login'); // Redirect to login paged
         } catch (error) {
             const errorMessage = error.response?.data?.error || 'Registration failed. Please try again.';
             toast.error(errorMessage);
