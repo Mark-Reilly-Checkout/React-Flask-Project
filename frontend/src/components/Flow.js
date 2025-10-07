@@ -333,7 +333,8 @@ const Flow = ({ passedPaymentSession = null }) => {
                             data: {
                                 displayCardholderName: config.cardDisplayCardholderName,
                             },
-                            acceptedCardTypes: ['credit', 'charge', 'deferred_debit', 'prepaid'],
+                            acceptedCardTypes: ['credit', 'debit', 'charge', 'deferred_debit', 'prepaid'],
+                            acceptedCardSchemes: ['visa'],
                         },
                     },
 
