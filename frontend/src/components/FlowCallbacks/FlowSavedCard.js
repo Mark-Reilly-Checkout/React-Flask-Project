@@ -31,6 +31,8 @@ const FlowSavedCard = () => {
     const [loading, setLoading] = useState(false);
     const [paymentSession, setPaymentSession] = useState(null);
     const [paymentResponse, setPaymentResponse] = useState(null);
+    const [paymentDetails, setPaymentDetails] = useState(null); // State for the GET Payment Details response
+    const [gettingDetails, setGettingDetails] = useState(false); // Loading state for the GET request    
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
     const navigate = useNavigate();
 
@@ -57,6 +59,7 @@ const FlowSavedCard = () => {
         setLoading(true);
         setPaymentSession(null);
         setPaymentResponse(null);
+        setPaymentDetails(null);
 
         if (jsonError) {
             toast.error("Cannot create session. Please fix the invalid JSON.");
@@ -74,6 +77,22 @@ const FlowSavedCard = () => {
             toast.error('Error creating payment session.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchPaymentDetails = async (paymentId) => {
+        if (!paymentId) return;
+        setGettingDetails(true);
+        setPaymentDetails(null); // Clear previous details
+        try {
+            const response = await axios.get(`${API_BASE_URL}/api/payment-details/${paymentId}`);
+            setPaymentDetails(response.data);
+        } catch (error) {
+            console.error("Get Payment Details Error:", error.response ? error.response.data : error.message);
+            toast.error('Error fetching payment details.');
+            setPaymentDetails({ error: "Failed to fetch details.", details: error.response?.data });
+        } finally {
+            setGettingDetails(false);
         }
     };
 
@@ -95,13 +114,14 @@ const FlowSavedCard = () => {
                     onPaymentCompleted: (_component, paymentResponse) => {
                         setPaymentResponse(paymentResponse);
                         toast.success('Payment completed successfully!');
-                        navigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);
+                        fetchPaymentDetails(paymentResponse.id);
+                        //navigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);
                     },
                     onError: (component, error) => {
                         setPaymentResponse(error);
                         toast.error('Payment failed. Please try again.');
                         console.error("Payment Error:", error);
-                        navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
+                        //navigate(`/failure?cko-payment-id=${error?.payment?.id || 'N/A'}&status=failed`);
                     }
                 });
 
@@ -129,8 +149,9 @@ const FlowSavedCard = () => {
             <h1 className="text-3xl font-bold text-center mb-8">Flow Component Demo</h1>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Panel: Configuration and Actions */}
+                {/* Left Column */}
                 <div className="flex flex-col gap-6">
+                    {/* Panel 1: Configuration and Actions */}
                     <Card className="p-6 rounded-xl shadow-md bg-white">
                         <Card.Title className="text-xl font-semibold mb-4">Payment Session</Card.Title>
                         <div className="mb-4">
@@ -157,32 +178,37 @@ const FlowSavedCard = () => {
                             </p>
                         )}
                     </Card>
-                </div>
 
-                {/* Right Panel: Flow Component and Response */}
-                <Card className="p-6 rounded-xl shadow-md bg-white">
-                    <Card.Title className="text-xl font-semibold mb-4">Flow Component</Card.Title>
-                    
-                    {/* Container for the flow component, rendered conditionally */}
-                    {paymentSession ? (
-                        <div ref={flowContainerRef} id="flow-container" className="min-h-[300px]">
-                            {/* The flow component will be mounted here by the useEffect hook */}
-                        </div>
-                    ) : (
-                        <div className="min-h-[300px] flex items-center justify-center">
-                            <p className="text-center text-gray-500">Create a payment session to load the Flow component.</p>
+                    {/* Panel 2: Flow Component */}
+                    <Card className="p-6 rounded-xl shadow-md bg-white">
+                        <Card.Title className="text-xl font-semibold mb-4">Flow Component</Card.Title>
+                        {paymentSession ? (
+                            <div ref={flowContainerRef} id="flow-container" className="min-h-[300px]">
+                                {/* The flow component will be mounted here by the useEffect hook */}
+                            </div>
+                        ) : (
+                            <div className="min-h-[300px] flex items-center justify-center">
+                                <p className="text-center text-gray-500">Create a payment session to load the Flow component.</p>
+                            </div>
+                        )}
+                    </Card>
+                </div>
+                
+                {/* Right Column: Payment Response */}
+                <div className="p-6 rounded-xl shadow-md bg-white">
+                    <h2 className="text-xl font-semibold mb-4">Payment Response</h2>
+                    {paymentResponse?.id && (
+                        <div className="mb-4 text-sm text-gray-700 break-all">
+                            <strong>Payment ID:</strong> {paymentResponse.id}
                         </div>
                     )}
-                    
-                    <hr className="my-4" />
-
-                    <Card.Title className="text-xl font-semibold mb-4">Payment Response</Card.Title>
-                    <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-64 whitespace-pre-wrap break-words">
-                        {paymentResponse
-                            ? JSON.stringify(paymentResponse, null, 2)
-                            : 'Waiting for payment response...'}
+                    <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-full min-h-[400px] whitespace-pre-wrap break-words">
+                        {gettingDetails ? "GET Payment Details running..." : (
+                            paymentDetails ? JSON.stringify(paymentDetails, null, 2) :
+                            (paymentResponse ? "Waiting for payment details..." : "Waiting for payment response...")
+                        )}
                     </div>
-                </Card>
+                </div>
             </div>
         </div>
     );
