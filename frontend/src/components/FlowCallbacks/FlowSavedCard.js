@@ -86,7 +86,7 @@ const FlowSavedCard = () => {
         setPaymentDetails(null); // Clear previous details
         try {
             const response = await axios.get(`${API_BASE_URL}/api/payment-details/${paymentId}`);
-            setPaymentDetails(response.data);
+            setPaymentDetails(response.data.source.id);
         } catch (error) {
             console.error("Get Payment Details Error:", error.response ? error.response.data : error.message);
             toast.error('Error fetching payment details.');
@@ -114,7 +114,9 @@ const FlowSavedCard = () => {
                     onPaymentCompleted: (_component, paymentResponse) => {
                         setPaymentResponse(paymentResponse);
                         toast.success('Payment completed successfully!');
-                        fetchPaymentDetails(paymentResponse.id);
+                        setTimeout(() => {
+                            fetchPaymentDetails(paymentResponse.id);
+                        }, 3000);
                         //navigate(`/success?cko-payment-id=${paymentResponse.id}&status=succeeded`);
                     },
                     onError: (component, error) => {
