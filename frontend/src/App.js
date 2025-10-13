@@ -21,6 +21,7 @@ import RememberMe from './components/FlowCallbacks/RememberMe';
 import Tokenization from './components/FlowCallbacks/Tokenization';
 import HostedPaymentPages from './components/HostedPaymentPages';
 import OnAuthorized from './components/FlowCallbacks/OnAuthorized';
+import FlowSavedCard from './components/FlowCallbacks/FlowSavedCard';
 
 
 
@@ -59,6 +60,7 @@ function App() {
         <Route path='/tokenization' element={<Tokenization/>}/>
         <Route path="/hosted-payment-pages" element={<HostedPaymentPages />}/>
         <Route path="/checkout-demo/*" element={<CheckoutDemoApp />} />
+        <Route path="/flowSavedCard" element={<FlowSavedCard />} />
 
       </Routes>
     </>

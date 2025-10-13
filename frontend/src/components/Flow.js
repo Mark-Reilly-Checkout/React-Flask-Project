@@ -334,7 +334,6 @@ const Flow = ({ passedPaymentSession = null }) => {
                                 displayCardholderName: config.cardDisplayCardholderName,
                             },
                             acceptedCardTypes: ['credit', 'debit', 'charge', 'deferred_debit', 'prepaid'],
-                            acceptedCardSchemes: ['visa'],
                         },
                     },
 
@@ -406,7 +405,13 @@ const Flow = ({ passedPaymentSession = null }) => {
                             onClick={handleInitialModeSelection}
                             className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out"
                         >
-                            Flow Demo
+                           Go to Default Flow Demo
+                        </button>
+                        <button
+                            onClick={() => navigate('/flowSavedCard')}
+                            className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out mt-4"
+                        >
+                            Go to Save Card Demo
                         </button>
                         <button
                             onClick={() => navigate('/flowHandleSubmit')}
