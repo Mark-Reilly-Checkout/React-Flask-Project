@@ -157,7 +157,6 @@ def request_card_payment():
 
 # POST - Regular - Payment
 @app.route('/api/payments', methods=['POST'])
-
 def regularPayment():
     try:
         data = request.json
@@ -179,34 +178,35 @@ def regularPayment():
 @app.route('/api/paymentLink', methods=['POST'])
 def paymentLink():
     try:
-        data = request.json
-        requestPaymentLink = {
-            "amount": data["amount"],  # Amount in cents
-            "currency": "USD",
-            "reference": "UCHA.SE LTD",
-            "capture": True,  # Auto-capture payment
-            "payment_type": "Regular",
-            "customer": {
-                "name":"Mark Reilly",
-                "email": "test@checkout.com"
-            },
-            "billing":{
-                "address":{
-                    "country":"GB"
+        # The frontend sends a JSON payload that matches the expected API structure.
+        # We can pass this dictionary directly to the SDK method.
+        payload = request.json
+
+        # The SDK's hosted_payments client is accessed directly from the main API instance.
+        # The payload dictionary is passed as the argument.
+        response = checkout_api.payments_links.create_payment_link(payload)
+
+        # The SDK response object needs to be converted to a dict to be JSON serializable
+        response_dict = {
+            "id": response.id,
+            "reference": response.reference,
+            "_links": {
+                "redirect": {
+                    "href": response._links['redirect'].href
                 }
-            },
-            "processing_channel_id":"pc_pxk25jk2hvuenon5nyv3p6nf2i",
-            "return_url":"https://react-frontend-elpl.onrender.com/paymentLink"
+            }
         }
-        response = checkout_api.payments_links.create_payment_link(requestPaymentLink)
-        #Display the API response response.id will find the field with id from the response
-        return jsonify({"id": response.id, "redirect_href": response._links.redirect.href, "expires_on":response.expires_on, "reference": response.reference})
+        
+        return jsonify(response_dict), 201
+
     except Exception as e:
-        error_message = {"error": str(e)}
-        if response and hasattr(response, 'error_type'):
-            error_message["type"] = response.error_type  # Avoids accessing response if it's None
-        return jsonify(error_message), 500
-    
+        traceback.print_exc()
+        # Attempt to get more detailed error info from the SDK exception if available
+        error_details = str(e)
+        if hasattr(e, 'error_details'):
+            error_details = e.error_details
+        return jsonify({"error": "Failed to create Hosted Payments session", "details": error_details}), 500
+
 # POST - Regular - Payment context
 @app.route('/api/payment-contexts', methods=['POST'])
 def paymentContext():
