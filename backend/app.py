@@ -194,7 +194,6 @@ def paymentLink():
         # The SDK response object needs to be converted to a dict to be JSON serializable
         response_dict = {
             "id": response.id,
-            "reference": response.reference,
             "_links": {
                 "redirect": {
                     "href": response._links['redirect'].href
