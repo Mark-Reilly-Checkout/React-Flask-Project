@@ -256,24 +256,19 @@ const ApplePay = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold text-center mb-8">Apple Pay</h1>
-
       {!showMainContent ? (
         <div className="flex items-center justify-center min-h-[calc(100vh-100px)]">
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
                 <h2 className="text-2xl font-bold mb-6 text-gray-800">Choose your Apple Pay flow</h2>
                 <div className="mb-6">
-                    <label htmlFor="paymentModeSelect" className="block text-lg font-medium text-gray-700 mb-2">
-                        Select Action:
-                    </label>
                     <select
                         id="paymentModeSelect"
                         value={initialPaymentMode}
                         onChange={(e) => setInitialPaymentMode(e.target.value)}
                         className="w-full border rounded-lg px-4 py-3 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
                     >
-                        <option value="processPayment">Full payment</option>
-                        <option value="generateTokenOnly">Token generation</option>
+                        <option value="processPayment">End-to-End Payment</option>
+                        <option value="generateTokenOnly">Token Generation</option>
                     </select>
                 </div>
                 <button
@@ -302,7 +297,7 @@ const ApplePay = () => {
                             onChange={() => setConfig({...config, paymentMode: 'processPayment'})}
                             className="form-radio h-4 w-4 text-blue-600"
                         />
-                        <span className="ml-2 text-gray-700">Full payment</span>
+                        <span className="ml-2 text-gray-700">End-to-End Payment</span>
                     </label>
                     <label className="inline-flex items-center">
                         <input
@@ -313,13 +308,13 @@ const ApplePay = () => {
                             onChange={() => setConfig({...config, paymentMode: 'generateTokenOnly'})}
                             className="form-radio h-4 w-4 text-blue-600"
                         />
-                        <span className="ml-2 text-gray-700">Token generation</span>
+                        <span className="ml-2 text-gray-700">Token Generation</span>
                     </label>
                 </div>
             </div>
 
             <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Merchant Identifier (e.g., merchant.com.yourdomain)</label>
+                <label className="block text-sm font-medium mb-1">Merchant Identifier</label>
                 <input
                     type="text"
                     value={config.merchantIdentifier}
@@ -329,7 +324,7 @@ const ApplePay = () => {
             </div>
 
             <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Display Name (for Payment Sheet)</label>
+                <label className="block text-sm font-medium mb-1">Display Name</label>
                 <input
                     type="text"
                     value={config.displayName}
@@ -339,7 +334,7 @@ const ApplePay = () => {
             </div>
 
             <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Initiative Context (The current domain)</label>
+                <label className="block text-sm font-medium mb-1">Initiative Context</label>
                 <input
                     type="text"
                     value={config.initiativeContext}

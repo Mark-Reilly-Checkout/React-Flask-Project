@@ -82,7 +82,7 @@ const HostedPaymentPages = () => {
             <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Panel: Request Body */}
                 <Card className="p-6 rounded-xl shadow-md bg-white">
-                    <Card.Title className="text-xl font-semibold mb-4">1. HPP Request Body</Card.Title>
+                    <Card.Title className="text-xl font-semibold mb-4">Hosted Payment Page Request JSON</Card.Title>
                     <textarea
                         value={jsonInput}
                         onChange={handleJsonInputChange}
@@ -96,24 +96,24 @@ const HostedPaymentPages = () => {
                         disabled={loading || !!jsonError}
                         className="mt-4 w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 disabled:opacity-50"
                     >
-                        {loading ? "Creating Session..." : "Create HPP Session"}
+                        {loading ? "Sending request..." : "Create Hosted Payment Page Request"}
                     </button>
                 </Card>
 
                 {/* Right Panel: Response and Redirect */}
                 <Card className="p-6 rounded-xl shadow-md bg-white">
-                    <Card.Title className="text-xl font-semibold mb-4">2. Response & Redirect</Card.Title>
+                    <Card.Title className="text-xl font-semibold mb-4">Hosted Payment Page Response</Card.Title>
                     <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-80 whitespace-pre-wrap break-words mb-4">
                         {sessionResponse
                             ? JSON.stringify(sessionResponse, null, 2)
-                            : 'Waiting for session response...'}
+                            : 'Waiting for request response...'}
                     </div>
                     <button
                         onClick={handleRedirect}
                         disabled={!sessionResponse?._links?.redirect?.href}
                         className="w-full bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition duration-300 disabled:opacity-50"
                     >
-                        Continue to Payment Page
+                        Continue to Hosted Payment Page
                     </button>
                 </Card>
             </div>

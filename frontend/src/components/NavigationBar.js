@@ -30,8 +30,8 @@ const NavigationBar = () => {
             <NavDropdown title="Payouts" id="collapsible-nav-dropdown" data-bs-theme="light">
               <Dropdown.Item href="#card">Card</Dropdown.Item>
               <Dropdown.Item href="#bank">Bank</Dropdown.Item>
-              <Dropdown.Item href="/requestPayment">Request Payment</Dropdown.Item>
             </NavDropdown>
+             <Nav.Link href="/requestPayment">Risk Payment</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>
