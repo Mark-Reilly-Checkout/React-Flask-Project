@@ -27,10 +27,10 @@ const Home = () => {
         </p>
         <div className="flex gap-4">
           <Link
-            to="/requestPayment"
+            to="/flow"
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105"
           >
-            Test Card Payments
+            Explore Flow
           </Link>
           <Link
             to="/paypal"
