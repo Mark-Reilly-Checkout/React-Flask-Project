@@ -1,61 +1,66 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 const NavigationBar = ({ currentUser, onLogout }) => {
+    // --- NEW: State to manually control the collapse/expand behavior ---
+    const [expanded, setExpanded] = useState(false);
+
     return (
-        // The `expand="lg"` prop is key. It means the navbar will be in its expanded state
-        // on large (lg) screens and up, and collapsed on screens smaller than that.
-        <Navbar bg="dark" variant="dark" expand="lg" className="border-b border-slate-700">
-            <Navbar.Brand as={Link} to="/">CKO Payments</Navbar.Brand>
+        // --- UPDATED: Connect the Navbar's state to our manual `expanded` state ---
+        <Navbar 
+            bg="dark" 
+            variant="dark" 
+            expand="lg" 
+            className="border-b border-slate-700"
+            expanded={expanded} // Control the component's state
+            onToggle={() => setExpanded(!expanded)} // Toggle state on hamburger click
+        >
+            <Navbar.Brand as={Link} to="/" onClick={() => setExpanded(false)}>CKO Payments</Navbar.Brand>
             
-            {/* This is the hamburger button that appears on smaller screens */}
             <Navbar.Toggle aria-controls="responsive-navbar-nav" />
 
-            {/* This component wraps all the content that will be collapsed */}
             <Navbar.Collapse id="responsive-navbar-nav">
                 
-                {/* Main navigation links */}
                 <Nav className="me-auto">
-                    <Nav.Link as={Link} to="/requestPayment">Request Payment</Nav.Link>
-                    <Nav.Link as={Link} to="/paymentLink">Payment Link</Nav.Link>
+                    {/* --- UPDATED: Added onClick to every link to close the menu after selection --- */}
+                    <Nav.Link as={Link} to="/requestPayment" onClick={() => setExpanded(false)}>Request Payment</Nav.Link>
+                    <Nav.Link as={Link} to="/paymentLink" onClick={() => setExpanded(false)}>Payment Link</Nav.Link>
                     
-                    {/* Organized links into a "Flow Demos" dropdown */}
                     <NavDropdown title="Flow Demos" id="flow-demos-dropdown">
-                        <NavDropdown.Item as={Link} to="/flow">Standard Flow</NavDropdown.Item>
-                        <NavDropdown.Item as={Link} to="/flow-saved-card">Saved Card</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/flow" onClick={() => setExpanded(false)}>Standard Flow</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/flow-saved-card" onClick={() => setExpanded(false)}>Saved Card</NavDropdown.Item>
                         <NavDropdown.Divider />
-                        <NavDropdown.Item as={Link} to="/flowHandleSubmit">Handle Submit Callback</NavDropdown.Item>
-                        <NavDropdown.Item as={Link} to="/flowHandleClick">Handle Click Callback</NavDropdown.Item>
-                        <NavDropdown.Item as={Link} to="/onAuthorized">On Authorized Callback</NavDropdown.Item>
-                        <NavDropdown.Item as={Link} to="/rememberMe">Remember Me</NavDropdown.Item>
-                        <NavDropdown.Item as={Link} to="/tokenization">Tokenization</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/flowHandleSubmit" onClick={() => setExpanded(false)}>Handle Submit Callback</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/flowHandleClick" onClick={() => setExpanded(false)}>Handle Click Callback</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/onAuthorized" onClick={() => setExpanded(false)}>On Authorized Callback</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/rememberMe" onClick={() => setExpanded(false)}>Remember Me</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/tokenization" onClick={() => setExpanded(false)}>Tokenization</NavDropdown.Item>
                     </NavDropdown>
 
-                     {/* Organized links into an "APMs & Wallets" dropdown */}
                     <NavDropdown title="APMs & Wallets" id="apm-wallets-dropdown">
-                        <NavDropdown.Item as={Link} to="/paypal">PayPal</NavDropdown.Item>
-                        <NavDropdown.Item as={Link} to="/googlePay">Google Pay</NavDropdown.Item>
-                        <NavDropdown.Item as={Link} to="/applePay">Apple Pay</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/paypal" onClick={() => setExpanded(false)}>PayPal</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/googlePay" onClick={() => setExpanded(false)}>Google Pay</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/applePay" onClick={() => setExpanded(false)}>Apple Pay</NavDropdown.Item>
                     </NavDropdown>
 
-                    <Nav.Link as={Link} to="/hosted-payment-pages">Hosted Payments</Nav.Link>
-                    <Nav.Link as={Link} to="/checkout-demo">Checkout Demo</Nav.Link>
+                    <Nav.Link as={Link} to="/hosted-payment-pages" onClick={() => setExpanded(false)}>Hosted Payments</Nav.Link>
+                    <Nav.Link as={Link} to="/checkout-demo" onClick={() => setExpanded(false)}>Checkout Demo</Nav.Link>
                 </Nav>
 
-                {/* Login/Logout links will also collapse into the menu */}
                 <Nav>
                     {currentUser ? (
                         <>
                             <Navbar.Text className="text-slate-400 me-3">
                                 Signed in as: {currentUser.email}
                             </Navbar.Text>
-                            <Nav.Link onClick={onLogout} className="text-slate-300 hover:text-white">Logout</Nav.Link>
+                            {/* --- UPDATED: The logout link also needs to close the menu --- */}
+                            <Nav.Link onClick={() => { onLogout(); setExpanded(false); }} className="text-slate-300 hover:text-white">Logout</Nav.Link>
                         </>
                     ) : (
                         <>
-                            <Nav.Link as={Link} to="/login" className="text-slate-300 hover:text-white">Login</Nav.Link>
-                            <Nav.Link as={Link} to="/register" className="text-slate-300 hover:text-white">Register</Nav.Link>
+                            <Nav.Link as={Link} to="/login" onClick={() => setExpanded(false)} className="text-slate-300 hover:text-white">Login</Nav.Link>
+                            <Nav.Link as={Link} to="/register" onClick={() => setExpanded(false)} className="text-slate-300 hover:text-white">Register</Nav.Link>
                         </>
                     )}
                 </Nav>
