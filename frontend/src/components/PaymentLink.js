@@ -2,9 +2,8 @@ import axios from "axios";
 import Button from 'react-bootstrap/Button';
 import React, { useState, useEffect } from 'react';
 import { Card, CardText } from 'react-bootstrap';
-import CardGroup from 'react-bootstrap/CardGroup';
-import Col from 'react-bootstrap/Col';
-import Row from 'react-bootstrap/Row';
+import { toast } from 'react-toastify';
+
 
 const defaultPaymentLinkRequest = {
   amount: 2000,
