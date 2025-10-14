@@ -196,7 +196,7 @@ def paymentLink():
             "id": response.id,
             "_links": {
                 "redirect": {
-                    "href": response._links['redirect'].href
+                    "href": response._links.redirect.href
                 }
             }
         }
@@ -209,7 +209,7 @@ def paymentLink():
         error_details = str(e)
         if hasattr(e, 'error_details'):
             error_details = e.error_details
-        return jsonify({"error": "Failed to create Hosted Payments session", "details": error_details}), 500
+        return jsonify({"error": "Failed to create Payment Link request", "details": error_details}), 500
 
 # POST - Regular - Payment context
 @app.route('/api/payment-contexts', methods=['POST'])
