@@ -22,6 +22,7 @@ import Tokenization from './components/FlowCallbacks/Tokenization';
 import HostedPaymentPages from './components/HostedPaymentPages';
 import OnAuthorized from './components/FlowCallbacks/OnAuthorized';
 import FlowSavedCard from './components/FlowCallbacks/FlowSavedCard';
+import Home from './components/Home';
 
 
 
@@ -47,7 +48,7 @@ function App() {
         <Route path="/requestPayment" element={<RequestPayment />} />
         <Route path="/paymentLink" element={<PaymentLink />} />
         <Route path="/applePay" element={<ApplePay />} />
-        <Route path="/" element={<div>Welcome to the Payment App</div>} />
+        <Route path="/" element={<Home/>} />
         <Route path="/googlePay" element={<GooglePay />} />
         <Route path="/test" element={<Test />} />
         <Route path="/success" element={<Success />} />
