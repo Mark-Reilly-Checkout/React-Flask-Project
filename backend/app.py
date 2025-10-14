@@ -78,7 +78,7 @@ def get_payment_details(payment_id):
 # POST - Flow - Create payment session
 @app.route('/api/create-payment-session', methods=['POST'])
 def create_payment_session():
-    rresponse = None # Initialize response to None for error handling
+    response = None # Initialize response to None for error handling
     try:
         # Step 1: Get the raw JSON from the frontend
         data = request.json
@@ -181,6 +181,11 @@ def paymentLink():
         # The frontend sends a JSON payload that matches the expected API structure.
         # We can pass this dictionary directly to the SDK method.
         payload = request.json
+
+        if 'processing_channel_id' not in payload:
+            payload['processing_channel_id'] = "pc_pxk25jk2hvuenon5nyv3p6nf2i"
+
+        print(payload)
 
         # The SDK's hosted_payments client is accessed directly from the main API instance.
         # The payload dictionary is passed as the argument.
