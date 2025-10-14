@@ -22,10 +22,7 @@ const defaultPaymentLinkRequest = {
     name: "Test Item",
     amount: 2000,
     quantity: 1
-  },
-  success_url: "https://example.com/payments/success",
-  failure_url: "https://example.com/payments/failure",
-  cancel_url: "https://example.com/payments/cancel"
+  }
 };
 
 const PaymentLink = () => {

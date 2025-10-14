@@ -185,6 +185,8 @@ def paymentLink():
         if 'processing_channel_id' not in payload:
             payload['processing_channel_id'] = "pc_pxk25jk2hvuenon5nyv3p6nf2i"
 
+        payload['return_url'] = "https://react-frontend-elpl.onrender.com/success"
+
         print(payload)
 
         # The SDK's hosted_payments client is accessed directly from the main API instance.
