@@ -147,21 +147,20 @@ const FlowSavedCard = () => {
 
 
     return (
-        <div className="min-h-screen bg-gray-100 p-6">
-            <h1 className="text-3xl font-bold text-center mb-8">Flow Component Demo</h1>
+       <div className="min-h-screen p-6">
+            <h1 className="text-3xl font-bold text-center mb-8 text-white">Flow Component Demo</h1>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Column */}
                 <div className="flex flex-col gap-6">
-                    {/* Panel 1: Configuration and Actions */}
-                    <Card className="p-6 rounded-xl shadow-md bg-white">
-                        <Card.Title className="text-xl font-semibold mb-4">Payment Session</Card.Title>
+                    <Card className="p-6 rounded-xl shadow-md bg-slate-800 border border-slate-700">
+                        <Card.Title className="text-xl font-semibold mb-4 text-white">Payment Session</Card.Title>
                         <div className="mb-4">
-                            <label className="block text-sm font-medium mb-1">Payment Session Request</label>
+                            <label className="block text-sm font-medium mb-1 text-slate-300">Payment Session Request</label>
                             <textarea
                                 value={jsonInput}
                                 onChange={handleJsonInputChange}
-                                className={`w-full border rounded px-3 py-2 font-mono text-sm ${jsonError ? 'border-red-500' : 'border-gray-300'}`}
+                                className={`w-full border rounded px-3 py-2 font-mono text-sm bg-slate-900 text-slate-200 ${jsonError ? 'border-red-500' : 'border-slate-600'}`}
                                 rows={15}
                                 placeholder="Enter session request JSON here..."
                             />
@@ -175,32 +174,31 @@ const FlowSavedCard = () => {
                             {loading ? "Creating Session..." : "Create Payment Session"}
                         </button>
                         {paymentSession && (
-                            <p className="mt-4 text-sm text-gray-700 break-all">
+                            <p className="mt-4 text-sm text-slate-400 break-all">
                                 <strong>Payment Session ID:</strong> {paymentSession.id}
                             </p>
                         )}
                     </Card>
 
-                    {/* Panel 2: Flow Component */}
-                    <Card className="p-6 rounded-xl shadow-md bg-white">
-                        <Card.Title className="text-xl font-semibold mb-4">Flow Component</Card.Title>
+                    <Card className="p-6 rounded-xl shadow-md bg-slate-800 border border-slate-700">
+                        <Card.Title className="text-xl font-semibold mb-4 text-white">Flow Component</Card.Title>
                         {paymentSession ? (
                             <div ref={flowContainerRef} id="flow-container" className="min-h-[300px]">
                                 {/* The flow component will be mounted here by the useEffect hook */}
                             </div>
                         ) : (
                             <div className="min-h-[300px] flex items-center justify-center">
-                                <p className="text-center text-gray-500">Create a payment session to load the Flow component.</p>
+                                <p className="text-center text-slate-400">Create a payment session to load the Flow component.</p>
                             </div>
                         )}
                     </Card>
                 </div>
                 
                 {/* Right Column: Payment Response */}
-                <div className="p-6 rounded-xl shadow-md bg-white">
-                    <h2 className="text-xl font-semibold mb-4">Payment Response</h2>
+                <div className="p-6 rounded-xl shadow-md bg-slate-800 border border-slate-700">
+                    <h2 className="text-xl font-semibold mb-4 text-white">Payment Response</h2>
                     {paymentResponse?.id && (
-                        <div className="mb-4 text-sm text-gray-700 break-all">
+                        <div className="mb-4 text-sm text-slate-400 break-all">
                             <strong>Payment ID:</strong> {paymentResponse.id}
                         </div>
                     )}

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const NavigationBar = () => {
   return (
-    <Navbar bg="primary" data-bs-theme="dark" expand="lg" sticky="top">
+    <Navbar bg="dark" variant="dark" expand="lg" className="border-b border-slate-700" sticky="top">
       <Container>
         <Navbar.Brand href="/">CKO Integrations</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
