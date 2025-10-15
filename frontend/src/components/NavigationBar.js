@@ -23,19 +23,16 @@ const NavigationBar = ({ currentUser, onLogout }) => {
             <Navbar.Collapse id="responsive-navbar-nav">
                 
                 <Nav className="me-auto">
-                    {/* --- UPDATED: Added onClick to every link to close the menu after selection --- */}
-                    <Nav.Link as={Link} to="/requestPayment" onClick={() => setExpanded(false)}>Request Payment</Nav.Link>
-                    <Nav.Link as={Link} to="/paymentLink" onClick={() => setExpanded(false)}>Payment Link</Nav.Link>
-                    
-                    <NavDropdown title="Flow Demos" id="flow-demos-dropdown">
-                        <NavDropdown.Item as={Link} to="/flow" onClick={() => setExpanded(false)}>Standard Flow</NavDropdown.Item>
-                        <NavDropdown.Item as={Link} to="/flowSavedCard" onClick={() => setExpanded(false)}>Saved Card</NavDropdown.Item>
+                    {/* --- UPDATED: Added onClick to every link to close the menu after selection --- */}                    
+                    <NavDropdown title="Flow" id="flow-demos-dropdown">
+                        <NavDropdown.Item as={Link} to="/flow" onClick={() => setExpanded(false)}>Flow</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/flowSavedCard" onClick={() => setExpanded(false)}>Save Card Demo</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/tokenization" onClick={() => setExpanded(false)}>Tokenization Demo</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/rememberMe" onClick={() => setExpanded(false)}>Remember Me Demo</NavDropdown.Item>
                         <NavDropdown.Divider />
                         <NavDropdown.Item as={Link} to="/flowHandleSubmit" onClick={() => setExpanded(false)}>Handle Submit Callback</NavDropdown.Item>
                         <NavDropdown.Item as={Link} to="/flowHandleClick" onClick={() => setExpanded(false)}>Handle Click Callback</NavDropdown.Item>
-                        <NavDropdown.Item as={Link} to="/onAuthorized" onClick={() => setExpanded(false)}>On Authorized Callback</NavDropdown.Item>
-                        <NavDropdown.Item as={Link} to="/rememberMe" onClick={() => setExpanded(false)}>Remember Me</NavDropdown.Item>
-                        <NavDropdown.Item as={Link} to="/tokenization" onClick={() => setExpanded(false)}>Tokenization</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/onAuthorized" onClick={() => setExpanded(false)}>On Authorized Callback</NavDropdown.Item>                        
                     </NavDropdown>
 
                     <NavDropdown title="APMs & Wallets" id="apm-wallets-dropdown">
@@ -44,7 +41,12 @@ const NavigationBar = ({ currentUser, onLogout }) => {
                         <NavDropdown.Item as={Link} to="/applePay" onClick={() => setExpanded(false)}>Apple Pay</NavDropdown.Item>
                     </NavDropdown>
 
-                    <Nav.Link as={Link} to="/hosted-payment-pages" onClick={() => setExpanded(false)}>Hosted Payments</Nav.Link>
+                    <NavDropdown title="Payment Interfaces" id="payment-interfaces-dropdown">
+                        <NavDropdown.Item as={Link} to="/hosted-payment-pages" onClick={() => setExpanded(false)}>Hosted Payments</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/paymentLink" onClick={() => setExpanded(false)}>Payment Link</NavDropdown.Item>
+                    </NavDropdown>
+
+                    <Nav.Link as={Link} to="/requestPayment" onClick={() => setExpanded(false)}>Risk JS</Nav.Link>
                     <Nav.Link as={Link} to="/checkout-demo" onClick={() => setExpanded(false)}>Checkout Demo</Nav.Link>
                 </Nav>
 
