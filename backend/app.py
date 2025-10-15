@@ -13,9 +13,6 @@ CORS(app, origins=["https://react-frontend-elpl.onrender.com", "https://react-fl
 CHECKOUT_SECRET_KEY = os.environ.get('CHECKOUT_SECRET_KEY')
 CHECKOUT_PUBLIC_KEY = os.environ.get('CHECKOUT_PUBLIC_KEY')
 
-print("Checkout Secret Key:", CHECKOUT_SECRET_KEY)
-print("Checkout Public Key:", CHECKOUT_PUBLIC_KEY)
-
 # Path to your Apple Pay merchant certificate and key
 APPLE_PAY_CERT = './certificate_sandbox.pem'
 APPLE_PAY_KEY = './certificate_sandbox.key'
@@ -27,9 +24,8 @@ checkout_api = CheckoutSdk.builder() \
     .public_key(CHECKOUT_PUBLIC_KEY)\
     .environment(Environment.sandbox()) \
     .build() 
+
 payments_client = checkout_api.payments    
-
-
 
 # Test to show FE and BE communicating ff
 @app.route('/')
@@ -122,17 +118,15 @@ def create_payment_session():
         return jsonify(error_message), 500
 
 
-# --- NEW ENDPOINT for Direct Card Payment with Risk Data ---
+#Card Payment - Risk Data
 @app.route('/api/request-card-payment', methods=['POST'])
 def request_card_payment():
     try:
-        # Get the full JSON payload from the frontend
         payment_data = request.json
-        
-        print(f"Requesting card payment with data: {payment_data}")
 
-        # Use the payments client to request a payment
-        # The frontend payload already matches the structure needed by the SDK
+        if 'processing_channel_id' not in payment_data:
+            payment_data['processing_channel_id'] = "pc_pxk25jk2hvuenon5nyv3p6nf2i" 
+        
         response = payments_client.request_payment(payment_data)
 
         # Convert the response object to a JSON-serializable dictionary
@@ -154,18 +148,21 @@ def request_card_payment():
         
         return jsonify({"error": "Failed to process card payment", "details": error_details}), status_code
 
-
-# POST - Regular - Payment
+#Standard Payment
 @app.route('/api/payments', methods=['POST'])
 def regularPayment():
     try:
         data = request.json
+
+        if 'processing_channel_id' not in data:
+            data['processing_channel_id'] = "pc_pxk25jk2hvuenon5nyv3p6nf2i"
+
         processing_channel_id = data.get("processing_channel_id")
         payment_context_id = data.get("payment_context_id")
 
         payment_request = {
-            "payment_context_id": payment_context_id,  # Use the payment context ID from the frontend
-            "processing_channel_id": processing_channel_id,  # Use the processing channel ID from the frontend
+            "payment_context_id": payment_context_id,  
+            "processing_channel_id": processing_channel_id, 
         }
         response = checkout_api.payments.request_payment(payment_request)
         #Display the API response response.id will find the field with id from the response
@@ -174,7 +171,7 @@ def regularPayment():
         #When there is an error display responses error codes and type
         return jsonify({"error": str(e), "error Code": response.error_codes, "Error Type": response.error_type}), 500
 
-# POST - Regular - Payment Link
+#Payment Link
 @app.route('/api/paymentLink', methods=['POST'])
 def paymentLink():
     try:
@@ -213,7 +210,7 @@ def paymentLink():
             error_details = e.error_details
         return jsonify({"error": "Failed to create Payment Link request", "details": error_details}), 500
 
-# POST - Regular - Payment context
+#Payment Context - PayPal
 @app.route('/api/payment-contexts', methods=['POST'])
 def paymentContext():
     response = None # Initialize response to None for error handling
@@ -316,11 +313,7 @@ def paymentContext():
             error_message["type"] = response.error_type
         return jsonify(error_message), 500
 
-
-# POST - Apple Pay session
-# This endpoint is called by the frontend to initiate the Apple Pay session
-# It receives the Apple Pay token and amount, and then converts it into a Checkout.com token
-# and processes the payment
+# Apple Pay session - Tokenize and Pay
 @app.route('/api/apple-pay-session', methods=['POST'])
 def apple_pay_session():
     data = request.get_json()
@@ -384,6 +377,7 @@ def apple_pay_session():
             "status": "Failed"
         }), 400
 
+#Apple Pay - Validate Merchant
 @app.route('/api/apple-pay/validate-merchant', methods=['POST'])
 def validate_merchant():
     data = request.get_json()
@@ -420,6 +414,7 @@ def validate_merchant():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
     
+#Flow - Submit payment session    
 @app.route('/api/submit-flow-session-payment', methods=['POST'])
 def submit_flow_session_payment():
     try:
@@ -503,13 +498,17 @@ def submit_flow_session_payment():
         traceback.print_exc()
         print(f"An unexpected error occurred during payment session submission: {e}")
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
-
+    
+#Hosted Payments Page
 @app.route('/api/hosted-payments', methods=['POST'])
 def create_hosted_payments_page_session():
     try:
         # The frontend sends a JSON payload that matches the expected API structure.
         # We can pass this dictionary directly to the SDK method.
         payload = request.json
+
+        if 'processing_channel_id' not in payload:
+            payload['processing_channel_id'] = "pc_pxk25jk2hvuenon5nyv3p6nf2i"
 
         # The SDK's hosted_payments client is accessed directly from the main API instance.
         # The payload dictionary is passed as the argument.
@@ -539,4 +538,3 @@ def create_hosted_payments_page_session():
 
 if __name__ == '__main__':
     app.run()
-    #app.run(port=5000)
