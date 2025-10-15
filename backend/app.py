@@ -351,6 +351,7 @@ def apple_pay_session():
             "amount": data["amount"],
             "currency": data["currencyCode"],
             "reference": f"apple-pay-risk-demo-{uuid.uuid4().hex[:6]}",
+            "processing_channel_id": "pc_pxk25jk2hvuenon5nyv3p6nf2i",
         }
 
         # --- NEW: Add risk data if device session ID is provided ---
