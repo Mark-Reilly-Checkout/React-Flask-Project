@@ -148,7 +148,7 @@ const FlowSavedCard = () => {
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">
-            <h1 className="text-3xl font-bold text-center mb-8">Flow Component Demo</h1>
+            <h1 className="text-3xl font-bold text-center mb-8">Save Card Demo</h1>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Column */}
@@ -205,6 +205,7 @@ const FlowSavedCard = () => {
                         </div>
                     )}
                     <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-full min-h-[400px] whitespace-pre-wrap break-words">
+                        {paymentResponse.id}
                         {gettingDetails ? "GET Payment Details running..." : (
                             paymentDetails ? JSON.stringify(paymentDetails, null, 2) :
                             (paymentResponse ? "Waiting for payment details..." : "Waiting for payment response...")

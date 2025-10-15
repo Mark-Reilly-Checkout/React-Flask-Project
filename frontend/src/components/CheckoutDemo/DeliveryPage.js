@@ -122,7 +122,7 @@ const DeliveryPage = () => {
         }
         
         clearContainer('card-container');
-        clearContainer('ideal-pay-container');
+        clearContainer('klarna-pay-container');
         clearContainer('google-pay-container');
         clearContainer('paypal-container');
 
@@ -148,7 +148,7 @@ const DeliveryPage = () => {
 
                 // --- Create each component instance ---
                 const cardComponent = checkout.create('card');
-                const iDealComponent = checkout.create('ideal');
+                const klarnaComponent = checkout.create('klarna');
                 const googlePayComponent = checkout.create('googlepay');
                 const paypalComponent = checkout.create('paypal');
                 
@@ -160,8 +160,8 @@ const DeliveryPage = () => {
                     if (await cardComponent.isAvailable()) {
                         cardComponent.mount('#card-container');
                     }
-                    if (await iDealComponent.isAvailable()) {
-                        iDealComponent.mount('#ideal-pay-container');
+                    if (await klarnaComponent.isAvailable()) {
+                        klarnaComponent.mount('#klarna-pay-container');
                     }
                     if (await googlePayComponent.isAvailable()) {
                         googlePayComponent.mount('#google-pay-container');
@@ -239,18 +239,13 @@ const DeliveryPage = () => {
                                 <div id="google-pay-container" className="h-12 flex items-center justify-center"></div>
                             </Card>
                             <Card className="p-4 rounded-xl shadow-md bg-white">
-                                <div id="ideal-pay-container" className="h-12 flex items-center justify-center"></div>
+                                <div id="klarna-pay-container" className="h-12 flex items-center justify-center"></div>
                             </Card>
                             <Card className="p-4 rounded-xl shadow-md bg-white">
                                 <div id="paypal-container" className="h-12 flex items-center justify-center"></div>
                             </Card>
                             <Card className="p-6 rounded-xl shadow-md bg-white">
                                 <div id="card-container" className="w-full"></div>
-                                <button 
-                                    onClick={() => cardComponentRef.current?.submit()} 
-                                    className="mt-4 w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out">
-                                    Pay with Card
-                                </button>
                             </Card>
                         </>
                     ) : (
