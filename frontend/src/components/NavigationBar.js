@@ -16,7 +16,7 @@ const NavigationBar = ({ currentUser, onLogout }) => {
             expanded={expanded} // Control the component's state
             onToggle={() => setExpanded(!expanded)} // Toggle state on hamburger click
         >
-            <Navbar.Brand as={Link} to="/" onClick={() => setExpanded(false)}>CKO Payments</Navbar.Brand>
+            <Navbar.Brand as={Link} to="/" onClick={() => setExpanded(false)}>Integrations</Navbar.Brand>
             
             <Navbar.Toggle aria-controls="responsive-navbar-nav" />
 
@@ -29,7 +29,7 @@ const NavigationBar = ({ currentUser, onLogout }) => {
                     
                     <NavDropdown title="Flow Demos" id="flow-demos-dropdown">
                         <NavDropdown.Item as={Link} to="/flow" onClick={() => setExpanded(false)}>Standard Flow</NavDropdown.Item>
-                        <NavDropdown.Item as={Link} to="/flow-saved-card" onClick={() => setExpanded(false)}>Saved Card</NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/flowSavedCard" onClick={() => setExpanded(false)}>Saved Card</NavDropdown.Item>
                         <NavDropdown.Divider />
                         <NavDropdown.Item as={Link} to="/flowHandleSubmit" onClick={() => setExpanded(false)}>Handle Submit Callback</NavDropdown.Item>
                         <NavDropdown.Item as={Link} to="/flowHandleClick" onClick={() => setExpanded(false)}>Handle Click Callback</NavDropdown.Item>
