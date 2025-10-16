@@ -48,7 +48,7 @@ const RequestPayment = () => {
 
     const initializeRisk = async () => {
         try {
-            const risk = await window.Risk.create("pk_sbox_z6zxchef4pyoy3bziidwee4clm4");
+            const risk = await window.Risk.create("pk_sbox_qbu63dvt2kqozcji7x67wlx2kez");
             const dsid = await risk.publishRiskData();
             setDeviceSessionId(dsid);
             toast.info(`Fraud detection session started.`);
