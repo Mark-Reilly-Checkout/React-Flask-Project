@@ -237,6 +237,11 @@ const GooglePay = () => {
                                     currencyCode: config.currencyCode,
                                     countryCode: config.acquirerCountry,
                                 },
+                                billingAddressRequired: true,
+      billingAddressParameters: {
+        format: 'FULL',
+        phoneNumberRequired: true,
+      },
                             }}
                             onLoadPaymentData={paymentRequest => {
                                 const tokenData = JSON.parse(paymentRequest.paymentMethodData.tokenizationData.token);
