@@ -159,10 +159,12 @@ def regularPayment():
 
         processing_channel_id = data.get("processing_channel_id")
         payment_context_id = data.get("payment_context_id")
+        capture = data.get("capture", True)
 
         payment_request = {
             "payment_context_id": payment_context_id,  
             "processing_channel_id": processing_channel_id, 
+            "capture": capture,
         }
         response = checkout_api.payments.request_payment(payment_request)
         #Display the API response response.id will find the field with id from the response

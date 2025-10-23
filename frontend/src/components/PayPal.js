@@ -191,6 +191,7 @@ const PayPal = () => {
                                 const response = await axios.post(`${API_BASE_URL}api/payments`, {
                                     payment_context_id: ckoPaymentContextId,
                                     processing_channel_id: config.processingChannelId,
+                                    capture: config.capture,
                                 });
 
                                 if (response.data.status === 'Authorized' || response.data.status === 'Captured' || response.data.status === 'Pending') {
