@@ -86,7 +86,7 @@ const FlowSavedCard = () => {
         setPaymentDetails(null); // Clear previous details
         try {
             const response = await axios.get(`${API_BASE_URL}/api/payment-details/${paymentId}`);
-            setPaymentDetails(response.data.id);
+            setPaymentDetails(response.data.source.id);
         } catch (error) {
             console.error("Get Payment Details Error:", error.response ? error.response.data : error.message);
             toast.error('Error fetching payment details.');
