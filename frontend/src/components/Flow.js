@@ -370,6 +370,7 @@ const Flow = ({ passedPaymentSession = null }) => {
         initializeFlowComponent(sessionToUse);
 
     }, [internalPaymentSessionDetails, passedPaymentSession, config, showMainContent, API_BASE_URL]);
+    
 
 
     useEffect(() => {
