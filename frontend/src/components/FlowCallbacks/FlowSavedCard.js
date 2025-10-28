@@ -182,6 +182,7 @@ const FlowSavedCard = () => {
                         {paymentSession && (
                             <p className="mt-4 text-sm text-gray-700 break-all">
                                 <strong>Payment Session ID:</strong> {paymentSession.id}
+                                <strong>Customer ID to simiulate saved card:cus_t5dvp4w5cg2ejiphzzwmb2xdxe</strong>
                             </p>
                         )}
                     </Card>
