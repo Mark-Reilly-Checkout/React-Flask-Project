@@ -86,7 +86,7 @@ const FlowSavedCard = () => {
         setPaymentDetails(null); // Clear previous details
         try {
             const response = await axios.get(`${API_BASE_URL}/api/payment-details/${paymentId}`);
-            setPaymentDetails(response.data.source.id);
+            setPaymentDetails(response.data.id);
         } catch (error) {
             console.error("Get Payment Details Error:", error.response ? error.response.data : error.message);
             toast.error('Error fetching payment details.');
@@ -197,21 +197,24 @@ const FlowSavedCard = () => {
                 </div>
                 
                 {/* Right Column: Payment Response */}
-                <div className="p-6 rounded-xl shadow-md bg-white">
-                    <h2 className="text-xl font-semibold mb-4">Payment Response</h2>
+                <Card className="p-6 rounded-xl shadow-md bg-white">
+                    <Card.Title className="text-xl font-semibold mb-4">Payment Response</Card.Title>
+                    
+                    {/* --- FIX IS HERE --- */}
+                    {/* We only render this section IF paymentResponse is not null */}
                     {paymentResponse?.id && (
                         <div className="mb-4 text-sm text-gray-700 break-all">
                             <strong>Payment ID:</strong> {paymentResponse.id}
                         </div>
                     )}
+
                     <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-full min-h-[400px] whitespace-pre-wrap break-words">
-                        {paymentResponse.id}
                         {gettingDetails ? "GET Payment Details running..." : (
                             paymentDetails ? JSON.stringify(paymentDetails, null, 2) :
                             (paymentResponse ? "Waiting for payment details..." : "Waiting for payment response...")
                         )}
                     </div>
-                </div>
+                </Card>
             </div>
         </div>
     );
