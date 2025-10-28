@@ -32,6 +32,7 @@ const FlowSavedCard = () => {
     const [paymentSession, setPaymentSession] = useState(null);
     const [paymentResponse, setPaymentResponse] = useState(null);
     const [paymentDetails, setPaymentDetails] = useState(null); // State for the GET Payment Details response
+    const [customerDetails, setCustomerDetails] = useState(null); // State for the GET Payment Details response
     const [gettingDetails, setGettingDetails] = useState(false); // Loading state for the GET request    
     const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "";
     const navigate = useNavigate();
@@ -60,6 +61,7 @@ const FlowSavedCard = () => {
         setPaymentSession(null);
         setPaymentResponse(null);
         setPaymentDetails(null);
+        setCustomerDetails(null);
 
         if (jsonError) {
             toast.error("Cannot create session. Please fix the invalid JSON.");
@@ -84,13 +86,16 @@ const FlowSavedCard = () => {
         if (!paymentId) return;
         setGettingDetails(true);
         setPaymentDetails(null); // Clear previous details
+        setCustomerDetails(null);
         try {
             const response = await axios.get(`${API_BASE_URL}/api/payment-details/${paymentId}`);
             setPaymentDetails(response.data.source.id);
+            setCustomerDetails(response.data.customer.id);
         } catch (error) {
             console.error("Get Payment Details Error:", error.response ? error.response.data : error.message);
             toast.error('Error fetching payment details.');
             setPaymentDetails({ error: "Failed to fetch details.", details: error.response?.data });
+            setCustomerDetails({ error: "Failed to fetch details.", details: error.response?.data });
         } finally {
             setGettingDetails(false);
         }
@@ -211,7 +216,20 @@ const FlowSavedCard = () => {
                     <div className="flex-1 bg-black text-green-400 font-mono text-sm p-4 rounded-lg overflow-auto h-full min-h-[400px] whitespace-pre-wrap break-words">
                         {gettingDetails ? "GET Payment Details running..." : (
                             paymentDetails ? JSON.stringify(paymentDetails, null, 2) :
-                            (paymentResponse ? "Waiting for payment details..." : "Waiting for payment response...")
+                            (paymentResponse ? (
+                                // --- THIS IS THE UPDATED BLOCK ---
+                                <div>
+                                    <p>Payment completed. Waiting for full GET details...</p>
+                                    <br />
+                                    {/* Use optional chaining to safely access nested IDs */}
+                                    {paymentResponse.customer?.id && (
+                                        <p><strong>Customer ID:</strong> {paymentResponse.customer.id}</p>
+                                    )}
+                                    {paymentResponse.instrument?.id && (
+                                        <p><strong>Instrument ID:</strong> {paymentResponse.source.id}</p>
+                                    )}
+                                </div>
+                            ) : "Waiting for payment response...")
                         )}
                     </div>
                 </Card>
@@ -221,3 +239,4 @@ const FlowSavedCard = () => {
 };
 
 export default FlowSavedCard;
+
