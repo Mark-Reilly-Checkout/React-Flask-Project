@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@google-pay/button-react": "^3.1.0",
+    "@google-pay/button-react": "^3.2.1",
     "frames-react": "^1.2.3",
     "ogl": "^1.0.11"
   },
