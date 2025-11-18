@@ -319,7 +319,7 @@ def paymentContext():
 @app.route('/api/apple-pay-session', methods=['POST'])
 def apple_pay_session():
     data = request.get_json()
-    print("Data in Apple Pay session call:", data)
+    print("Token Data in Apple Pay session call:", data["tokenData"])
     
     # 1. Tokenize the Apple Pay token using the SDK
     try:
