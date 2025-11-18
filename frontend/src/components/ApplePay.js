@@ -189,6 +189,12 @@ const ApplePay = () => {
     session.onpaymentauthorized = async (event) => {
       const token = event.payment.token;
 
+      console.log("Apple Pay Payment Token version:", token.paymentData.version);
+      console.log("Apple Pay Payment Token data:", token.paymentData.data);
+      console.log("Apple Pay Payment Token signature:", token.paymentData.signature);
+      console.log("Apple Pay Payment Token transactionId:", token.paymentData.transactionId);
+
+
       if (config.paymentMode === 'processPayment') {
         try {
           const res = await axios.post(`${API_BASE_URL}/api/apple-pay-session`, {
