@@ -189,7 +189,7 @@ const ApplePay = () => {
     session.onpaymentauthorized = async (event) => {
       const token = event.payment.token;
 
-      params ={
+      const params ={
           "version":token.paymentData.version,
           "data":token.paymentData.data,
           "signature": token.paymentData.signature,
