@@ -21,7 +21,7 @@ pip-upgrader==1.4.15
 pipreqs==0.4.13
 pycparser==2.22
 pyOpenSSL==25.0.0
-requests==2.32.3
+requests==2.32.4
 terminaltables==3.1.10
 urllib3==2.5.0
 Werkzeug==3.1.4
